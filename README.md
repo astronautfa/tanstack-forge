@@ -76,7 +76,7 @@ By incorporating best practices directly into the template, we aim to eliminate 
 
 ## TODO
 
-- [ ] Fix Shadcn styling and configuration issues
+- [*] Fix Shadcn styling and configuration issues
 - [ ] Integrate Better Auth with Prisma for authentication
 - [ ] Create login/signup forms with Better Auth integration
 - [ ] Add email sending functionality with Resend
