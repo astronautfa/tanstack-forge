@@ -7,6 +7,6 @@
     "build": "pnpm run -r build",
     "lint": "pnpm run -r --parallel lint",
     "lint:fix": "pnpm run -r --parallel lint:fix",
-    "start": "pnpm run --filter @app/web start"
+    "start": "pnpm run --filter @app/dashboard start"
   }
 }

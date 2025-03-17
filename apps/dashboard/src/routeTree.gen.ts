@@ -12,12 +12,26 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
+import { Route as DemoStartServerFuncsImport } from './routes/demo.start.server-funcs'
+import { Route as DemoStartApiRequestImport } from './routes/demo.start.api-request'
 
 // Create/Update Routes
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DemoStartServerFuncsRoute = DemoStartServerFuncsImport.update({
+  id: '/demo/start/server-funcs',
+  path: '/demo/start/server-funcs',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DemoStartApiRequestRoute = DemoStartApiRequestImport.update({
+  id: '/demo/start/api-request',
+  path: '/demo/start/api-request',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -32,6 +46,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/demo/start/api-request': {
+      id: '/demo/start/api-request'
+      path: '/demo/start/api-request'
+      fullPath: '/demo/start/api-request'
+      preLoaderRoute: typeof DemoStartApiRequestImport
+      parentRoute: typeof rootRoute
+    }
+    '/demo/start/server-funcs': {
+      id: '/demo/start/server-funcs'
+      path: '/demo/start/server-funcs'
+      fullPath: '/demo/start/server-funcs'
+      preLoaderRoute: typeof DemoStartServerFuncsImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -39,32 +67,42 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/demo/start/api-request': typeof DemoStartApiRequestRoute
+  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/demo/start/api-request': typeof DemoStartApiRequestRoute
+  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/demo/start/api-request': typeof DemoStartApiRequestRoute
+  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/demo/start/api-request' | '/demo/start/server-funcs'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/demo/start/api-request' | '/demo/start/server-funcs'
+  id: '__root__' | '/' | '/demo/start/api-request' | '/demo/start/server-funcs'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
+  DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DemoStartApiRequestRoute: DemoStartApiRequestRoute,
+  DemoStartServerFuncsRoute: DemoStartServerFuncsRoute,
 }
 
 export const routeTree = rootRoute
@@ -77,11 +115,19 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/"
+        "/",
+        "/demo/start/api-request",
+        "/demo/start/server-funcs"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/demo/start/api-request": {
+      "filePath": "demo.start.api-request.tsx"
+    },
+    "/demo/start/server-funcs": {
+      "filePath": "demo.start.server-funcs.tsx"
     }
   }
 }
