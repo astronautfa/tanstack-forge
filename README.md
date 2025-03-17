@@ -76,12 +76,116 @@ By incorporating best practices directly into the template, we aim to eliminate 
 
 ## TODO
 
-- [*] Fix Shadcn styling and configuration issues
-- [ ] Integrate Better Auth with Prisma for authentication
-- [ ] Create login/signup forms with Better Auth integration
-- [ ] Add email sending functionality with Resend
-- [ ] Implement payment processing with Stripe and LemonSqueezy
-- [ ] Enhance documentation with more examples
+Styling and Configuration
+
+[*] Fix Shadcn styling and configuration issues
+
+Authentication with Better Auth and Prisma
+
+[ ] Set up Prisma
+
+[ ] Initialize Prisma in project
+[ ] Create database schema for users
+[ ] Set up relations between user and other models
+[ ] Generate Prisma client
+[ ] Create database migration scripts
+[ ] Add utility functions for database operations
+
+[ ] Integrate Better Auth
+
+[ ] Install Better Auth package
+[ ] Configure Better Auth providers (Google, GitHub, etc.)
+[ ] Set up session management
+[ ] Create authentication hooks
+[ ] Implement JWT handling and refresh logic
+[ ] Connect Better Auth with Prisma models
+
+[ ] Authentication UI
+
+[ ] Create login page
+
+[ ] Build login form with validation
+[ ] Add social login buttons
+[ ] Implement error handling
+
+[ ] Create signup page
+
+[ ] Build registration form with validation
+[ ] Add terms of service checkbox
+[ ] Implement email verification flow
+
+[ ] Create password reset flow
+
+[ ] Build forgot password form
+[ ] Create reset password page
+
+[ ] Build profile management page
+[ ] Implement protected routes
+
+Email Functionality with Resend
+
+[ ] Set up Resend
+
+[ ] Install Resend package
+[ ] Configure API keys and environment variables
+[ ] Create email templates
+
+[ ] Welcome email template
+[ ] Password reset email template
+[ ] Verification email template
+
+[ ] Build email sending utility functions
+
+API Routes with HonoJS
+
+[ ] Set up HonoJS API routes
+
+[ ] Configure API middleware
+[ ] Implement authentication middleware
+[ ] Create user management endpoints
+[ ] Set up email sending endpoints
+[ ] Implement error handling
+
+React Query Integration
+
+[ ] Configure React Query
+
+[ ] Set up QueryClient provider
+[ ] Create custom hooks for auth operations
+[ ] Implement data fetching with authentication
+[ ] Set up cache invalidation strategies
+[ ] Add optimistic updates for better UX
+
+Payment Processing
+
+[ ] Stripe Integration
+
+[ ] Install Stripe package
+[ ] Configure Stripe API keys
+[ ] Create subscription models in Prisma
+[ ] Build checkout components
+[ ] Implement webhook handling
+[ ] Add payment success/failure flows
+
+[ ] LemonSqueezy Integration
+
+[ ] Install LemonSqueezy package
+[ ] Configure LemonSqueezy API keys
+[ ] Create product management in Prisma
+[ ] Build checkout components
+[ ] Implement webhook handling
+[ ] Add payment success/failure flows
+
+Documentation
+
+[ ] Enhance documentation
+
+[ ] Update README with setup instructions
+[ ] Add authentication usage examples
+[ ] Document API endpoints
+[ ] Create email templates documentation
+[ ] Add payment integration guides
+[ ] Include troubleshooting section
 
 ## Future Roadmap
 

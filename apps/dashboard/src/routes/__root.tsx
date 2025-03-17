@@ -5,8 +5,7 @@ import {
 	createRootRoute,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-
-import Header from "../components/header";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 import globalsCss from "@app/ui/globals.css?url";
 
@@ -34,10 +33,9 @@ export const Route = createRootRoute({
 
 	component: () => (
 		<RootDocument>
-			<Header />
-
 			<Outlet />
 			<TanStackRouterDevtools />
+			<ReactQueryDevtools initialIsOpen={false} position="right" />
 		</RootDocument>
 	),
 });
