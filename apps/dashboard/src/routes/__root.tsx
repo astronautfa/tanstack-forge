@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { Toaster } from "@app/ui/components/sonner"
 
 import globalsCss from "@app/ui/globals.css?url";
 
@@ -36,6 +37,7 @@ export const Route = createRootRoute({
 			<Outlet />
 			<TanStackRouterDevtools />
 			<ReactQueryDevtools initialIsOpen={false} position="right" />
+			<Toaster />
 		</RootDocument>
 	),
 });

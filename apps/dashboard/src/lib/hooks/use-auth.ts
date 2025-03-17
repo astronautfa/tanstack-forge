@@ -1,4 +1,3 @@
-// lib/hooks/use-auth.ts
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { authApi } from "@/lib/api/auth-api";
@@ -66,7 +65,7 @@ export function useResetPassword() {
         mutationFn: authApi.resetPassword,
         onSuccess: () => {
             // Redirect to login page after successful password reset
-            router.navigate({ to: "/" });
+            router.navigate({ to: "/signin" });
         }
     });
 }

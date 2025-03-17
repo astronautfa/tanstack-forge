@@ -13,7 +13,7 @@ function AuthLayout() {
                         Welcome to the App
                     </h1>
                 </div>
-                <div className="bg-white p-8 shadow-md rounded-lg">
+                <div className="p-8 shadow-md hover:shadow-lg transition-shadow duration-200 rounded-lg">
                     <Outlet />
                 </div>
             </div>

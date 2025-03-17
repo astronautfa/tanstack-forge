@@ -2,8 +2,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@app/ui/components/button";
-import { Alert, AlertDescription } from "@app/ui/components/alert";
 import { Input } from "@app/ui/components/input";
 import { Label } from "@app/ui/components/label";
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
@@ -34,23 +34,21 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
             await login.mutateAsync(data);
             onSuccess?.();
         } catch (error) {
-            // Error is handled by the useMutation hook
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : "Something went wrong. Please try again.",
+                {
+                    icon: <AlertCircle className="h-4 w-4" />,
+                    position: "top-center",
+                    duration: 5000,
+                }
+            );
         }
     }
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {login.error && (
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                        {login.error instanceof Error
-                            ? login.error.message
-                            : "Something went wrong. Please try again."}
-                    </AlertDescription>
-                </Alert>
-            )}
-
             <div className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
