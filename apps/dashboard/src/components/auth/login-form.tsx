@@ -69,7 +69,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
                     <div className="flex items-center justify-between">
                         <Label htmlFor="password">Password</Label>
                         <Link
-                            to="/"
+                            to="/auth/forgot-password"
                             className="text-sm font-medium text-primary hover:underline"
                         >
                             Forgot password?

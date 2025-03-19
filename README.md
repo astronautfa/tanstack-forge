@@ -16,6 +16,7 @@ A modern, opinionated monorepo template for building lightning-fast, feature-ric
 - [Zod](https://zod.dev/)
 - [pnpm](https://pnpm.io/)
 - [BiomeJS](https://biomejs.dev/)
+- [Turborepo](https://turbo.build/)
 
 ## How to use
 
@@ -38,6 +39,33 @@ pnpm install
 pnpm dev
 ```
 
+## Turborepo Commands
+
+This project uses Turborepo for optimized builds and task running:
+
+```bash
+# Run development server for all workspaces
+pnpm dev
+
+# Build all workspaces
+pnpm build
+
+# Lint all workspaces
+pnpm lint
+
+# Fix linting in all workspaces
+pnpm lint:fix
+
+# Format all workspaces
+pnpm format
+
+# Fix formatting in all workspaces
+pnpm format:fix
+
+# Run tests in all workspaces
+pnpm test
+```
+
 ## Installing Shadcn UI Components
 
 ```bash
@@ -55,8 +83,6 @@ pnpm dlx shadcn@2.1.6 add [COMPONENT]
 pnpm dlx shadcn@latest add label
 ```
 
----
-
 ## Use it in the web app
 
 ```tsx
@@ -64,7 +90,7 @@ pnpm dlx shadcn@latest add label
 import { Label } from "@app/ui/components/label";
 
 function MyComponent() {
-  return <Label>Hello World</Label>;
+  return Hello World;
 }
 ```
 
