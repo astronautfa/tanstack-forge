@@ -1,0 +1,17 @@
+{
+  "extends": "@app/typescript-config/react-library.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@/components/*": ["emails/components/*"],
+      "@/provider/*": ["./src/provider/*"],
+      "@/emails/*": ["./emails/*"],
+      "@/types": ["./types.ts"],
+      "@/config": ["src/util/config.ts"],
+      "@/logger": ["src/util/logger.ts"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["dist", "build", "node_modules"]
+}
