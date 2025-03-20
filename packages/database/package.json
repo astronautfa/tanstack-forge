@@ -1,0 +1,26 @@
+{
+  "name": "@app/database",
+  "version": "0.0.0",
+  "main": "./index.ts",
+  "types": "./**/.tsx",
+  "scripts": {
+    "generate": "prisma generate --no-hints",
+    "push": "dotenv -c -e ../../.env -- prisma db push --skip-generate",
+    "migrate": "dotenv -c -e ../../.env -- prisma migrate dev",
+    "studio": "dotenv -c -e ../../.env -- prisma studio",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.3.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@app/typescript-config": "workspace:*",
+    "@biomejs/biome": "1.9.4",
+    "@types/node": "22.13.5",
+    "dotenv-cli": "^8.0.0",
+    "prisma": "^6.3.1",
+    "prisma-json-types-generator": "^3.2.2",
+    "zod-prisma-types": "^3.2.4"
+  }
+}
