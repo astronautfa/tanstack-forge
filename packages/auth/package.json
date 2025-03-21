@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "@app/database": "workspace:*",
+    "better-auth": "1.1.21",
+    "cookie": "^1.0.2",
+    "next": "15.1.7"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@app/typescript-config": "workspace:*",
+    "@types/node": "^22.13.5"
+  },
+  "main": "./index.ts",
+  "name": "@app/auth",
+  "scripts": {
+    "migrate": "dotenv -e ../../.env.local -- pnpm dlx @better-auth/cli@latest generate --config ./auth.ts --output ../database/prisma/schema.prisma",
+    "type-check": "tsc --noEmit"
+  },
+  "types": "./**/.tsx",
+  "version": "0.0.0"
+}
