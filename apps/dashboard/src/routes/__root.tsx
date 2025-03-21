@@ -9,6 +9,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from "@app/ui/components/sonner"
 
 import globalsCss from "@app/ui/globals.css?url";
+import { SessionProvider } from "@/lib/providers/session";
 
 export const Route = createRootRoute({
 	head: () => ({
@@ -49,7 +50,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body>
-				{children}
+				<SessionProvider>
+					{children}
+				</SessionProvider>
 				<Scripts />
 			</body>
 		</html>

@@ -3,7 +3,6 @@ import type { BetterAuthPlugin } from "better-auth";
 import { APIError } from "better-auth/api";
 import { createAuthMiddleware } from "better-auth/plugins";
 
-// Simple config to replace @repo/config
 const config = {
     auth: {
         enableSignup: process.env.ENABLE_SIGNUP === "true",
@@ -25,7 +24,6 @@ export const invitationOnlyPlugin = () =>
 
                         const { email } = ctx.body;
 
-                        // check if there is an invitation for the email
                         const hasInvitation = await db.invitation.count({
                             where: {
                                 email,

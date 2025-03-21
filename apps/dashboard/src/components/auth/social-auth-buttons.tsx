@@ -1,7 +1,8 @@
 import { type ComponentProps } from "react";
 import { Button } from "@app/ui/components/button";
 import { cn } from "@app/ui/lib/utils";
-import { Github, Mail, MessageCircle } from "lucide-react";
+import { Github, Mail } from "lucide-react";
+import { authClient } from "@app/auth";
 
 export type SocialProvider = "discord" | "google" | "github";
 
@@ -16,16 +17,16 @@ function SocialAuthButton({
     className,
     ...props
 }: SocialAuthButtonProps) {
-    // TODO: Replace with actual auth implementation
     const handleAuth = async () => {
-        console.log(`Sign in with ${provider}`);
-        // In the real implementation, this would call your auth service
+        const callbackURL = new URL('/', window.location.origin);
+        authClient.signIn.social({
+            provider,
+            callbackURL: callbackURL.toString(),
+        });
     };
 
     const getIcon = () => {
         switch (provider) {
-            case "discord":
-                return <MessageCircle size={20} className="mr-2" />;
             case "github":
                 return <Github size={20} className="mr-2" />;
             case "google":

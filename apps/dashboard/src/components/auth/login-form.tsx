@@ -1,26 +1,28 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "@tanstack/react-router";
-import { AlertCircle } from "lucide-react";
-import { toast } from "sonner";
+import { AlertCircle, EyeIcon, EyeOffIcon } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Input } from "@app/ui/components/input";
-import { Label } from "@app/ui/components/label";
+import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
-import { useLogin } from "@/lib/hooks/use-auth";
+import { authClient } from "@app/auth";
+import { useSession } from "@/lib/providers/session";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@app/ui/components/form";
 
 interface LoginFormProps {
     onSuccess?: () => void;
+    redirectTo?: string;
 }
 
-export function LoginForm({ onSuccess }: LoginFormProps) {
-    const login = useLogin();
+export function LoginForm({ onSuccess, redirectTo = "/" }: LoginFormProps) {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [serverError, setServerError] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const { reloadSession } = useSession();
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors, isValid }
-    } = useForm<LoginFormValues>({
+    const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
         defaultValues: {
             email: "",
@@ -30,71 +32,118 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
     });
 
     async function onSubmit(data: LoginFormValues) {
+        setIsSubmitting(true);
+
         try {
-            await login.mutateAsync(data);
+            const { error } = await authClient.signIn.email({
+                email: data.email,
+                password: data.password,
+            });
+
+            if (error) {
+                throw error;
+            }
+
+            await reloadSession();
             onSuccess?.();
+
+            // Redirect to specified path after successful login
+            window.location.href = redirectTo;
         } catch (error) {
-            toast.error(
-                error instanceof Error
-                    ? error.message
-                    : "Something went wrong. Please try again.",
-                {
-                    icon: <AlertCircle className="h-4 w-4" />,
-                    position: "top-center",
-                    duration: 5000,
-                }
-            );
+            setServerError("Invalid email or password. Please try again.");
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        placeholder="m@example.com"
-                        autoComplete="email"
-                        className={errors.email ? "border-red-300" : ""}
-                        {...register("email")}
-                    />
-                    {errors.email && (
-                        <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>
-                    )}
-                </div>
+        <Form {...form}>
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    form.handleSubmit(onSubmit)(e);
+                }}
+                method="post"
+                className="space-y-6"
+            >
+                {serverError && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Sign in failed</AlertTitle>
+                        <AlertDescription>{serverError}</AlertDescription>
+                    </Alert>
+                )}
 
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Password</Label>
-                        <Link
-                            to="/auth/forgot-password"
-                            className="text-sm font-medium text-primary hover:underline"
-                        >
-                            Forgot password?
-                        </Link>
-                    </div>
-                    <Input
-                        id="password"
-                        type="password"
-                        autoComplete="current-password"
-                        className={errors.password ? "border-red-300" : ""}
-                        {...register("password")}
+                <div className="space-y-4">
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        type="email"
+                                        placeholder="m@example.com"
+                                        autoComplete="email"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
                     />
-                    {errors.password && (
-                        <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>
-                    )}
-                </div>
 
-                <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={login.isPending || !isValid}
-                >
-                    {login.isPending ? "Signing in..." : "Sign in"}
-                </Button>
-            </div>
-        </form>
+                    <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                            <FormItem>
+                                <div className="flex items-center justify-between">
+                                    <FormLabel>Password</FormLabel>
+                                    <Link
+                                        to="/auth/forgot-password"
+                                        className="text-sm font-medium text-primary hover:underline"
+                                    >
+                                        Forgot password?
+                                    </Link>
+                                </div>
+                                <FormControl>
+                                    <div className="relative">
+                                        <Input
+                                            {...field}
+                                            type={showPassword ? "text" : "password"}
+                                            autoComplete="current-password"
+                                            className="pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute inset-y-0 right-0 flex items-center pr-3 text-primary"
+                                        >
+                                            {showPassword ? (
+                                                <EyeOffIcon className="h-4 w-4" />
+                                            ) : (
+                                                <EyeIcon className="h-4 w-4" />
+                                            )}
+                                        </button>
+                                    </div>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={isSubmitting}
+                    // loading={isSubmitting}
+                    >
+                        {isSubmitting ? "Signing in..." : "Sign in"}
+                    </Button>
+                </div>
+            </form>
+        </Form>
     );
 }
