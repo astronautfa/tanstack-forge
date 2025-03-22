@@ -1,11 +1,19 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env.*local"],
+  "globalDependencies": [".env"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
-      "cache": true
+      "env": [
+        "DATABASE_URL",
+        "RESEND_API_KEY",
+        "MAIL_FROM",
+        "ENABLE_SIGNUP",
+        "NEXT_PUBLIC_*",
+        "GOOGLE_*",
+        "GITHUB_*"
+      ]
     },
     "lint": {},
     "lint:fix": {},
@@ -13,14 +21,38 @@
     "format:fix": {},
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "DATABASE_URL",
+        "RESEND_API_KEY",
+        "MAIL_FROM",
+        "ENABLE_SIGNUP",
+        "NEXT_PUBLIC_*",
+        "GOOGLE_*",
+        "GITHUB_*"
+      ]
     },
     "start": {
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
+      "env": [
+        "DATABASE_URL",
+        "RESEND_API_KEY",
+        "MAIL_FROM",
+        "ENABLE_SIGNUP",
+        "NEXT_PUBLIC_*",
+        "GOOGLE_*",
+        "GITHUB_*"
+      ]
     },
     "test": {
       "dependsOn": ["build"],
-      "inputs": ["src/**/*.tsx", "src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"]
+      "inputs": [
+        "src/**/*.tsx",
+        "src/**/*.ts",
+        "test/**/*.ts",
+        "test/**/*.tsx"
+      ],
+      "env": ["DATABASE_URL", "TEST_*"]
     }
   }
 }

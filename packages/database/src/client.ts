@@ -1,8 +1,15 @@
 import { PrismaClient } from "@prisma/client";
+import { env } from "@app/env";
 
 const prismaClientSingleton = () => {
-    return new PrismaClient();
-};
+    return new PrismaClient({
+      datasources: {
+        db: {
+          url: env.DATABASE_URL,
+        },
+      },
+    });
+  };
 
 declare global {
     var prisma: undefined | ReturnType<typeof prismaClientSingleton>;
