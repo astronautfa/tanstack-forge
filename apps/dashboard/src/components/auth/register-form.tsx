@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, EyeIcon, EyeOffIcon, Mail, MailboxIcon } from "lucide-react";
+import { AlertCircle, EyeIcon, EyeOffIcon, Mail } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { registerSchema, type RegisterFormValues } from "@/lib/validations/auth";
