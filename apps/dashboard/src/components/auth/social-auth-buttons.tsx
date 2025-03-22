@@ -2,7 +2,7 @@ import { type ComponentProps } from "react";
 import { Button } from "@app/ui/components/button";
 import { cn } from "@app/ui/lib/utils";
 import { Github, Mail } from "lucide-react";
-import { authClient } from "@app/auth";
+import { authClient } from "@app/auth/client";
 
 export type SocialProvider = "discord" | "google" | "github";
 

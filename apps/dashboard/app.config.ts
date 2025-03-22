@@ -8,11 +8,13 @@ export default defineConfig({
   },
   vite: {
     plugins: [
-      // this is the plugin that enables path aliases
       viteTsConfigPaths({
         projects: ['./tsconfig.json'],
       }),
       tailwindcss(),
     ],
+    ssr: {
+      external: ['@prisma/client', 'better-auth']
+    }
   },
 })

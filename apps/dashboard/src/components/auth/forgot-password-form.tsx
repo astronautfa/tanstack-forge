@@ -6,7 +6,7 @@ import { Button } from "@app/ui/components/button";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { FormField } from "@app/ui/components/form-field";
 import { forgotPasswordSchema, type ForgotPasswordFormValues } from "@/lib/validations/auth";
-import { authClient } from "@app/auth";
+import { authClient } from "@app/auth/client";
 import { Link } from "@tanstack/react-router";
 
 interface ForgotPasswordFormProps {

@@ -5,7 +5,7 @@ import { AlertCircle, ArrowLeftIcon, CheckCircle2 } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { resetPasswordSchema, type ResetPasswordFormValues } from "@/lib/validations/auth";
-import { authClient } from "@app/auth";
+import { authClient } from "@app/auth/client";
 import { Link } from "@tanstack/react-router";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@app/ui/components/form";
 import { Input } from "@app/ui/components/input";

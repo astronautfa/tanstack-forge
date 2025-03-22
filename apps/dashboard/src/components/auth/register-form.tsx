@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, EyeIcon, EyeOffIcon, MailboxIcon } from "lucide-react";
+import { AlertCircle, EyeIcon, EyeOffIcon, Mail, MailboxIcon } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { registerSchema, type RegisterFormValues } from "@/lib/validations/auth";
-import { authClient } from "@app/auth";
+import { authClient } from "@app/auth/client";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@app/ui/components/form";
 import { Input } from "@app/ui/components/input";
 
@@ -68,7 +68,7 @@ export function RegisterForm({ onSuccess, redirectTo = "/" }: RegisterFormProps)
     if (isSubmitted) {
         return (
             <Alert variant="success">
-                <MailboxIcon className="h-5 w-5" />
+                <Mail className="h-5 w-5" />
                 <AlertTitle>Verify your email</AlertTitle>
                 <AlertDescription>
                     We've sent you an email with a link to verify your account. Please check your inbox and follow the instructions.

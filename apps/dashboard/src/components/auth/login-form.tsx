@@ -7,7 +7,7 @@ import { Button } from "@app/ui/components/button";
 import { Input } from "@app/ui/components/input";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
-import { authClient } from "@app/auth";
+import { authClient } from "@app/auth/client";
 import { useSession } from "@/lib/providers/session";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@app/ui/components/form";
 
