@@ -132,6 +132,9 @@ importers:
       '@app/database':
         specifier: workspace:*
         version: link:../database
+      '@app/env':
+        specifier: workspace:*
+        version: link:../env
       better-auth:
         specifier: 1.1.21
         version: 1.1.21
@@ -207,6 +210,9 @@ importers:
 
   packages/mail:
     dependencies:
+      '@app/env':
+        specifier: workspace:*
+        version: link:../env
       '@react-email/components':
         specifier: ^0.0.33
         version: 0.0.33(react-dom@19.0.0(react@19.0.0))(react@19.0.0)

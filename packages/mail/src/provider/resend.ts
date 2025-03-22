@@ -1,6 +1,7 @@
 import { config } from "@/src/util/config";
 import { logger } from "@/src/util/logger";
 import type { SendEmailHandler } from "@/types";
+import { env } from "@app/env";
 
 const { from } = config.mails;
 
@@ -10,7 +11,7 @@ export const send: SendEmailHandler = async ({ to, subject, html }) => {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+                Authorization: `Bearer ${env.RESEND_API_KEY}`,
             },
             body: JSON.stringify({
                 from,

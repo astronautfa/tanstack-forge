@@ -2,10 +2,11 @@ import { db } from "@app/database";
 import type { BetterAuthPlugin } from "better-auth";
 import { APIError } from "better-auth/api";
 import { createAuthMiddleware } from "better-auth/plugins";
+import { env } from "@app/env";
 
 const config = {
     auth: {
-        enableSignup: process.env.ENABLE_SIGNUP === "true",
+        enableSignup: env.ENABLE_SIGNUP === "true",
     },
 };
 

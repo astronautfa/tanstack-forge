@@ -1,5 +1,7 @@
+import { env } from "@app/env";
+
 export const config = {
     mails: {
-        from: process.env.MAIL_FROM || 'noreply@example.com',
+        from: env.MAIL_FROM || 'noreply@example.com',
     }
 };

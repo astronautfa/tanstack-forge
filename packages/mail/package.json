@@ -4,6 +4,7 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "dependencies": {
+    "@app/env": "workspace:*",
     "@react-email/components": "^0.0.33",
     "@react-email/render": "^1.0.5",
     "nodemailer": "^6.10.0",

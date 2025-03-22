@@ -13,27 +13,25 @@ import { passkey } from "better-auth/plugins/passkey";
 import { updateSeatsInOrganization } from "./lib/organization";
 import { getUserByEmail } from "./lib/user";
 import { invitationOnlyPlugin } from "./plugins/invitation-only";
+import { env } from "@app/env";
 
-// Simple config placeholder (replace @repo/config)
 const config = {
     auth: {
         sessionCookieMaxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        enableSignup: process.env.ENABLE_SIGNUP === "true",
+        enableSignup: env.ENABLE_SIGNUP === "true",
     },
 };
 
-// Helper function (replace @repo/utils)
 const getBaseUrl = () => {
-    if (process.env.NEXT_PUBLIC_SITE_URL) {
-        return process.env.NEXT_PUBLIC_SITE_URL;
+    if (env.NEXT_PUBLIC_SITE_URL) {
+        return env.NEXT_PUBLIC_SITE_URL;
     }
-    if (process.env.NEXT_PUBLIC_VERCEL_URL) {
-        return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-    }
-    return `http://localhost:${process.env.PORT ?? 3000}`;
+    // if (env.NEXT_PUBLIC_VERCEL_URL) {
+    //     return `https://${env.NEXT_PUBLIC_VERCEL_URL}`;
+    // }
+    return `http://localhost:3000`;
 };
 
-// Simple placeholder for email sending (replace @repo/mail)
 const sendEmail = async ({ to, templateId, context }: {
     to: string;
     templateId: string;
@@ -153,13 +151,13 @@ export const auth = betterAuth({
     },
     socialProviders: {
         google: {
-            clientId: process.env.GOOGLE_CLIENT_ID as string,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+            clientId: env.GOOGLE_CLIENT_ID as string,
+            clientSecret: env.GOOGLE_CLIENT_SECRET as string,
             scope: ["email", "profile"],
         },
         github: {
-            clientId: process.env.GITHUB_CLIENT_ID as string,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+            clientId: env.GITHUB_CLIENT_ID as string,
+            clientSecret: env.GITHUB_CLIENT_SECRET as string,
             scope: ["user:email"],
         },
     },

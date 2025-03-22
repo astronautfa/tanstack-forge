@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@app/env": "workspace:*",
     "@app/database": "workspace:*",
     "better-auth": "1.1.21",
     "cookie": "^1.0.2",
