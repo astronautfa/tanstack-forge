@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, ArrowLeftIcon } from "lucide-react";
@@ -14,9 +14,14 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@app/ui/com
 interface ForgotPasswordFormProps {
     onSuccess?: () => void;
     className?: string;
+    defaultEmail?: string;
 }
 
-export function ForgotPasswordForm({ onSuccess, className = "" }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm({
+    onSuccess,
+    className = "",
+    defaultEmail = ""
+}: ForgotPasswordFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [serverError, setServerError] = useState<{ title: string; message?: string } | null>(null);
@@ -24,15 +29,25 @@ export function ForgotPasswordForm({ onSuccess, className = "" }: ForgotPassword
     const form = useForm<ForgotPasswordFormValues>({
         resolver: zodResolver(forgotPasswordSchema),
         defaultValues: {
-            email: "",
+            email: defaultEmail,
         },
         mode: "onChange"
     });
 
+    // Update form values when defaultEmail prop changes
+    useEffect(() => {
+        if (defaultEmail) {
+            form.setValue("email", defaultEmail);
+        }
+    }, [defaultEmail, form]);
+
+    // Watch for email value to determine if button should be enabled
     const email = form.watch("email");
 
+    // Check if email field has a value
     const hasEmailValue = !!email;
 
+    // Check if form passes validation
     const isFormValid = form.formState.isValid;
 
     async function onSubmit(data: ForgotPasswordFormValues) {
@@ -112,7 +127,7 @@ export function ForgotPasswordForm({ onSuccess, className = "" }: ForgotPassword
                         control={form.control}
                         name="email"
                         render={({ field }) => (
-                            <FormItem >
+                            <FormItem>
                                 <Label htmlFor="email">Email</Label>
                                 <FormControl>
                                     <Input
