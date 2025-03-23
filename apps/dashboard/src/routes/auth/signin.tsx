@@ -9,7 +9,7 @@ function SignInPage() {
     return (
         <div className="space-y-5">
             <div className="text-center">
-                <h2 className="text-lg font-semibold">Welcome back</h2>
+                <h2 className="text-lg font-semibold text-foreground">Welcome back</h2>
                 <p className="text-sm text-muted-foreground">
                     Enter your credentials to login to your account.
                 </p>

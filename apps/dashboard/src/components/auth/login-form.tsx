@@ -154,7 +154,7 @@ export function LoginForm({
                     </div>
                     <Link
                         to="/auth/forgot-password"
-                        className="text-sm underline hover:no-underline"
+                        className="text-muted-foreground text-sm hover:underline"
                     >
                         Forgot password?
                     </Link>

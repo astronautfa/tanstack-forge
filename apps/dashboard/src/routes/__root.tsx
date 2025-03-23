@@ -64,7 +64,7 @@ export const Route = createRootRoute({
 function RootDocument({ children }: { children: React.ReactNode }) {
 
 	const { user } = Route.useRouteContext();
-	console.log("User from route context:", user); 
+	console.log("User from route context:", user);
 
 	return (
 		<html lang="en">
@@ -73,7 +73,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			</head>
 			<body>
 				<SessionProvider initialUser={user}>
-					{children}
+					<div className="min-h-screen font-sans antialiased dark scheme-only-dark">
+						{children}
+					</div>
 				</SessionProvider>
 				<Scripts />
 			</body>
