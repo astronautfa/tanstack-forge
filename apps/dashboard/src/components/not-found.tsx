@@ -3,12 +3,6 @@ import { Search, ArrowLeft } from "lucide-react"
 import { Button } from "@app/ui/components/button"
 import { Input } from "@app/ui/components/input"
 
-interface NotFoundProps {
-    title?: string
-    description?: string
-    children?: React.ReactNode
-}
-
 export function Illustration(props: React.ComponentPropsWithoutRef<"svg">) {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 362 145" {...props}>
@@ -20,21 +14,17 @@ export function Illustration(props: React.ComponentPropsWithoutRef<"svg">) {
     )
 }
 
-export function NotFound({
-    title = "Page not found",
-    description = "Lost, this page is. In another system, it may be.",
-    children
-}: NotFoundProps) {
+export function NotFound() {
     return (
         <div className="relative flex flex-col w-full justify-center min-h-svh bg-background p-6 md:p-10">
             <div className="relative max-w-5xl mx-auto w-full">
                 <Illustration className="absolute inset-0 w-full h-[30vh] opacity-[0.04] dark:opacity-[0.03] text-foreground" />
                 <div className="relative text-center z-[1]">
                     <h1 className="mt-4 text-balance text-4xl font-semibold tracking-tight text-primary sm:text-6xl">
-                        {title}
+                        Page not found
                     </h1>
                     <p className="mt-6 text-pretty text-lg font-medium text-muted-foreground sm:text-xl/8">
-                        {children || description}
+                        Lost, this page is. In another system, it may be.
                     </p>
                     <div className="mt-10 flex flex-col sm:flex-row gap-y-3 sm:space-x-2 mx-auto sm:max-w-sm">
                         <div className="relative w-full">

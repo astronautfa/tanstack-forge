@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { SidebarProvider, SidebarInset } from "@app/ui/components/sidebar";
 import { AppSidebar } from "../components/app-sidebar";
 import {
@@ -6,26 +6,43 @@ import {
     PieChart,
     Calendar
 } from "lucide-react";
+import { authClient } from "@app/auth/client";
 
 export const Route = createFileRoute("/")({
     component: Dashboard,
-    beforeLoad: ({ context }) => {
-        const { user } = context;
-
-        if (!user) {
-            throw redirect({
-                to: '/auth/signin',
-                replace: true,
-            });
+    loader: ({ context }) => {
+        return { user: context.user };
+    },
+    beforeLoad: async ({ context }) => {
+        if (!context.user) {
+            throw redirect({ to: "/auth/signin" });
         }
+
+        // `context.queryClient` is also available in our loaders
+        // https://tanstack.com/start/latest/docs/framework/react/examples/start-basic-react-query
+        // https://tanstack.com/router/latest/docs/framework/react/guide/external-data-loading
     },
 });
 
 function Dashboard() {
+    const { queryClient } = Route.useRouteContext();
+    // const { user } = Route.useLoaderData();
+    const router = useRouter();
+
+    const handleSignOut = async () => {
+        try {
+            await authClient.signOut();
+            await queryClient.invalidateQueries({ queryKey: ["user"] });
+            await router.invalidate();
+        } catch (error) {
+            console.error("Sign out failed:", error);
+        }
+    };
+
     return (
         <SidebarProvider defaultOpen={true}>
             <div className="flex h-screen w-full overflow-hidden">
-                <AppSidebar />
+                <AppSidebar onSignOut={handleSignOut} />
                 <SidebarInset className="overflow-auto bg-background text-foreground p-6">
                     <div className="grid gap-6">
                         {/* Dashboard Header */}

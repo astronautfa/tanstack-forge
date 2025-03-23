@@ -105,7 +105,11 @@ const data = {
     ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+    onSignOut?: () => Promise<void> | void;
+}
+
+export function AppSidebar({ onSignOut, ...props }: AppSidebarProps) {
     return (
         <Sidebar {...props}>
             <SidebarHeader>
@@ -151,10 +155,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <hr className="border-t border-border mx-2 -mt-px" />
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton className="font-medium gap-3 h-9 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto">
+                        <SidebarMenuButton
+                            onClick={onSignOut}
+                            className="font-medium gap-3 h-9 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto">
                             <LogOut
                                 className="text-muted-foreground/60 group-data-[active=true]/menu-button:text-primary"
-                                size={22}
+                                size={18}
                                 aria-hidden="true"
                             />
                             <span>Sign Out</span>

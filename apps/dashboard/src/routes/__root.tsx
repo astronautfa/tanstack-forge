@@ -2,17 +2,36 @@ import {
 	HeadContent,
 	Outlet,
 	Scripts,
-	createRootRoute,
+	createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from "@app/ui/components/sonner"
 
 import globalsCss from "@app/ui/globals.css?url";
-import { SessionProvider } from "@/lib/providers/session";
-import { authClient } from "@app/auth/client";
+import { auth } from "@app/auth";
+import { getWebRequest } from "@tanstack/react-start/server";
+import { createServerFn } from "@tanstack/react-start";
+import type { QueryClient } from "@tanstack/react-query";
 
-export const Route = createRootRoute({
+const getUser = createServerFn({ method: "GET" }).handler(async () => {
+	const { headers } = getWebRequest()!;
+	const session = await auth.api.getSession({ headers });
+
+	return session?.user || null;
+});
+
+export const Route = createRootRouteWithContext<{
+	queryClient: QueryClient;
+	user: Awaited<ReturnType<typeof getUser>>;
+}>()({
+	beforeLoad: async ({ context }) => {
+		const user = await context.queryClient.fetchQuery({
+			queryKey: ["user"],
+			queryFn: ({ signal }) => getUser({ signal }),
+		});
+		return { user };
+	},
 	head: () => ({
 		meta: [
 			{
@@ -33,7 +52,6 @@ export const Route = createRootRoute({
 			},
 		],
 	}),
-
 	component: () => (
 		<RootDocument>
 			<Outlet />
@@ -42,23 +60,6 @@ export const Route = createRootRoute({
 			<Toaster />
 		</RootDocument>
 	),
-
-	beforeLoad: async () => {
-		try {
-			const { data: session } = await authClient.getSession();
-
-			console.log(session)
-
-			console.log("Session in root route:", session ? "exists" : "missing");
-
-			return {
-				user: session?.user || null
-			};
-		} catch (error) {
-			console.error("Error fetching session:", error);
-			return { user: null };
-		}
-	},
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
@@ -72,11 +73,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body>
-				<SessionProvider initialUser={user}>
-					<div className="min-h-screen font-sans antialiased dark scheme-only-dark">
-						{children}
-					</div>
-				</SessionProvider>
+				<div className="min-h-screen font-sans antialiased dark scheme-only-dark">
+					{children}
+				</div>
 				<Scripts />
 			</body>
 		</html>
