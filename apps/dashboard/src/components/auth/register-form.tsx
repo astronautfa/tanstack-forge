@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@app/ui/com
 import { Input } from "@app/ui/components/input";
 import { SocialAuthButtons } from "./social-auth-buttons";
 import { useAuth } from "@/routes/auth/route";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface RegisterFormProps {
     onSuccess?: () => void;
@@ -197,23 +198,48 @@ export function RegisterForm({
 
                                 {/* Password requirements checklist */}
                                 {password && (
-                                    <ul className="mt-2 space-y-1" aria-label="Password requirements">
-                                        {requirementStatus.map((req, index) => (
-                                            <li key={index} className="flex items-center gap-1.5">
-                                                {req.met ? (
-                                                    <Check size={16} className="text-emerald-500" aria-hidden="true" />
-                                                ) : (
-                                                    <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
-                                                )}
-                                                <span className={`text-xs ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
-                                                    {req.text}
-                                                    <span className="sr-only">
-                                                        {req.met ? " - Requirement met" : " - Requirement not met"}
+                                    <AnimatePresence>
+                                        <motion.ul
+                                            className="mt-2 space-y-1"
+                                            aria-label="Password requirements"
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: "auto" }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            {requirementStatus.map((req, index) => (
+                                                <motion.li
+                                                    key={index}
+                                                    className="flex items-center gap-1.5"
+                                                    initial={{ opacity: 0, x: 0 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ duration: 0.2 }}
+                                                >
+                                                    <AnimatePresence mode="wait" initial={false}>
+                                                        <motion.div
+                                                            key={req.met ? "check" : "x"}
+                                                            initial={{ scale: 0.5, opacity: 0 }}
+                                                            animate={{ scale: 1, opacity: 1 }}
+                                                            exit={{ scale: 0.5, opacity: 0 }}
+                                                            transition={{ duration: 0.2 }}
+                                                        >
+                                                            {req.met ? (
+                                                                <Check size={16} className="text-emerald-500" aria-hidden="true" />
+                                                            ) : (
+                                                                <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
+                                                            )}
+                                                        </motion.div>
+                                                    </AnimatePresence>
+                                                    <span className={`text-xs ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
+                                                        {req.text}
+                                                        <span className="sr-only">
+                                                            {req.met ? " - Requirement met" : " - Requirement not met"}
+                                                        </span>
                                                     </span>
-                                                </span>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                                </motion.li>
+                                            ))}
+                                        </motion.ul>
+                                    </AnimatePresence>
                                 )}
 
                                 {form.formState.submitCount > 0 && <FormMessage />}
@@ -253,21 +279,38 @@ export function RegisterForm({
 
                                 {/* Show password match status only when both fields have values */}
                                 {password && confirmPassword && (
-                                    <div className="mt-2 flex items-center gap-1">
-                                        {passwordsMatch ? (
-                                            <>
-                                                <Check size={16} className="text-emerald-500" aria-hidden="true" />
-                                                <span className="text-xs text-emerald-600">Passwords match</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <X size={16} className="text-destructive/80" aria-hidden="true" />
-                                                <span className="text-xs text-destructive">Passwords do not match</span>
-                                            </>
-                                        )}
-                                    </div>
+                                    <AnimatePresence>
+                                        <motion.div
+                                            className="mt-2 flex items-center gap-1"
+                                            initial={{ opacity: 0, y: -5 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -5 }}
+                                            transition={{ duration: 0.2 }}
+                                        >
+                                            <AnimatePresence mode="wait" initial={false}>
+                                                <motion.div
+                                                    key={passwordsMatch ? "match" : "no-match"}
+                                                    initial={{ scale: 1, opacity: 0 }}
+                                                    animate={{ scale: 1, opacity: 1 }}
+                                                    exit={{ scale: 1, opacity: 0 }}
+                                                    transition={{ duration: 0.2 }}
+                                                >
+                                                    {passwordsMatch ? (
+                                                        <div className="flex gap-1">
+                                                            <Check size={16} className="text-emerald-500" aria-hidden="true" />
+                                                            <span className="text-xs text-emerald-600">Passwords match</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex gap-1">
+                                                            <X size={16} className="text-destructive/80" aria-hidden="true" />
+                                                            <span className="text-xs text-destructive">Passwords do not match</span>
+                                                        </div>
+                                                    )}
+                                                </motion.div>
+                                            </AnimatePresence>
+                                        </motion.div>
+                                    </AnimatePresence>
                                 )}
-
                                 {form.formState.submitCount > 0 && <FormMessage />}
                             </FormItem>
                         )}
