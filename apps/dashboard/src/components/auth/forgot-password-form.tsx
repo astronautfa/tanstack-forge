@@ -29,6 +29,12 @@ export function ForgotPasswordForm({ onSuccess, className = "" }: ForgotPassword
         mode: "onChange"
     });
 
+    const email = form.watch("email");
+
+    const hasEmailValue = !!email;
+
+    const isFormValid = form.formState.isValid;
+
     async function onSubmit(data: ForgotPasswordFormValues) {
         setIsSubmitting(true);
 
@@ -117,7 +123,7 @@ export function ForgotPasswordForm({ onSuccess, className = "" }: ForgotPassword
                                         autoComplete="email"
                                     />
                                 </FormControl>
-                                <FormMessage />
+                                {form.formState.submitCount > 0 && <FormMessage />}
                             </FormItem>
                         )}
                     />
@@ -125,7 +131,7 @@ export function ForgotPasswordForm({ onSuccess, className = "" }: ForgotPassword
                     <Button
                         type="submit"
                         className="w-full"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !hasEmailValue || !isFormValid}
                     >
                         {isSubmitting ? "Sending..." : "Send Reset Link"}
                     </Button>

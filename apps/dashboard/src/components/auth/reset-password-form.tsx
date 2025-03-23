@@ -1,7 +1,7 @@
-import { useState, useId } from "react";
+import { useState, useId, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, CheckCircle2, EyeIcon, EyeOffIcon } from "lucide-react";
+import { AlertCircle, CheckCircle2, EyeIcon, EyeOffIcon, Check, X } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { resetPasswordSchema, type ResetPasswordFormValues } from "@/lib/validations/auth";
@@ -39,6 +39,31 @@ export function ResetPasswordForm({
         },
         mode: "onChange"
     });
+
+    // Password requirements based on your zod validation
+    const passwordRequirements = [
+        { regex: /.{8,}/, text: "At least 8 characters" },
+        { regex: /[0-9]/, text: "At least 1 number" },
+        { regex: /[a-z]/, text: "At least 1 lowercase letter" },
+        { regex: /[A-Z]/, text: "At least 1 uppercase letter" }
+    ];
+
+    const password = form.watch("password");
+
+    // Check which requirements are met
+    const requirementStatus = useMemo(() => {
+        return passwordRequirements.map((req) => ({
+            met: req.regex.test(password || ""),
+            text: req.text,
+        }));
+    }, [password]);
+
+    // Check if confirm password matches
+    const confirmPassword = form.watch("confirmPassword");
+    const passwordsMatch = password === confirmPassword && password !== "";
+
+    // Check if form is valid
+    const isFormValid = form.formState.isValid;
 
     async function onSubmit(data: ResetPasswordFormValues) {
         setIsSubmitting(true);
@@ -141,7 +166,29 @@ export function ResetPasswordForm({
                                         </button>
                                     </div>
                                 </FormControl>
-                                <FormMessage />
+
+                                {/* Password requirements checklist */}
+                                {password && (
+                                    <ul className="mt-2 space-y-1" aria-label="Password requirements">
+                                        {requirementStatus.map((req, index) => (
+                                            <li key={index} className="flex items-center gap-2">
+                                                {req.met ? (
+                                                    <Check size={16} className="text-emerald-500" aria-hidden="true" />
+                                                ) : (
+                                                    <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
+                                                )}
+                                                <span className={`text-xs ${req.met ? "text-emerald-600" : "text-muted-foreground"}`}>
+                                                    {req.text}
+                                                    <span className="sr-only">
+                                                        {req.met ? " - Requirement met" : " - Requirement not met"}
+                                                    </span>
+                                                </span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+
+                                {form.formState.submitCount > 0 && <FormMessage />}
                             </FormItem>
                         )}
                     />
@@ -175,7 +222,25 @@ export function ResetPasswordForm({
                                         </button>
                                     </div>
                                 </FormControl>
-                                <FormMessage />
+
+                                {/* Show password match status only when both fields have values */}
+                                {password && confirmPassword && (
+                                    <div className="mt-2 flex items-center gap-2">
+                                        {passwordsMatch ? (
+                                            <>
+                                                <Check size={16} className="text-emerald-500" aria-hidden="true" />
+                                                <span className="text-xs text-emerald-600">Passwords match</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
+                                                <span className="text-xs text-muted-foreground">Passwords do not match</span>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
+
+                                {form.formState.submitCount > 0 && <FormMessage />}
                             </FormItem>
                         )}
                     />
@@ -183,7 +248,7 @@ export function ResetPasswordForm({
                     <Button
                         type="submit"
                         className="w-full"
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || !isFormValid}
                     >
                         {isSubmitting ? "Resetting..." : "Reset Password"}
                     </Button>

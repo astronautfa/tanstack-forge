@@ -42,6 +42,16 @@ export function LoginForm({
         mode: "onChange"
     });
 
+    // Watch for email and password values to determine if button should be enabled
+    const email = form.watch("email");
+    const password = form.watch("password");
+
+    // Form is only valid if both email and password have values
+    const formHasValues = !!email && !!password;
+
+    // Check if the form is valid (passes validation)
+    const isFormValid = form.formState.isValid;
+
     async function onSubmit(data: LoginFormValues) {
         setIsSubmitting(true);
 
@@ -105,7 +115,7 @@ export function LoginForm({
                                         autoComplete="email"
                                     />
                                 </FormControl>
-                                <FormMessage />
+                                {form.formState.submitCount > 0 && <FormMessage />}
                             </FormItem>
                         )}
                     />
@@ -139,7 +149,7 @@ export function LoginForm({
                                         </button>
                                     </div>
                                 </FormControl>
-                                <FormMessage />
+                                {form.formState.submitCount > 0 && <FormMessage />}
                             </FormItem>
                         )}
                     />
@@ -163,7 +173,7 @@ export function LoginForm({
                 <Button
                     type="submit"
                     className="w-full"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !formHasValues || !isFormValid}
                 >
                     {isSubmitting ? "Signing in..." : "Sign in"}
                 </Button>

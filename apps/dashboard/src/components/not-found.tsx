@@ -36,7 +36,7 @@ export function NotFound() {
                     <div className="mt-10 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-y-3 gap-x-6">
                         <Button variant="secondary" className="group" onClick={() => window.history.back()}>
                             <ArrowLeft
-                                className="me-2 ms-0 opacity-60 transition-transform group-hover:-translate-x-0.5"
+                                className="ms-0 opacity-60 transition-transform group-hover:-translate-x-1"
                                 size={16}
                                 strokeWidth={2}
                                 aria-hidden="true"

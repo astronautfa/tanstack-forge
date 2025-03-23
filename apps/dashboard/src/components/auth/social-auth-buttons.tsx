@@ -38,9 +38,8 @@ function SocialAuthButton({
 
     return (
         <Button
+            variant={'outline'}
             onClick={handleAuth}
-            type="button"
-            variant="outline"
             className={cn(
                 "flex w-full text-foreground",
                 className

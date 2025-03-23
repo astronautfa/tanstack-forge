@@ -9,7 +9,7 @@ function SignUpPage() {
     return (
         <div className="space-y-5">
             <div className="text-center">
-                <h2 className="text-lg font-semibold">Create your account</h2>
+                <h2 className="text-lg font-semibold text-foreground">Create your account</h2>
                 <p className="text-sm text-muted-foreground">
                     Fill in the details below to create a new account
                 </p>
