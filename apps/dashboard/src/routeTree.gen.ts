@@ -11,7 +11,6 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as ProtectedImport } from './routes/_protected'
 import { Route as AuthRouteImport } from './routes/auth/route'
 import { Route as IndexImport } from './routes/index'
 import { Route as AuthSignupImport } from './routes/auth/signup'
@@ -19,11 +18,6 @@ import { Route as AuthSigninImport } from './routes/auth/signin'
 import { Route as AuthForgotPasswordImport } from './routes/auth/forgot-password'
 
 // Create/Update Routes
-
-const ProtectedRoute = ProtectedImport.update({
-  id: '/_protected',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const AuthRouteRoute = AuthRouteImport.update({
   id: '/auth',
@@ -73,13 +67,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRoute
     }
-    '/_protected': {
-      id: '/_protected'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof ProtectedImport
-      parentRoute: typeof rootRoute
-    }
     '/auth/forgot-password': {
       id: '/auth/forgot-password'
       path: '/forgot-password'
@@ -125,7 +112,6 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
-  '': typeof ProtectedRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -134,7 +120,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
-  '': typeof ProtectedRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -144,7 +129,6 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
-  '/_protected': typeof ProtectedRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -155,23 +139,15 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | ''
     | '/auth/forgot-password'
     | '/auth/signin'
     | '/auth/signup'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/auth'
-    | ''
-    | '/auth/forgot-password'
-    | '/auth/signin'
-    | '/auth/signup'
+  to: '/' | '/auth' | '/auth/forgot-password' | '/auth/signin' | '/auth/signup'
   id:
     | '__root__'
     | '/'
     | '/auth'
-    | '/_protected'
     | '/auth/forgot-password'
     | '/auth/signin'
     | '/auth/signup'
@@ -181,13 +157,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
-  ProtectedRoute: typeof ProtectedRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRouteRoute: AuthRouteRouteWithChildren,
-  ProtectedRoute: ProtectedRoute,
 }
 
 export const routeTree = rootRoute
@@ -201,8 +175,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/auth",
-        "/_protected"
+        "/auth"
       ]
     },
     "/": {
@@ -215,9 +188,6 @@ export const routeTree = rootRoute
         "/auth/signin",
         "/auth/signup"
       ]
-    },
-    "/_protected": {
-      "filePath": "_protected.tsx"
     },
     "/auth/forgot-password": {
       "filePath": "auth/forgot-password.tsx",
