@@ -44,10 +44,18 @@ export const Route = createRootRoute({
 	),
 
 	beforeLoad: async () => {
-		const { data } = await authClient.getSession();
-		return {
-			user: data?.user || null
-		};
+		try {
+			const { data: session } = await authClient.getSession();
+
+			console.log("Session in root route:", session ? "exists" : "missing");
+
+			return {
+				user: session?.user || null
+			};
+		} catch (error) {
+			console.error("Error fetching session:", error);
+			return { user: null };
+		}
 	},
 });
 

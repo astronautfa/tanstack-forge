@@ -54,6 +54,16 @@ export const auth = betterAuth({
     session: {
         expiresIn: config.auth.sessionCookieMaxAge,
         freshAge: 0,
+        cookie: {
+            name: 'auth_session',
+            maxAge: config.auth.sessionCookieMaxAge,
+            path: '/',
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,
+        },
+        strategy: process.env.NODE_ENV === 'development' ? 'cookie' : 'refresh_token',
+        recreateOnAuthentication: false,
     },
     account: {
         accountLinking: {

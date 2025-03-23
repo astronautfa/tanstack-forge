@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { AlertCircle, EyeIcon, EyeOffIcon } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Input } from "@app/ui/components/input";
@@ -22,6 +22,7 @@ export function LoginForm({ onSuccess, redirectTo = "/" }: LoginFormProps) {
     const [showPassword, setShowPassword] = useState(false);
     const { reloadSession } = useSession();
     const navigate = useNavigate();
+    const router = useRouter();
 
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -47,6 +48,8 @@ export function LoginForm({ onSuccess, redirectTo = "/" }: LoginFormProps) {
 
             await reloadSession();
             onSuccess?.();
+
+            await router.invalidate();
 
             navigate({
                 to: redirectTo,
