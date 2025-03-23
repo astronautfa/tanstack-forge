@@ -33,9 +33,15 @@ const SessionContext = createContext<SessionContextType>({
     reloadSession: async () => { },
 });
 
-export function SessionProvider({ children }: { children: React.ReactNode }) {
+export function SessionProvider({
+    children,
+    initialUser
+}: {
+    children: React.ReactNode;
+    initialUser?: User | null;
+}) {
     const [session, setSession] = useState<any | null>(null);
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<User | null>(initialUser || null);
     const [loaded, setLoaded] = useState(false);
 
     const loadSession = async () => {
@@ -67,8 +73,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     };
 
     useEffect(() => {
-        loadSession();
-    }, []);
+        if (!initialUser) {
+            loadSession();
+        }
+    }, [initialUser]);
 
     const reloadSession = async () => {
         await loadSession();

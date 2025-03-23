@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, EyeIcon, EyeOffIcon, Mail } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
-import { Checkbox } from "@app/ui/components/checkbox";
 import { Label } from "@app/ui/components/label";
 import { registerSchema, type RegisterFormValues } from "@/lib/validations/auth";
 import { authClient } from "@app/auth/client";

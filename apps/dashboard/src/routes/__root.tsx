@@ -47,6 +47,8 @@ export const Route = createRootRoute({
 		try {
 			const { data: session } = await authClient.getSession();
 
+			console.log(session)
+
 			console.log("Session in root route:", session ? "exists" : "missing");
 
 			return {
@@ -60,13 +62,17 @@ export const Route = createRootRoute({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+
+	const { user } = Route.useRouteContext();
+	console.log("User from route context:", user); 
+
 	return (
 		<html lang="en">
 			<head>
 				<HeadContent />
 			</head>
 			<body>
-				<SessionProvider>
+				<SessionProvider initialUser={user}>
 					{children}
 				</SessionProvider>
 				<Scripts />
