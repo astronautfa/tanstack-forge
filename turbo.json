@@ -8,6 +8,7 @@
       "env": [
         "DATABASE_URL",
         "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
         "RESEND_API_KEY",
         "MAIL_FROM",
         "ENABLE_SIGNUP",
@@ -26,6 +27,7 @@
       "env": [
         "DATABASE_URL",
         "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
         "RESEND_API_KEY",
         "MAIL_FROM",
         "ENABLE_SIGNUP",
@@ -39,6 +41,7 @@
       "env": [
         "DATABASE_URL",
         "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
         "RESEND_API_KEY",
         "MAIL_FROM",
         "ENABLE_SIGNUP",

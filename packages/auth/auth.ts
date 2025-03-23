@@ -17,7 +17,7 @@ import { env } from "@app/env";
 
 const config = {
     auth: {
-        sessionCookieMaxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        sessionCookieMaxAge: 30 * 24 * 60 * 60,
         enableSignup: env.ENABLE_SIGNUP === "true",
     },
 };

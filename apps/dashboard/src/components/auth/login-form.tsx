@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { AlertCircle, EyeIcon, EyeOffIcon } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Input } from "@app/ui/components/input";
@@ -21,6 +21,7 @@ export function LoginForm({ onSuccess, redirectTo = "/" }: LoginFormProps) {
     const [serverError, setServerError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const { reloadSession } = useSession();
+    const navigate = useNavigate();
 
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -47,8 +48,10 @@ export function LoginForm({ onSuccess, redirectTo = "/" }: LoginFormProps) {
             await reloadSession();
             onSuccess?.();
 
-            // Redirect to specified path after successful login
-            window.location.href = redirectTo;
+            navigate({
+                to: redirectTo,
+                replace: true
+            });
         } catch (error) {
             setServerError("Invalid email or password. Please try again.");
         } finally {
@@ -138,7 +141,6 @@ export function LoginForm({ onSuccess, redirectTo = "/" }: LoginFormProps) {
                         type="submit"
                         className="w-full"
                         disabled={isSubmitting}
-                    // loading={isSubmitting}
                     >
                         {isSubmitting ? "Signing in..." : "Sign in"}
                     </Button>

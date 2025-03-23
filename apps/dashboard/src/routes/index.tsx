@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import {
     Sidebar,
     SidebarContent,
@@ -25,7 +25,15 @@ import {
 
 export const Route = createFileRoute("/")({
     component: Dashboard,
-    beforeLoad: async () => {
+    beforeLoad: ({ context }) => {
+        const { user } = context;
+
+        if (!user) {
+            throw redirect({
+                to: '/auth/signin',
+                replace: true,
+            });
+        }
     },
 });
 

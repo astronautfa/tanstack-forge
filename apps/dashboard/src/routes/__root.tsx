@@ -10,6 +10,7 @@ import { Toaster } from "@app/ui/components/sonner"
 
 import globalsCss from "@app/ui/globals.css?url";
 import { SessionProvider } from "@/lib/providers/session";
+import { authClient } from "@app/auth/client";
 
 export const Route = createRootRoute({
 	head: () => ({
@@ -41,6 +42,13 @@ export const Route = createRootRoute({
 			<Toaster />
 		</RootDocument>
 	),
+
+	beforeLoad: async () => {
+		const { data } = await authClient.getSession();
+		return {
+			user: data?.user || null
+		};
+	},
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
