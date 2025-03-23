@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@app/ui/com
 import { Input } from "@app/ui/components/input";
 import { Label } from "@app/ui/components/label";
 import { useSession } from "@/lib/providers/session";
+import { useAuth } from "@/routes/auth/route";
 
 interface ResetPasswordFormProps {
     onSuccess?: () => void;
@@ -24,12 +25,13 @@ export function ResetPasswordForm({
     className = ""
 }: ResetPasswordFormProps) {
     const id = useId();
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [serverError, setServerError] = useState<{ title: string; message?: string } | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { user, reloadSession } = useSession();
+
+    const { isLoading, setIsLoading } = useAuth();
 
     const form = useForm<ResetPasswordFormValues>({
         resolver: zodResolver(resetPasswordSchema),
@@ -66,7 +68,7 @@ export function ResetPasswordForm({
     const isFormValid = form.formState.isValid;
 
     async function onSubmit(data: ResetPasswordFormValues) {
-        setIsSubmitting(true);
+        setIsLoading(true);
 
         try {
             const { error } = await authClient.resetPassword({
@@ -95,7 +97,7 @@ export function ResetPasswordForm({
                     : "Failed to reset password. Please try again."
             });
         } finally {
-            setIsSubmitting(false);
+            setIsLoading(false);
         }
     }
 
@@ -248,9 +250,9 @@ export function ResetPasswordForm({
                     <Button
                         type="submit"
                         className="w-full"
-                        disabled={isSubmitting || !isFormValid}
+                        disabled={isLoading || !isFormValid}
                     >
-                        {isSubmitting ? "Resetting..." : "Reset Password"}
+                        {isLoading ? "Resetting..." : "Reset Password"}
                     </Button>
                 </div>
             </form>

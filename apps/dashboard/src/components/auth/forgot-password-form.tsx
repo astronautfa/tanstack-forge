@@ -10,6 +10,7 @@ import { forgotPasswordSchema, type ForgotPasswordFormValues } from "@/lib/valid
 import { authClient } from "@app/auth/client";
 import { Link } from "@tanstack/react-router";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@app/ui/components/form";
+import { useAuth } from "@/routes/auth/route";
 
 interface ForgotPasswordFormProps {
     onSuccess?: () => void;
@@ -22,9 +23,10 @@ export function ForgotPasswordForm({
     className = "",
     defaultEmail = ""
 }: ForgotPasswordFormProps) {
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [serverError, setServerError] = useState<{ title: string; message?: string } | null>(null);
+
+    const { isLoading, setIsLoading } = useAuth();
 
     const form = useForm<ForgotPasswordFormValues>({
         resolver: zodResolver(forgotPasswordSchema),
@@ -51,7 +53,7 @@ export function ForgotPasswordForm({
     const isFormValid = form.formState.isValid;
 
     async function onSubmit(data: ForgotPasswordFormValues) {
-        setIsSubmitting(true);
+        setIsLoading(true);
 
         try {
             const redirectTo = new URL(
@@ -76,7 +78,7 @@ export function ForgotPasswordForm({
                 message: "We couldn't send a password reset link to that email. Please check the email address and try again."
             });
         } finally {
-            setIsSubmitting(false);
+            setIsLoading(false);
         }
     }
 
@@ -146,9 +148,9 @@ export function ForgotPasswordForm({
                     <Button
                         type="submit"
                         className="w-full"
-                        disabled={isSubmitting || !hasEmailValue || !isFormValid}
+                        disabled={isLoading || !hasEmailValue || !isFormValid}
                     >
-                        {isSubmitting ? "Sending..." : "Send Reset Link"}
+                        {isLoading ? "Sending..." : "Send Reset Link"}
                     </Button>
                 </div>
             </form>

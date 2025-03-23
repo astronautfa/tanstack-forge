@@ -64,8 +64,6 @@ export const Route = createRootRouteWithContext<{
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 
-	const { user } = Route.useRouteContext();
-
 	return (
 		<html lang="en">
 			<head>

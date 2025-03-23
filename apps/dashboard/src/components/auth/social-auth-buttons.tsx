@@ -11,6 +11,7 @@ import {
 } from "@app/ui/components/tooltip";
 import { Badge } from "@app/ui/components/badge";
 import { useStorage } from "@/lib/hooks/use-storage";
+import { useAuth } from "@/routes/auth/route";
 
 export type SocialProvider = "discord" | "google" | "github";
 
@@ -31,7 +32,11 @@ function SocialAuthButton({
     onAuth,
     ...props
 }: SocialAuthButtonProps) {
+    // Use the auth context for loading state
+    const { isLoading } = useAuth();
+
     const handleAuth = async () => {
+        if (isLoading) return; // Prevent multiple clicks during loading
         await onAuth(provider);
     };
 
@@ -65,11 +70,12 @@ function SocialAuthButton({
     if (isLastUsed) {
         return (
             <TooltipProvider delayDuration={0}>
-                <Tooltip open={true} >
+                <Tooltip open={!isLoading}>
                     <TooltipTrigger asChild>
                         <Button
                             variant={isLastUsed ? 'default' : 'outline'}
                             onClick={handleAuth}
+                            disabled={isLoading}
                             className={cn(
                                 "flex w-full relative",
                                 isLastUsed && "bg-primary/10 text-primary border-primary hover:bg-primary/20 hover:text-primary",
@@ -92,6 +98,7 @@ function SocialAuthButton({
         <Button
             variant="outline"
             onClick={handleAuth}
+            disabled={isLoading}
             className={cn("flex w-full relative", className)}
             {...props}
         >
@@ -107,26 +114,33 @@ interface SocialAuthButtonsProps {
 export function SocialAuthButtons({ type }: SocialAuthButtonsProps) {
     const actionText = type === "signin" ? "Sign in" : "Sign up";
 
-    // Use the storage hook instead of useState + useEffect
+    const { setIsLoading } = useAuth();
+
     const [lastLoginMethod, setLastLoginMethod, _, storageError] = useStorage<SocialProvider | null>(
         LAST_LOGIN_METHOD_KEY,
         null
     );
 
-    // If there's a storage error, log it
     if (storageError) {
         console.error("Error accessing login method storage:", storageError);
     }
 
     const handleAuth = async (provider: SocialProvider) => {
-        // Save this provider as the last used method using the hook
-        await setLastLoginMethod(provider);
+        setIsLoading(true);
 
-        const callbackURL = new URL('/', window.location.origin);
-        authClient.signIn.social({
-            provider,
-            callbackURL: callbackURL.toString(),
-        });
+        try {
+            await setLastLoginMethod(provider);
+
+            const callbackURL = new URL('/', window.location.origin);
+            authClient.signIn.social({
+                provider,
+                callbackURL: callbackURL.toString(),
+            });
+
+        } catch (error) {
+            console.error("Social auth error:", error);
+            setIsLoading(false);
+        }
     };
 
     return (

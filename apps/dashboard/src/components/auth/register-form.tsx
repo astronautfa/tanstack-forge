@@ -10,6 +10,7 @@ import { authClient } from "@app/auth/client";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@app/ui/components/form";
 import { Input } from "@app/ui/components/input";
 import { SocialAuthButtons } from "./social-auth-buttons";
+import { useAuth } from "@/routes/auth/route";
 
 interface RegisterFormProps {
     onSuccess?: () => void;
@@ -23,11 +24,12 @@ export function RegisterForm({
     className = ""
 }: RegisterFormProps) {
     const id = useId();
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const { isLoading, setIsLoading } = useAuth();
 
     const form = useForm<RegisterFormValues>({
         resolver: zodResolver(registerSchema),
@@ -40,7 +42,6 @@ export function RegisterForm({
         mode: "onChange"
     });
 
-    // Password requirements based on your zod validation
     const passwordRequirements = [
         { regex: /.{8,}/, text: "At least 8 characters" },
         { regex: /[0-9]/, text: "At least 1 number" },
@@ -50,7 +51,6 @@ export function RegisterForm({
 
     const password = form.watch("password");
 
-    // Check which requirements are met
     const requirementStatus = useMemo(() => {
         return passwordRequirements.map((req) => ({
             met: req.regex.test(password || ""),
@@ -58,15 +58,13 @@ export function RegisterForm({
         }));
     }, [password]);
 
-    // Check if confirm password matches
     const confirmPassword = form.watch("confirmPassword");
     const passwordsMatch = password === confirmPassword && password !== "";
 
-    // Check if form is valid (for disabling submit button)
     const isFormValid = form.formState.isValid;
 
     async function onSubmit(data: RegisterFormValues) {
-        setIsSubmitting(true);
+        setIsLoading(true);
 
         try {
             const callbackURL = new URL(
@@ -94,7 +92,7 @@ export function RegisterForm({
                     : "Failed to create account. Please try again."
             );
         } finally {
-            setIsSubmitting(false);
+            setIsLoading(false);
         }
     }
 
@@ -278,9 +276,9 @@ export function RegisterForm({
                     <Button
                         type="submit"
                         className="w-full"
-                        disabled={isSubmitting || !isFormValid}
+                        disabled={isLoading || !isFormValid}
                     >
-                        {isSubmitting ? "Creating account..." : "Sign up"}
+                        {isLoading ? "Creating account..." : "Sign up"}
                     </Button>
                 </div>
 

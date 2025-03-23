@@ -13,6 +13,7 @@ import { authClient } from "@app/auth/client";
 import { useSession } from "@/lib/providers/session";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@app/ui/components/form";
 import { SocialAuthButtons } from "./social-auth-buttons";
+import { useAuth } from "@/routes/auth/route";
 import {
     Dialog,
     DialogContent,
@@ -36,7 +37,6 @@ export function LoginForm({
     onForgotPassword
 }: LoginFormProps) {
     const id = useId();
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [failedAttempts, setFailedAttempts] = useState(0);
@@ -44,6 +44,8 @@ export function LoginForm({
     const { reloadSession } = useSession();
     const navigate = useNavigate();
     const router = useRouter();
+
+    const { isLoading, setIsLoading } = useAuth();
 
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -79,7 +81,7 @@ export function LoginForm({
     };
 
     async function onSubmit(data: LoginFormValues) {
-        setIsSubmitting(true);
+        setIsLoading(true);
 
         try {
             const { error } = await authClient.signIn.email({
@@ -109,7 +111,7 @@ export function LoginForm({
                 setShowResetDialog(true);
             }
         } finally {
-            setIsSubmitting(false);
+            setIsLoading(false); // End loading animation
         }
     }
 
@@ -207,9 +209,9 @@ export function LoginForm({
                     <Button
                         type="submit"
                         className="w-full"
-                        disabled={isSubmitting || !formHasValues || !isFormValid}
+                        disabled={isLoading || !formHasValues || !isFormValid}
                     >
-                        {isSubmitting ? "Signing in..." : "Sign in"}
+                        {isLoading ? "Signing in..." : "Sign in"}
                     </Button>
 
                     <div className="before:bg-border after:bg-border flex items-center gap-3 before:h-px before:flex-1 after:h-px after:flex-1">
