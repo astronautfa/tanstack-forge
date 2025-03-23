@@ -28,9 +28,9 @@ export function NotFound({
     return (
         <div className="relative flex flex-col w-full justify-center min-h-svh bg-background p-6 md:p-10">
             <div className="relative max-w-5xl mx-auto w-full">
-                <Illustration className="absolute inset-0 w-full h-[50vh] opacity-[0.04] dark:opacity-[0.03] text-foreground" />
-                <div className="relative text-center z-[1] pt-52">
-                    <h1 className="mt-4 text-balance text-5xl font-semibold tracking-tight text-primary sm:text-7xl">
+                <Illustration className="absolute inset-0 w-full h-[30vh] opacity-[0.04] dark:opacity-[0.03] text-foreground" />
+                <div className="relative text-center z-[1]">
+                    <h1 className="mt-4 text-balance text-4xl font-semibold tracking-tight text-primary sm:text-6xl">
                         {title}
                     </h1>
                     <p className="mt-6 text-pretty text-lg font-medium text-muted-foreground sm:text-xl/8">
@@ -41,7 +41,7 @@ export function NotFound({
                             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input placeholder="Search" className="pl-8" />
                         </div>
-                        <Button variant="default">Search</Button>
+                        <Button variant="outline">Search</Button>
                     </div>
                     <div className="mt-10 flex flex-col sm:flex-row sm:items-center sm:justify-center gap-y-3 gap-x-6">
                         <Button variant="secondary" className="group" onClick={() => window.history.back()}>
