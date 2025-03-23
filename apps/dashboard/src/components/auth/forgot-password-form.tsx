@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, CheckCircle2, ArrowLeftIcon } from "lucide-react";
+import { AlertCircle, CheckCircle2, ArrowLeftIcon, Mail } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { Input } from "@app/ui/components/input";
@@ -85,19 +85,21 @@ export function ForgotPasswordForm({
     if (isSubmitted) {
         return (
             <div className={`space-y-4 ${className}`}>
-                <Alert className="bg-green-50 border-green-200 text-green-600">
-                    <CheckCircle2 className="h-4 w-4" />
+                <Alert variant="success">
+                    <Mail className="h-4 w-4" />
                     <AlertTitle>Check your email</AlertTitle>
                     <AlertDescription>
                         Password reset instructions have been sent to your email.
                     </AlertDescription>
                 </Alert>
-                <p className="text-sm text-muted-foreground">
-                    Please check your inbox and follow the instructions to reset your password.
-                </p>
-                <Button asChild className="w-full mt-4">
+                <Button asChild className="w-full mt-4 group">
                     <Link to="/auth/signin">
-                        <ArrowLeftIcon className="mr-1 h-4 w-4" />
+                        <ArrowLeftIcon
+                            className="ms-0 opacity-60 transition-transform group-hover:-translate-x-1"
+                            size={16}
+                            strokeWidth={2}
+                            aria-hidden="true"
+                        />
                         Return to Sign In
                     </Link>
                 </Button>

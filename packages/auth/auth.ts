@@ -14,6 +14,7 @@ import { updateSeatsInOrganization } from "./lib/organization";
 import { getUserByEmail } from "./lib/user";
 import { invitationOnlyPlugin } from "./plugins/invitation-only";
 import { env } from "@app/env";
+import { sendEmail } from "@app/mail";
 
 const config = {
     auth: {
@@ -30,17 +31,6 @@ const getBaseUrl = () => {
     //     return `https://${env.NEXT_PUBLIC_VERCEL_URL}`;
     // }
     return `http://localhost:3000`;
-};
-
-const sendEmail = async ({ to, templateId, context }: {
-    to: string;
-    templateId: string;
-    context: Record<string, any>;
-    locale?: string;
-}) => {
-    console.log(`Email would be sent to ${to} with template ${templateId}`);
-    console.log("Email context:", context);
-    // Implement your email sending logic here later
 };
 
 const appUrl = getBaseUrl();

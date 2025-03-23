@@ -1,9 +1,9 @@
-import { EmailVerification, type EmailVerificationProps } from "@/emails/EmailVerification";
-import { ForgotPassword, type ForgotPasswordProps } from "@/emails/ForgotPassword";
-import { MagicLink, type MagicLinkProps } from "@/emails/MagicLink";
-import { NewUser, type NewUserProps } from "@/emails/NewUser";
-import { NewsletterSignup, type NewsletterSignupProps } from "@/emails/NewsletterSignup";
-import { OrganizationInvitation, type OrganizationInvitationProps } from "@/emails/OrganizationInvitation";
+import { EmailVerification, type EmailVerificationProps } from "./EmailVerification";
+import { ForgotPassword, type ForgotPasswordProps } from "./ForgotPassword";
+import { MagicLink, type MagicLinkProps } from "./MagicLink";
+import { NewUser, type NewUserProps } from "./NewUser";
+import { NewsletterSignup, type NewsletterSignupProps } from "./NewsletterSignup";
+import { OrganizationInvitation, type OrganizationInvitationProps } from "./OrganizationInvitation";
 
 export const mailTemplates = {
     magicLink: MagicLink,

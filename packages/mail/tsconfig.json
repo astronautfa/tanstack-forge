@@ -4,12 +4,13 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
-      "@/components/*": ["emails/components/*"],
+      "@/components/*": ["./emails/components/*"],
       "@/provider/*": ["./src/provider/*"],
+      "@/emails": ["./emails/index.ts"],
       "@/emails/*": ["./emails/*"],
       "@/types": ["./types.ts"],
-      "@/config": ["src/util/config.ts"],
-      "@/logger": ["src/util/logger.ts"]
+      "@/logger": ["./src/util/logger.ts"],
+      "@/config": ["./src/util/config.ts"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],

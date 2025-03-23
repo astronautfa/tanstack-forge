@@ -1,8 +1,8 @@
 import { render } from "@react-email/render";
-import { mailTemplates } from "@/emails";
-import { logger } from "@/logger";
-import { send } from "@/provider/index";
-import type { TemplateId, TemplatePropsMap } from "@/emails";
+import { mailTemplates } from "../../emails";
+import { logger } from "./logger";
+import { send } from "../provider/index";
+import type { TemplateId, TemplatePropsMap } from "../../emails";
 
 /**
  * Send an email using a template or raw content
@@ -28,18 +28,19 @@ export async function sendEmail<T extends TemplateId>(
     let text: string;
     let subject: string;
 
+
     if ("templateId" in params) {
         const { templateId, context } = params;
+
+        console.log(`Email would be sent to ${to} with template ${params.templateId}`);
+        console.log("Email context:", context);
+
         const Template = mailTemplates[templateId];
 
-        // Type assertion using the specific template's parameter type
-        // This avoids the intersection type problem
         const email = Template(context as any);
 
-        // Generate subject based on template type
         subject = getSubjectForTemplate(templateId, context);
 
-        // Render to HTML and plaintext
         html = await render(email);
         text = await render(email, { plainText: true });
     } else {

@@ -2,6 +2,7 @@
   "dependencies": {
     "@app/env": "workspace:*",
     "@app/database": "workspace:*",
+    "@app/mail": "workspace:*",
     "better-auth": "1.1.21",
     "cookie": "^1.0.2",
     "next": "15.1.7"

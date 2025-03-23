@@ -1,6 +1,6 @@
 import { Link, Text } from "@react-email/components";
-import PrimaryButton from "@/components/PrimaryButton";
-import Wrapper from "@/components/Wrapper";
+import PrimaryButton from "./components/PrimaryButton";
+import Wrapper from "./components/Wrapper";
 
 export interface EmailVerificationProps {
     url: string;

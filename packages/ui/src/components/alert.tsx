@@ -8,15 +8,15 @@ const alertVariants = cva(
 	{
 		variants: {
 			variant: {
-				default: "bg-card text-card-foreground",
+				default: "bg-card text-card-foreground dark:bg-card/90 dark:text-card-foreground",
 				destructive:
-					"text-destructive border-destructive/50 bg-destructive/10 [&>svg]:text-destructive *:data-[slot=alert-description]:text-destructive/90",
+					"text-destructive border-destructive/50 bg-destructive/10 [&>svg]:text-destructive *:data-[slot=alert-description]:text-destructive/90 dark:bg-destructive/20 dark:border-destructive/30 dark:text-destructive-foreground dark:[&>svg]:text-destructive-foreground dark:*:data-[slot=alert-description]:text-destructive-foreground/90",
 				success:
-					"text-green-600 border-green-200 bg-green-50 [&>svg]:text-green-600 *:data-[slot=alert-description]:text-green-600/90",
+					"text-green-600 border-green-200 bg-green-50 [&>svg]:text-green-600 *:data-[slot=alert-description]:text-green-600/90 dark:bg-green-950/50 dark:border-green-800 dark:text-green-400 dark:[&>svg]:text-green-400 dark:*:data-[slot=alert-description]:text-green-400/90",
 				warning:
-					"text-amber-600 border-amber-200 bg-amber-50 [&>svg]:text-amber-600 *:data-[slot=alert-description]:text-amber-600/90",
+					"text-amber-600 border-amber-200 bg-amber-50 [&>svg]:text-amber-600 *:data-[slot=alert-description]:text-amber-600/90 dark:bg-amber-950/50 dark:border-amber-800 dark:text-amber-400 dark:[&>svg]:text-amber-400 dark:*:data-[slot=alert-description]:text-amber-400/90",
 				info:
-					"text-blue-600 border-blue-200 bg-blue-50 [&>svg]:text-blue-600 *:data-[slot=alert-description]:text-blue-600/90",
+					"text-blue-600 border-blue-200 bg-blue-50 [&>svg]:text-blue-600 *:data-[slot=alert-description]:text-blue-600/90 dark:bg-blue-950/50 dark:border-blue-800 dark:text-blue-400 dark:[&>svg]:text-blue-400 dark:*:data-[slot=alert-description]:text-blue-400/90",
 			},
 		},
 		defaultVariants: {
@@ -61,7 +61,7 @@ function AlertDescription({
 		<div
 			data-slot="alert-description"
 			className={cn(
-				"text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed",
+				"text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed dark:text-muted-foreground/90",
 				className,
 			)}
 			{...props}

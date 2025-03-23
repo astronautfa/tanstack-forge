@@ -1,5 +1,5 @@
 import { Heading, Text } from "@react-email/components";
-import Wrapper from "@/emails/components/Wrapper";
+import Wrapper from "./components/Wrapper";
 
 export interface NewsletterSignupProps {
 }
