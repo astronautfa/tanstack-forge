@@ -65,7 +65,6 @@ export const Route = createRootRouteWithContext<{
 function RootDocument({ children }: { children: React.ReactNode }) {
 
 	const { user } = Route.useRouteContext();
-	console.log("User from route context:", user);
 
 	return (
 		<html lang="en">

@@ -201,7 +201,7 @@ export function RegisterForm({
                                 {password && (
                                     <ul className="mt-2 space-y-1" aria-label="Password requirements">
                                         {requirementStatus.map((req, index) => (
-                                            <li key={index} className="flex items-center gap-2">
+                                            <li key={index} className="flex items-center gap-1.5">
                                                 {req.met ? (
                                                     <Check size={16} className="text-emerald-500" aria-hidden="true" />
                                                 ) : (
@@ -255,7 +255,7 @@ export function RegisterForm({
 
                                 {/* Show password match status only when both fields have values */}
                                 {password && confirmPassword && (
-                                    <div className="mt-2 flex items-center gap-2">
+                                    <div className="mt-2 flex items-center gap-1">
                                         {passwordsMatch ? (
                                             <>
                                                 <Check size={16} className="text-emerald-500" aria-hidden="true" />
@@ -263,8 +263,8 @@ export function RegisterForm({
                                             </>
                                         ) : (
                                             <>
-                                                <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
-                                                <span className="text-xs text-muted-foreground">Passwords do not match</span>
+                                                <X size={16} className="text-destructive/80" aria-hidden="true" />
+                                                <span className="text-xs text-destructive">Passwords do not match</span>
                                             </>
                                         )}
                                     </div>
