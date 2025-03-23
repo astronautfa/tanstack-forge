@@ -1,20 +1,29 @@
-import { useState } from "react";
+import { useState, useId } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, EyeIcon, EyeOffIcon, Mail } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
+import { Checkbox } from "@app/ui/components/checkbox";
+import { Label } from "@app/ui/components/label";
 import { registerSchema, type RegisterFormValues } from "@/lib/validations/auth";
 import { authClient } from "@app/auth/client";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@app/ui/components/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@app/ui/components/form";
 import { Input } from "@app/ui/components/input";
+import { SocialAuthButtons } from "./social-auth-buttons";
 
 interface RegisterFormProps {
     onSuccess?: () => void;
     redirectTo?: string;
+    className?: string;
 }
 
-export function RegisterForm({ onSuccess, redirectTo = "/" }: RegisterFormProps) {
+export function RegisterForm({
+    onSuccess,
+    redirectTo = "/",
+    className = ""
+}: RegisterFormProps) {
+    const id = useId();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
@@ -84,7 +93,8 @@ export function RegisterForm({ onSuccess, redirectTo = "/" }: RegisterFormProps)
                     e.preventDefault();
                     form.handleSubmit(onSubmit)(e);
                 }}
-                className="space-y-6">
+                method="post"
+                className={`space-y-5 ${className}`}>
                 {serverError && (
                     <Alert variant="destructive">
                         <AlertCircle className="h-4 w-4" />
@@ -99,9 +109,10 @@ export function RegisterForm({ onSuccess, redirectTo = "/" }: RegisterFormProps)
                         name="name"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Full Name</FormLabel>
+                                <Label htmlFor={`${id}-name`}>Full Name</Label>
                                 <FormControl>
                                     <Input
+                                        id={`${id}-name`}
                                         {...field}
                                         placeholder="John Doe"
                                         autoComplete="name"
@@ -117,12 +128,13 @@ export function RegisterForm({ onSuccess, redirectTo = "/" }: RegisterFormProps)
                         name="email"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Email</FormLabel>
+                                <Label htmlFor={`${id}-email`}>Email</Label>
                                 <FormControl>
                                     <Input
+                                        id={`${id}-email`}
                                         {...field}
                                         type="email"
-                                        placeholder="m@example.com"
+                                        placeholder="hi@example.com"
                                         autoComplete="email"
                                     />
                                 </FormControl>
@@ -136,12 +148,14 @@ export function RegisterForm({ onSuccess, redirectTo = "/" }: RegisterFormProps)
                         name="password"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Password</FormLabel>
+                                <Label htmlFor={`${id}-password`}>Password</Label>
                                 <FormControl>
                                     <div className="relative">
                                         <Input
+                                            id={`${id}-password`}
                                             {...field}
                                             type={showPassword ? "text" : "password"}
+                                            placeholder="Enter your password"
                                             autoComplete="new-password"
                                             className="pr-10"
                                         />
@@ -168,12 +182,14 @@ export function RegisterForm({ onSuccess, redirectTo = "/" }: RegisterFormProps)
                         name="confirmPassword"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Confirm Password</FormLabel>
+                                <Label htmlFor={`${id}-confirm-password`}>Confirm Password</Label>
                                 <FormControl>
                                     <div className="relative">
                                         <Input
+                                            id={`${id}-confirm-password`}
                                             {...field}
                                             type={showConfirmPassword ? "text" : "password"}
+                                            placeholder="Confirm your password"
                                             autoComplete="new-password"
                                             className="pr-10"
                                         />
@@ -199,11 +215,16 @@ export function RegisterForm({ onSuccess, redirectTo = "/" }: RegisterFormProps)
                         type="submit"
                         className="w-full"
                         disabled={isSubmitting}
-                    // loading={isSubmitting}
                     >
                         {isSubmitting ? "Creating account..." : "Sign up"}
                     </Button>
                 </div>
+
+                <div className="before:bg-border after:bg-border flex items-center gap-3 before:h-px before:flex-1 after:h-px after:flex-1">
+                    <span className="text-muted-foreground text-xs">Or</span>
+                </div>
+
+                <SocialAuthButtons type='signup' />
             </form>
         </Form>
     );

@@ -7,11 +7,9 @@ export const Route = createFileRoute("/auth/forgot-password")({
 
 function ForgotPasswordPage() {
     return (
-        <div className="space-y-6">
-            <div className="space-y-2 text-center">
-                <h2 className="text-2xl font-semibold tracking-tight">
-                    Forgot Password
-                </h2>
+        <div className="space-y-5">
+            <div className="text-center">
+                <h2 className="text-lg font-semibold">Forgot Password</h2>
                 <p className="text-sm text-muted-foreground">
                     Enter your email address and we'll send you a link to reset your password
                 </p>

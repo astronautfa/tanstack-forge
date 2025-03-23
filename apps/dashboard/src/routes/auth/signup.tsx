@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { RegisterForm } from "@/components/auth/register-form";
-import { SocialAuthButtons } from "@/components/auth/social-auth-buttons";
 
 export const Route = createFileRoute("/auth/signup")({
     component: SignUpPage,
@@ -8,11 +7,9 @@ export const Route = createFileRoute("/auth/signup")({
 
 function SignUpPage() {
     return (
-        <div className="space-y-6">
-            <div className="space-y-2 text-center">
-                <h2 className="text-2xl font-semibold tracking-tight">
-                    Create your account
-                </h2>
+        <div className="space-y-5">
+            <div className="text-center">
+                <h2 className="text-lg font-semibold">Create your account</h2>
                 <p className="text-sm text-muted-foreground">
                     Fill in the details below to create a new account
                 </p>
@@ -29,8 +26,6 @@ function SignUpPage() {
                     Sign in
                 </Link>
             </div>
-
-            <SocialAuthButtons type="signup" />
         </div>
     );
 }

@@ -4,25 +4,24 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, ArrowLeftIcon } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
-import { FormField } from "@app/ui/components/form-field";
+import { Input } from "@app/ui/components/input";
+import { Label } from "@app/ui/components/label";
 import { forgotPasswordSchema, type ForgotPasswordFormValues } from "@/lib/validations/auth";
 import { authClient } from "@app/auth/client";
 import { Link } from "@tanstack/react-router";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@app/ui/components/form";
 
 interface ForgotPasswordFormProps {
     onSuccess?: () => void;
+    className?: string;
 }
 
-export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm({ onSuccess, className = "" }: ForgotPasswordFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [serverError, setServerError] = useState<{ title: string; message?: string } | null>(null);
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors }
-    } = useForm<ForgotPasswordFormValues>({
+    const form = useForm<ForgotPasswordFormValues>({
         resolver: zodResolver(forgotPasswordSchema),
         defaultValues: {
             email: "",
@@ -62,7 +61,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
 
     if (isSubmitted) {
         return (
-            <div className="space-y-4">
+            <div className={`space-y-4 ${className}`}>
                 <Alert className="bg-green-50 border-green-200 text-green-600">
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertTitle>Check your email</AlertTitle>
@@ -74,7 +73,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
                     Please check your inbox and follow the instructions to reset your password.
                 </p>
                 <Button asChild className="w-full mt-4">
-                    <Link to="/auth/login">
+                    <Link to="/auth/signin">
                         <ArrowLeftIcon className="mr-1 h-4 w-4" />
                         Return to Sign In
                     </Link>
@@ -84,48 +83,54 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
     }
 
     return (
-        <form
-            onSubmit={(e) => {
-                e.preventDefault();
-                handleSubmit(onSubmit)(e);
-            }}
-            className="space-y-6">
-            {serverError && (
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>{serverError.title}</AlertTitle>
-                    {serverError.message && (
-                        <AlertDescription>{serverError.message}</AlertDescription>
-                    )}
-                </Alert>
-            )}
+        <Form {...form}>
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    form.handleSubmit(onSubmit)(e);
+                }}
+                method="post"
+                className={`space-y-5 ${className}`}>
+                {serverError && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>{serverError.title}</AlertTitle>
+                        {serverError.message && (
+                            <AlertDescription>{serverError.message}</AlertDescription>
+                        )}
+                    </Alert>
+                )}
 
-            <div className="space-y-4">
-                <FormField
-                    id="email"
-                    label="Email"
-                    type="email"
-                    placeholder="m@example.com"
-                    autoComplete="email"
-                    error={errors.email}
-                    registerProps={register("email")}
-                />
+                <div className="space-y-4">
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                            <FormItem >
+                                <Label htmlFor="email">Email</Label>
+                                <FormControl>
+                                    <Input
+                                        id="email"
+                                        {...field}
+                                        type="email"
+                                        placeholder="hi@example.com"
+                                        autoComplete="email"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
 
-                <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? "Sending..." : "Send Reset Link"}
-                </Button>
-            </div>
-
-            <div className="mt-6 text-center text-sm">
-                <Link to="/auth/login" className="text-primary hover:underline">
-                    <ArrowLeftIcon className="mr-1 inline h-4 w-4 align-middle" />
-                    Back to Sign In
-                </Link>
-            </div>
-        </form>
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={isSubmitting}
+                    >
+                        {isSubmitting ? "Sending..." : "Send Reset Link"}
+                    </Button>
+                </div>
+            </form>
+        </Form>
     );
 }

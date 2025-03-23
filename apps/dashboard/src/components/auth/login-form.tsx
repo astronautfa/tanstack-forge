@@ -1,22 +1,31 @@
-import { useState } from "react";
+import { useState, useId } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { AlertCircle, EyeIcon, EyeOffIcon } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Input } from "@app/ui/components/input";
+import { Checkbox } from "@app/ui/components/checkbox";
+import { Label } from "@app/ui/components/label";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
 import { authClient } from "@app/auth/client";
 import { useSession } from "@/lib/providers/session";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@app/ui/components/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@app/ui/components/form";
+import { SocialAuthButtons } from "./social-auth-buttons";
 
 interface LoginFormProps {
     onSuccess?: () => void;
     redirectTo?: string;
+    className?: string;
 }
 
-export function LoginForm({ onSuccess, redirectTo = "/" }: LoginFormProps) {
+export function LoginForm({
+    onSuccess,
+    redirectTo = "/",
+    className = ""
+}: LoginFormProps) {
+    const id = useId();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [serverError, setServerError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
@@ -70,7 +79,7 @@ export function LoginForm({ onSuccess, redirectTo = "/" }: LoginFormProps) {
                     form.handleSubmit(onSubmit)(e);
                 }}
                 method="post"
-                className="space-y-6"
+                className={`space-y-5 ${className}`}
             >
                 {serverError && (
                     <Alert variant="destructive">
@@ -86,12 +95,13 @@ export function LoginForm({ onSuccess, redirectTo = "/" }: LoginFormProps) {
                         name="email"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Email</FormLabel>
+                                <Label htmlFor={`${id}-email`}>Email</Label>
                                 <FormControl>
                                     <Input
+                                        id={`${id}-email`}
                                         {...field}
                                         type="email"
-                                        placeholder="m@example.com"
+                                        placeholder="hi@yourcompany.com"
                                         autoComplete="email"
                                     />
                                 </FormControl>
@@ -105,20 +115,14 @@ export function LoginForm({ onSuccess, redirectTo = "/" }: LoginFormProps) {
                         name="password"
                         render={({ field }) => (
                             <FormItem>
-                                <div className="flex items-center justify-between">
-                                    <FormLabel>Password</FormLabel>
-                                    <Link
-                                        to="/auth/forgot-password"
-                                        className="text-sm font-medium text-primary hover:underline"
-                                    >
-                                        Forgot password?
-                                    </Link>
-                                </div>
+                                <Label htmlFor={`${id}-password`}>Password</Label>
                                 <FormControl>
                                     <div className="relative">
                                         <Input
+                                            id={`${id}-password`}
                                             {...field}
                                             type={showPassword ? "text" : "password"}
+                                            placeholder="Enter your password"
                                             autoComplete="current-password"
                                             className="pr-10"
                                         />
@@ -139,15 +143,36 @@ export function LoginForm({ onSuccess, redirectTo = "/" }: LoginFormProps) {
                             </FormItem>
                         )}
                     />
-
-                    <Button
-                        type="submit"
-                        className="w-full"
-                        disabled={isSubmitting}
-                    >
-                        {isSubmitting ? "Signing in..." : "Sign in"}
-                    </Button>
                 </div>
+
+                <div className="flex justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                        <Checkbox id={`${id}-remember`} />
+                        <Label htmlFor={`${id}-remember`} className="text-muted-foreground font-normal">
+                            Remember me
+                        </Label>
+                    </div>
+                    <Link
+                        to="/auth/forgot-password"
+                        className="text-sm underline hover:no-underline"
+                    >
+                        Forgot password?
+                    </Link>
+                </div>
+
+                <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? "Signing in..." : "Sign in"}
+                </Button>
+
+                <div className="before:bg-border after:bg-border flex items-center gap-3 before:h-px before:flex-1 after:h-px after:flex-1">
+                    <span className="text-muted-foreground text-xs">Or</span>
+                </div>
+
+                <SocialAuthButtons type="signin" />
             </form>
         </Form>
     );

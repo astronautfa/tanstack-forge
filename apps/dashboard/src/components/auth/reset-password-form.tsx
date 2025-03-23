@@ -1,25 +1,34 @@
-import { useState } from "react";
+import { useState, useId } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, ArrowLeftIcon, CheckCircle2 } from "lucide-react";
+import { AlertCircle, ArrowLeftIcon, CheckCircle2, EyeIcon, EyeOffIcon } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { resetPasswordSchema, type ResetPasswordFormValues } from "@/lib/validations/auth";
 import { authClient } from "@app/auth/client";
 import { Link } from "@tanstack/react-router";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@app/ui/components/form";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@app/ui/components/form";
 import { Input } from "@app/ui/components/input";
+import { Label } from "@app/ui/components/label";
 import { useSession } from "@/lib/providers/session";
 
 interface ResetPasswordFormProps {
     onSuccess?: () => void;
     redirectTo?: string;
+    className?: string;
 }
 
-export function ResetPasswordForm({ onSuccess, redirectTo = "/" }: ResetPasswordFormProps) {
+export function ResetPasswordForm({
+    onSuccess,
+    redirectTo = "/",
+    className = ""
+}: ResetPasswordFormProps) {
+    const id = useId();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [serverError, setServerError] = useState<{ title: string; message?: string } | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { user, reloadSession } = useSession();
 
     const form = useForm<ResetPasswordFormValues>({
@@ -67,7 +76,7 @@ export function ResetPasswordForm({ onSuccess, redirectTo = "/" }: ResetPassword
 
     if (isSubmitted) {
         return (
-            <div className="space-y-4">
+            <div className={`space-y-4 ${className}`}>
                 <Alert className="bg-green-50 border-green-200 text-green-600">
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertTitle>Password reset successful</AlertTitle>
@@ -76,7 +85,7 @@ export function ResetPasswordForm({ onSuccess, redirectTo = "/" }: ResetPassword
                     </AlertDescription>
                 </Alert>
                 <Button asChild className="w-full mt-4">
-                    <Link to="/auth/login">Return to Sign In</Link>
+                    <Link to="/auth/signin">Return to Sign In</Link>
                 </Button>
             </div>
         );
@@ -89,7 +98,9 @@ export function ResetPasswordForm({ onSuccess, redirectTo = "/" }: ResetPassword
                     e.preventDefault();
                     form.handleSubmit(onSubmit)(e);
                 }}
-                className="space-y-6">
+                method="post"
+                className={`space-y-5 ${className}`}
+            >
                 {serverError && (
                     <Alert variant="destructive">
                         <AlertCircle className="h-4 w-4" />
@@ -105,14 +116,30 @@ export function ResetPasswordForm({ onSuccess, redirectTo = "/" }: ResetPassword
                         control={form.control}
                         name="password"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>New Password</FormLabel>
+                            <FormItem >
+                                <Label htmlFor={`${id}-password`}>New Password</Label>
                                 <FormControl>
-                                    <Input
-                                        {...field}
-                                        type="password"
-                                        autoComplete="new-password"
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            id={`${id}-password`}
+                                            {...field}
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="Enter your new password"
+                                            autoComplete="new-password"
+                                            className="pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute inset-y-0 right-0 flex items-center pr-3 text-primary"
+                                        >
+                                            {showPassword ? (
+                                                <EyeOffIcon className="h-4 w-4" />
+                                            ) : (
+                                                <EyeIcon className="h-4 w-4" />
+                                            )}
+                                        </button>
+                                    </div>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -123,14 +150,30 @@ export function ResetPasswordForm({ onSuccess, redirectTo = "/" }: ResetPassword
                         control={form.control}
                         name="confirmPassword"
                         render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Confirm Password</FormLabel>
+                            <FormItem >
+                                <Label htmlFor={`${id}-confirm-password`}>Confirm Password</Label>
                                 <FormControl>
-                                    <Input
-                                        {...field}
-                                        type="password"
-                                        autoComplete="new-password"
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            id={`${id}-confirm-password`}
+                                            {...field}
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            placeholder="Confirm your new password"
+                                            autoComplete="new-password"
+                                            className="pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute inset-y-0 right-0 flex items-center pr-3 text-primary"
+                                        >
+                                            {showConfirmPassword ? (
+                                                <EyeOffIcon className="h-4 w-4" />
+                                            ) : (
+                                                <EyeIcon className="h-4 w-4" />
+                                            )}
+                                        </button>
+                                    </div>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -141,19 +184,11 @@ export function ResetPasswordForm({ onSuccess, redirectTo = "/" }: ResetPassword
                         type="submit"
                         className="w-full"
                         disabled={isSubmitting}
-                    // loading={isSubmitting}
                     >
                         {isSubmitting ? "Resetting..." : "Reset Password"}
                     </Button>
                 </div>
             </form>
-
-            <div className="mt-6 text-center text-sm">
-                <Link to="/auth/login" className="text-primary hover:underline">
-                    <ArrowLeftIcon className="mr-1 inline h-4 w-4 align-middle" />
-                    Back to Sign In
-                </Link>
-            </div>
         </Form>
     );
 }
