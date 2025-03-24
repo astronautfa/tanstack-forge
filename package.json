@@ -20,5 +20,5 @@
     "turbo": "^2.4.4",
     "dotenv-cli": "^8.0.0"
   },
-  "packageManager": "pnpm@9.15.0"
+  "packageManager": "pnpm@10.6.5"
 }
