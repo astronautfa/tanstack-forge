@@ -65,8 +65,6 @@ export function LoginForm({
 
     const formHasValues = !!email && !!password;
 
-    const isFormValid = form.formState.isValid;
-
     const handleForgotPasswordClick = () => {
         if (onForgotPassword && email) {
             onForgotPassword(email);
@@ -209,7 +207,7 @@ export function LoginForm({
                     <Button
                         type="submit"
                         className="w-full"
-                        disabled={isLoading || !formHasValues || !isFormValid}
+                        disabled={isLoading || !formHasValues}
                     >
                         {isLoading ? "Signing in..." : "Sign in"}
                     </Button>

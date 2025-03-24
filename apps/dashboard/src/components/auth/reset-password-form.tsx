@@ -6,12 +6,13 @@ import { Button } from "@app/ui/components/button";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { resetPasswordSchema, type ResetPasswordFormValues } from "@/lib/validations/auth";
 import { authClient } from "@app/auth/client";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@app/ui/components/form";
 import { Input } from "@app/ui/components/input";
 import { Label } from "@app/ui/components/label";
 import { useSession } from "@/lib/providers/session";
 import { useAuth } from "@/routes/auth/route";
+import { Route as ResetPasswordRoute } from "@/routes/auth/reset-password";
 
 interface ResetPasswordFormProps {
     onSuccess?: () => void;
@@ -30,6 +31,9 @@ export function ResetPasswordForm({
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const { user, reloadSession } = useSession();
+    const navigate = useNavigate();
+
+    const { token } = ResetPasswordRoute.useSearch();
 
     const { isLoading, setIsLoading } = useAuth();
 
@@ -42,7 +46,6 @@ export function ResetPasswordForm({
         mode: "onChange"
     });
 
-    // Password requirements based on your zod validation
     const passwordRequirements = [
         { regex: /.{8,}/, text: "At least 8 characters" },
         { regex: /[0-9]/, text: "At least 1 number" },
@@ -52,7 +55,6 @@ export function ResetPasswordForm({
 
     const password = form.watch("password");
 
-    // Check which requirements are met
     const requirementStatus = useMemo(() => {
         return passwordRequirements.map((req) => ({
             met: req.regex.test(password || ""),
@@ -60,11 +62,9 @@ export function ResetPasswordForm({
         }));
     }, [password]);
 
-    // Check if confirm password matches
     const confirmPassword = form.watch("confirmPassword");
     const passwordsMatch = password === confirmPassword && password !== "";
 
-    // Check if form is valid
     const isFormValid = form.formState.isValid;
 
     async function onSubmit(data: ResetPasswordFormValues) {
@@ -73,6 +73,7 @@ export function ResetPasswordForm({
         try {
             const { error } = await authClient.resetPassword({
                 newPassword: data.password,
+                token: token || "",
             });
 
             if (error) {
@@ -82,19 +83,17 @@ export function ResetPasswordForm({
             setIsSubmitted(true);
             onSuccess?.();
 
-            // Reload the session to update the user state
             await reloadSession();
 
-            // If user is already authenticated, redirect to the specified path
             if (user) {
-                window.location.href = redirectTo;
+                navigate({ to: redirectTo, replace: true });
             }
         } catch (error) {
             setServerError({
                 title: "Password reset failed",
                 message: error instanceof Error
                     ? error.message
-                    : "Failed to reset password. Please try again."
+                    : "Failed to reset password. The reset link may have expired. Please try requesting a new link."
             });
         } finally {
             setIsLoading(false);
@@ -104,7 +103,7 @@ export function ResetPasswordForm({
     if (isSubmitted) {
         return (
             <div className={`space-y-4 ${className}`}>
-                <Alert className="bg-green-50 border-green-200 text-green-600">
+                <Alert variant="success">
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertTitle>Password reset successful</AlertTitle>
                     <AlertDescription>
@@ -235,8 +234,8 @@ export function ResetPasswordForm({
                                             </>
                                         ) : (
                                             <>
-                                                <X size={16} className="text-muted-foreground/80" aria-hidden="true" />
-                                                <span className="text-xs text-muted-foreground">Passwords do not match</span>
+                                                <X size={16} className="text-destructive/80" aria-hidden="true" />
+                                                <span className="text-xs text-destructive">Passwords do not match</span>
                                             </>
                                         )}
                                     </div>

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "vinxi start",
+    "start": "PORT=3001 vinxi start",
     "build": "vinxi build",
     "serve": "vite preview",
     "test": "vitest run",

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, CheckCircle2, ArrowLeftIcon, Mail } from "lucide-react";
+import { AlertCircle, ArrowLeftIcon, Mail } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { Input } from "@app/ui/components/input";
@@ -36,20 +36,16 @@ export function ForgotPasswordForm({
         mode: "onChange"
     });
 
-    // Update form values when defaultEmail prop changes
     useEffect(() => {
         if (defaultEmail) {
             form.setValue("email", defaultEmail);
         }
     }, [defaultEmail, form]);
 
-    // Watch for email value to determine if button should be enabled
     const email = form.watch("email");
 
-    // Check if email field has a value
     const hasEmailValue = !!email;
 
-    // Check if form passes validation
     const isFormValid = form.formState.isValid;
 
     async function onSubmit(data: ForgotPasswordFormValues) {
