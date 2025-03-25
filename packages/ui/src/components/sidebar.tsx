@@ -215,7 +215,7 @@ function Sidebar({
 						: "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
 					variant === "floating" || variant === "inset"
 						? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
-						: "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
+						: "group-data-[collapsible=icon]:w-(--sidebar-width-icon)",
 					className,
 				)}
 				{...props}
@@ -231,33 +231,64 @@ function Sidebar({
 	);
 }
 
-function SidebarTrigger({
-	className,
-	onClick,
-	...props
-}: React.ComponentProps<typeof Button>) {
-	const { toggleSidebar } = useSidebar();
-
-	return (
-		<Button
-			data-sidebar="trigger"
-			variant="ghost"
-			size="icon"
-			className={cn(
-				"text-muted-foreground/60 hover:text-foreground",
-				className,
-			)}
-			onClick={(event) => {
-				onClick?.(event);
-				toggleSidebar();
-			}}
-			{...props}
-		>
-			<PanelLeftIcon className="size-4" size={20} aria-hidden="true" />
-			<span className="sr-only">Toggle Sidebar</span>
-		</Button>
-	);
+interface SidebarTriggerProps extends React.ComponentProps<typeof Button> {
 }
+
+const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, SidebarTriggerProps>(
+	({ className, onClick, ...props }, ref) => {
+		const { state, toggleSidebar } = useSidebar();
+		const isOpen = state === 'expanded';
+
+		return (
+			<Button
+				ref={ref}
+				size="icon"
+				variant="ghost"
+				className={cn(className, 'size-6 mt-0.5 md:mt-0')}
+				onClick={(event) => {
+					onClick?.(event);
+					toggleSidebar();
+				}}
+				aria-expanded={isOpen}
+				aria-label={`Toggle Sidebar`}
+				data-sidebar="trigger"
+				tooltip={`${isOpen ? 'Close' : 'Open'} Sidebar`}
+				{...props}
+			>
+				<span aria-hidden="true">
+					<svg
+						className={cn(
+							'text-muted-foreground transition-transform duration-200 ease-in-out',
+							'rotate-180'
+						)}
+						fill="currentColor"
+						focusable="false"
+						height="16"
+						role="img"
+						viewBox="0 0 16 16"
+						width="16"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							clipRule="evenodd"
+							d="M4.25 2C2.45508 2 1 3.45508 1 5.25V10.7499C1 12.5449 2.45508 13.9999 4.25 13.9999H11.75C13.5449 13.9999 15 12.5449 15 10.7499V5.25C15 3.45508 13.5449 2 11.75 2H4.25ZM2.5 10.4999C2.5 11.6045 3.39543 12.4999 4.5 12.4999H11.75C12.7165 12.4999 13.5 11.7164 13.5 10.7499V5.25C13.5 4.28351 12.7165 3.5 11.75 3.5H4.5C3.39543 3.5 2.5 4.39543 2.5 5.5V10.4999Z"
+							fillRule="evenodd"
+						/>
+						<rect height="10" width="1.5" x="9" y="3" />
+						<rect
+							className="transition-all duration-200 ease-in-out"
+							height="10"
+							width={isOpen ? "4" : "0"}
+							x={isOpen ? "10" : "14"}
+							y="3"
+						/>
+					</svg>
+				</span>
+				<span className="sr-only">Toggle Sidebar</span>
+			</Button>
+		);
+	}
+);
 
 function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
 	const { toggleSidebar } = useSidebar();
@@ -287,9 +318,10 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
 	return (
 		<main
 			className={cn(
-				"relative flex min-h-svh flex-1 flex-col bg-background",
-				"peer-data-[variant=inset]:min-h-[calc(100svh-(--spacing(4)))] md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm",
-				className,
+				'relative shadow-lg flex flex-1 flex-col overflow-hidden bg-background p-3',
+				'md:peer-data-[state=expanded]:border-1 md:peer-data-[state=expanded]:border-border md:peer-data-[state=expanded]:m-1 md:peer-data-[state=expanded]:ml-0 md:peer-data-[state=expanded]:rounded-xl md:peer-data-[state=expanded]:pt-2',
+				'peer-data-[variant=inset]:max-h-[calc(100svh-theme(spacing.3))] md:peer-data-[variant=inset]:my-1.5 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl',
+				className
 			)}
 			{...props}
 		/>

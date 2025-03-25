@@ -1,5 +1,5 @@
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
-import { SidebarProvider, SidebarInset } from "@app/ui/components/sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@app/ui/components/sidebar";
 import { AppSidebar } from "../components/app-sidebar";
 import {
     User,
@@ -42,16 +42,14 @@ function Dashboard() {
 
     return (
         <SidebarProvider defaultOpen={true}>
-            <div className="flex h-screen w-full overflow-hidden">
+            <div className="flex h-screen w-full overflow-hidden bg-sidebar">
                 <AppSidebar onSignOut={handleSignOut} />
-                <SidebarInset className="overflow-auto bg-background text-foreground p-6">
+                <SidebarInset className="overflow-auto bg-background text-foreground">
                     <div className="grid gap-6">
                         {/* Dashboard Header */}
-                        <div className="flex items-center justify-between">
-                            <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-                            <div className="flex items-center gap-2">
-                                {/* You can add user profile button/notification icons here */}
-                            </div>
+                        <div className="flex items-center justify-start gap-2">
+                            <SidebarTrigger className="" />
+                            <h1 className="text-lg font-semibold tracking-tight text-foreground">Dashboard</h1>
                         </div>
 
                         {/* Overview Cards */}
