@@ -14,7 +14,8 @@ export const Route = createFileRoute("/")({
         return { user: context.user };
     },
     beforeLoad: async ({ context }) => {
-        if (!context.user) {
+        const { user } = context;
+        if (!user) {
             throw redirect({ to: "/auth/signin" });
         }
 

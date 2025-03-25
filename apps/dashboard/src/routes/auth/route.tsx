@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, useMatches } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
 import { LoadingContainer } from "@app/ui/components/loading-container";
 import { useState, useEffect } from "react";
 
@@ -32,6 +32,15 @@ export const Route = createFileRoute("/auth")({
 
 function AuthLayout() {
     const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
+    const { user } = Route.useRouteContext();
+
+    useEffect(() => {
+        if (user) {
+            navigate({ to: "/", replace: true });
+        }
+        setIsLoading(false);
+    }, [user]);
 
     useEffect(() => {
         setIsLoading(false);
