@@ -1,6 +1,7 @@
 import {
 	HeadContent,
 	Outlet,
+	ScriptOnce,
 	Scripts,
 	createRootRouteWithContext,
 } from "@tanstack/react-router";
@@ -55,7 +56,7 @@ export const Route = createRootRouteWithContext<{
 	component: () => (
 		<RootDocument>
 			<Outlet />
-			<TanStackRouterDevtools />
+			{/* <TanStackRouterDevtools /> */}
 			<ReactQueryDevtools initialIsOpen={false} position="right" />
 			<Toaster />
 		</RootDocument>
@@ -65,11 +66,17 @@ export const Route = createRootRouteWithContext<{
 function RootDocument({ children }: { children: React.ReactNode }) {
 
 	return (
-		<html lang="en">
+		<html lang="en" suppressHydrationWarning>
 			<head>
 				<HeadContent />
 			</head>
 			<body>
+				<ScriptOnce>
+					{`document.documentElement.classList.toggle(
+					'dark',
+					localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+					)`}
+				</ScriptOnce>
 				<div className="min-h-screen font-sans antialiased">
 					{children}
 				</div>
