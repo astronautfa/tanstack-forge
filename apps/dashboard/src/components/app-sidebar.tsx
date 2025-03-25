@@ -152,7 +152,7 @@ export function AppSidebar({ onSignOut, ...props }: AppSidebarProps) {
                 ))}
             </SidebarContent>
             <SidebarFooter>
-                <hr className="border-t border-border mx-2 -mt-px" />
+                <hr className="border-t border-border" />
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <ThemeToggle />
@@ -160,7 +160,7 @@ export function AppSidebar({ onSignOut, ...props }: AppSidebarProps) {
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             onClick={onSignOut}
-                            className="font-medium gap-3 h-9 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
+                            className="font-medium gap-3 h-8 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
                         >
                             <LogOut
                                 className="text-muted-foreground/60"

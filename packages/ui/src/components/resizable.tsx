@@ -11,6 +11,7 @@ function ResizablePanelGroup({
 	return (
 		<ResizablePrimitive.PanelGroup
 			data-slot="resizable-panel-group"
+			autoSaveId="persistence"
 			className={cn(
 				"flex h-full w-full data-[panel-group-direction=vertical]:flex-col",
 				className,
