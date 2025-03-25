@@ -68,13 +68,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 		<html lang="en">
 			<head>
 				<HeadContent />
-				<script>
-					const isDarkMode = localStorage.getItem("theme-mode");
-
-					const theme = isDarkMode === "true" ? "dark" : "";
-
-					document.querySelector("html").className = theme;
-				</script>
 			</head>
 			<body>
 				<div className="min-h-screen font-sans antialiased">
