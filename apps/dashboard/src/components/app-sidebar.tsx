@@ -26,6 +26,7 @@ import {
     HelpCircle,
     LogOut,
 } from "lucide-react";
+import { ThemeToggle } from "./theme-toggle";
 
 // This is sample data.
 const data = {
@@ -155,12 +156,15 @@ export function AppSidebar({ onSignOut, ...props }: AppSidebarProps) {
                 <hr className="border-t border-border mx-2 -mt-px" />
                 <SidebarMenu>
                     <SidebarMenuItem>
+                        <ThemeToggle />
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
                         <SidebarMenuButton
                             onClick={onSignOut}
                             className="font-medium gap-3 h-9 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto">
                             <LogOut
                                 className="text-muted-foreground/60 group-data-[active=true]/menu-button:text-primary"
-                                size={18}
+                                size={16}
                                 aria-hidden="true"
                             />
                             <span>Sign Out</span>

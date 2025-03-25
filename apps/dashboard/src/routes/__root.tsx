@@ -65,12 +65,19 @@ export const Route = createRootRouteWithContext<{
 function RootDocument({ children }: { children: React.ReactNode }) {
 
 	return (
-		<html lang="en" className="dark">
+		<html lang="en">
 			<head>
 				<HeadContent />
+				<script>
+					const isDarkMode = localStorage.getItem("theme-mode");
+
+					const theme = isDarkMode === "true" ? "dark" : "";
+
+					document.querySelector("html").className = theme;
+				</script>
 			</head>
 			<body>
-				<div className="min-h-screen font-sans antialiased dark scheme-only-dark">
+				<div className="min-h-screen font-sans antialiased">
 					{children}
 				</div>
 				<Scripts />
