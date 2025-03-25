@@ -113,6 +113,9 @@ interface SocialAuthButtonsProps {
 export function SocialAuthButtons({ type }: SocialAuthButtonsProps) {
     const actionText = type === "signin" ? "Sign in" : "Sign up";
 
+    const { setIsLoading } = useAuth();
+
+
     const [lastLoginMethod, setLastLoginMethod, _, storageError] = useStorage<SocialProvider | null>(
         LAST_LOGIN_METHOD_KEY,
         null
@@ -125,6 +128,7 @@ export function SocialAuthButtons({ type }: SocialAuthButtonsProps) {
     const handleAuth = async (provider: SocialProvider) => {
         try {
             const callbackURL = new URL('/', window.location.origin);
+            setIsLoading(true)
             const { error } = await authClient.signIn.social({
                 provider,
                 callbackURL: callbackURL.toString(),
@@ -133,11 +137,13 @@ export function SocialAuthButtons({ type }: SocialAuthButtonsProps) {
                     setLastLoginMethod(provider);
                 },
                 onError: () => {
+                    setIsLoading(false)
                     throw error
                 },
             });
 
         } catch (error) {
+            setIsLoading(false)
             console.error("Social auth error:", error);
         }
     };

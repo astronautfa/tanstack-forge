@@ -32,11 +32,10 @@ export const Route = createFileRoute("/auth")({
 
 function AuthLayout() {
     const [isLoading, setIsLoading] = useState(false);
-    const matches = useMatches();
 
     useEffect(() => {
         setIsLoading(false);
-    }, [matches]);
+    }, []);
 
     return (
         <AuthContext.Provider value={{ isLoading, setIsLoading }}>
