@@ -35,7 +35,7 @@ const getBaseUrl = () => {
 
 const appUrl = getBaseUrl();
 
-export const auth = betterAuth({
+export const auth: any = betterAuth({
     baseURL: appUrl,
     trustedOrigins: [appUrl],
     database: prismaAdapter(db, {

@@ -2,6 +2,8 @@
   "extends": "@app/typescript-config/react-library.json",
   "compilerOptions": {
     // "outDir": "dist"
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
     "baseUrl": ".",
     "paths": {
       "@app/ui/*": ["./src/*"]

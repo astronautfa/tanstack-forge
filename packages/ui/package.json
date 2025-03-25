@@ -8,6 +8,8 @@
     "./postcss.config": "./postcss.config.mjs",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
+    "./icons/*": "./src/icons/*.ts",
+    "./icons": "./src/icons/index.ts",
     "./hooks/*": "./src/hooks/*.ts"
   },
   "scripts": {

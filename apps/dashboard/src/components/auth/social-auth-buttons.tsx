@@ -1,7 +1,6 @@
 import { type ComponentProps } from "react";
 import { Button } from "@app/ui/components/button";
 import { cn } from "@app/ui/lib/utils";
-import { Github, Mail } from "lucide-react";
 import { authClient } from "@app/auth/client";
 import {
     Tooltip,
@@ -9,6 +8,7 @@ import {
     TooltipProvider,
     TooltipTrigger
 } from "@app/ui/components/tooltip";
+import { Icons } from "@app/ui/icons"
 import { Badge } from "@app/ui/components/badge";
 import { useStorage } from "@/lib/hooks/use-storage";
 import { useAuth } from "@/routes/auth/route";
@@ -27,9 +27,9 @@ interface SocialAuthButtonProps extends ComponentProps<typeof Button> {
 const getIcon = (provider: SocialProvider) => {
     switch (provider) {
         case "github":
-            return <Github size={20} className="mr-2" />;
+            return <Icons.github size='sm' className="mr-2" />;
         case "google":
-            return <Mail size={20} className="mr-2" />;
+            return <Icons.google size='sm' className="mr-2" />;
         default:
             return null;
     }
