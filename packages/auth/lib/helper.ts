@@ -1,3 +1,4 @@
+import { Member } from "@app/database";
 import type { ActiveOrganization } from "../auth";
 
 export function isOrganizationAdmin(
@@ -8,7 +9,7 @@ export function isOrganizationAdmin(
     } | null,
 ) {
     const userOrganizationRole = organization?.members.find(
-        (member) => member.userId === user?.id,
+        (member: Member) => member.userId === user?.id,
     )?.role;
 
     return (

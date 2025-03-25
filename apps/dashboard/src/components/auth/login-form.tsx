@@ -2,10 +2,9 @@ import { useState, useId, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useRouter } from "@tanstack/react-router";
-import { AlertCircle, EyeIcon, EyeOffIcon, KeyRound } from "lucide-react";
+import { AlertCircle, EyeIcon, EyeOffIcon, KeyRound, Mail } from "lucide-react";
 import { Button } from "@app/ui/components/button";
 import { Input } from "@app/ui/components/input";
-import { Checkbox } from "@app/ui/components/checkbox";
 import { Label } from "@app/ui/components/label";
 import { Alert, AlertDescription, AlertTitle } from "@app/ui/components/alert";
 import { loginSchema, type LoginFormValues } from "@/lib/validations/auth";
@@ -188,13 +187,7 @@ export function LoginForm({
                         />
                     </div>
 
-                    <div className="flex justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                            <Checkbox id={`${id}-remember`} />
-                            <Label htmlFor={`${id}-remember`} className="text-muted-foreground font-normal">
-                                Remember me
-                            </Label>
-                        </div>
+                    <div className="flex justify-end">
                         <button
                             type="button"
                             onClick={handleForgotPasswordClick}
@@ -232,10 +225,13 @@ export function LoginForm({
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="bg-secondary/50 p-4 rounded-lg my-2">
-                        <p className="text-sm">
+                    <div className="bg-secondary/50 p-4 rounded-lg my-2 flex gap-2">
+                        <div>
+                            <Mail className="size-4 mt-[2px]" />
+                        </div>
+                        <span className="text-sm">
                             We'll send a password reset link to <strong>{email}</strong> where you can create a new password.
-                        </p>
+                        </span>
                     </div>
 
                     <DialogFooter className="sm:justify-between flex-row gap-2 mt-2">
