@@ -13,7 +13,7 @@ import { Badge } from "@app/ui/components/badge";
 import { useStorage } from "@/lib/hooks/use-storage";
 import { useAuth } from "@/routes/auth/route";
 
-export type SocialProvider = "discord" | "google" | "github";
+export type SocialProvider = "google" | "github";
 
 const LAST_LOGIN_METHOD_KEY = "last_login_method";
 
@@ -24,6 +24,17 @@ interface SocialAuthButtonProps extends ComponentProps<typeof Button> {
     onAuth: (provider: SocialProvider) => Promise<void>;
 }
 
+const getIcon = (provider: SocialProvider) => {
+    switch (provider) {
+        case "github":
+            return <Github size={20} className="mr-2" />;
+        case "google":
+            return <Mail size={20} className="mr-2" />;
+        default:
+            return null;
+    }
+};
+
 function SocialAuthButton({
     provider,
     label,
@@ -32,28 +43,16 @@ function SocialAuthButton({
     onAuth,
     ...props
 }: SocialAuthButtonProps) {
-    // Use the auth context for loading state
     const { isLoading } = useAuth();
 
     const handleAuth = async () => {
-        if (isLoading) return; // Prevent multiple clicks during loading
+        if (isLoading) return;
         await onAuth(provider);
-    };
-
-    const getIcon = () => {
-        switch (provider) {
-            case "github":
-                return <Github size={20} className="mr-2" />;
-            case "google":
-                return <Mail size={20} className="mr-2" />;
-            default:
-                return null;
-        }
     };
 
     const buttonContent = (
         <div className="flex items-center justify-center w-full">
-            {getIcon()}
+            {getIcon(provider)}
             <span>{props.children || `Sign in with ${label}`}</span>
 
             {isLastUsed && (
@@ -114,8 +113,6 @@ interface SocialAuthButtonsProps {
 export function SocialAuthButtons({ type }: SocialAuthButtonsProps) {
     const actionText = type === "signin" ? "Sign in" : "Sign up";
 
-    const { setIsLoading } = useAuth();
-
     const [lastLoginMethod, setLastLoginMethod, _, storageError] = useStorage<SocialProvider | null>(
         LAST_LOGIN_METHOD_KEY,
         null
@@ -126,20 +123,22 @@ export function SocialAuthButtons({ type }: SocialAuthButtonsProps) {
     }
 
     const handleAuth = async (provider: SocialProvider) => {
-        setIsLoading(true);
-
         try {
-            await setLastLoginMethod(provider);
-
             const callbackURL = new URL('/', window.location.origin);
-            authClient.signIn.social({
+            const { error } = await authClient.signIn.social({
                 provider,
                 callbackURL: callbackURL.toString(),
+            }, {
+                onSuccess: () => {
+                    setLastLoginMethod(provider);
+                },
+                onError: () => {
+                    throw error
+                },
             });
 
         } catch (error) {
             console.error("Social auth error:", error);
-            setIsLoading(false);
         }
     };
 
