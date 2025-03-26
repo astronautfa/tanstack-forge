@@ -11,7 +11,6 @@ import {
     Save,
     Book,
     Blocks,
-    GraduationCap,
     FileText,
     LineChart,
     Mail,

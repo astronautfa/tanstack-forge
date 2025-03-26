@@ -12,7 +12,6 @@ import {
   Zap,
   MoreHorizontal,
   Terminal,
-  AlertCircle,
   Clock,
   ArrowUpRight,
   MessageSquare,
@@ -66,7 +65,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@app/ui/components/dialog";
 import {
   Popover,
@@ -75,7 +73,6 @@ import {
 } from "@app/ui/components/popover";
 import { Switch } from "@app/ui/components/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@app/ui/components/tabs";
-import { Input } from "@app/ui/components/input";
 import { Label } from "@app/ui/components/label";
 import { Checkbox } from "@app/ui/components/checkbox";
 import { Alert, AlertDescription } from "@app/ui/components/alert";
