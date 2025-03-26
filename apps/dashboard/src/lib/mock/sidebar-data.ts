@@ -18,13 +18,9 @@ import {
     Wrench,
     Palette,
     FunctionSquare,
-    Database,
-    Settings,
-    Lightbulb,
-    ShieldCheck,
-    Workflow, // Example, might not be used below
-    Scale,
-    FlaskConical, // Example, might not be used below
+    Database, Lightbulb,
+    ShieldCheck, // Example, might not be used below
+    Scale
 } from "lucide-react";
 
 export interface ItemData {

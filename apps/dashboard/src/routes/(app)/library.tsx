@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import React, { useState, useMemo, useCallback } from 'react';
 import {
     Book, List, Grid, Search, Filter, Plus, FileText, Globe, Code, Star,
@@ -171,10 +171,7 @@ const SAMPLE_LIBRARY_ITEMS: LibraryItem[] = [
 ];
 
 // --- Constants (Derived from data or predefined) ---
-const ALL_CATEGORIES = ['All', 'Textbook', 'Reference', 'Guide', 'Article', 'Paper', 'Code Snippets', 'Design', 'Book', 'Blog Post'];
 const ALL_TYPES: Array<'All' | ResourceType> = ['All', 'pdf', 'epub', 'web', 'snippet'];
-const ALL_TAGS = Array.from(new Set(SAMPLE_LIBRARY_ITEMS.flatMap(item => item.tags))).sort();
-const ALL_SHELVES = Array.from(new Set(SAMPLE_LIBRARY_ITEMS.map(item => item.shelf))).sort();
 type SortOption = 'title' | 'author' | 'dateAdded' | 'lastOpened' | 'progress';
 type SortDirection = 'asc' | 'desc';
 
@@ -216,8 +213,6 @@ const ItemActions: React.FC<ItemActionsProps> = ({
     item, onToggleFavorite, onDelete, availableShelves, availableTags,
     onAddToShelf, onAddToTag, onRemoveTag
 }) => {
-    const navigate = useNavigate(); // Assuming you might navigate to an item's page
-
     // Placeholder actions - replace with your actual logic
     const handleOpen = () => {
         console.log("Opening item:", item.id);
