@@ -100,7 +100,6 @@ function SettingsComponent() {
         { id: 'notifications', icon: Bell, label: 'Notifications' },
         { id: 'security', icon: Shield, label: 'Security' },
         { id: 'billing', icon: CreditCard, label: 'Billing' },
-        { id: 'academic', icon: GraduationCap, label: 'Academic' },
         { id: 'research', icon: Book, label: 'Research' },
         { id: 'integrations', icon: Blocks, label: 'Integrations' },
         { id: 'preferences', icon: Globe, label: 'Preferences' },
@@ -801,97 +800,6 @@ function SettingsComponent() {
                                 </div>
                             </div>
                         </CardContent>
-                    </Card>
-                </TabsContent>
-
-                {/* Academic Tab */}
-                <TabsContent value="academic" className="space-y-6">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Academic Profile</CardTitle>
-                            <CardDescription>Manage your academic information and research interests</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            <div className="space-y-2">
-                                <Label>Research Interests</Label>
-                                <div className="flex flex-wrap gap-2">
-                                    <Badge variant="secondary" className="px-3 py-1">Machine Learning</Badge>
-                                    <Badge variant="secondary" className="px-3 py-1">Natural Language Processing</Badge>
-                                    <Badge variant="secondary" className="px-3 py-1">Computer Vision</Badge>
-                                    <Badge variant="secondary" className="px-3 py-1">Educational Technology</Badge>
-                                    <Button variant="outline" size="sm" className="rounded-full h-7">+ Add</Button>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="cv">Curriculum Vitae</Label>
-                                <div className="flex items-center justify-between p-3 border rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <FileText className="h-5 w-5 text-muted-foreground" />
-                                        <p className="text-sm">academic_cv_2025.pdf</p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <Button variant="ghost" size="sm">View</Button>
-                                        <Button variant="outline" size="sm">Update</Button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Publications</Label>
-                                <div className="border rounded-lg divide-y">
-                                    <div className="p-3 space-y-1">
-                                        <p className="font-medium">Machine Learning for Educational Content Generation</p>
-                                        <p className="text-sm text-muted-foreground">Journal of Educational Technology, 2024</p>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <Badge variant="outline" className="text-xs">DOI: 10.1234/jet.2024.5678</Badge>
-                                            <Button variant="ghost" size="sm" className="h-6 p-0 text-xs text-blue-600 hover:text-blue-800">View</Button>
-                                        </div>
-                                    </div>
-                                    <div className="p-3 space-y-1">
-                                        <p className="font-medium">Natural Language Processing for Student Writing Assessment</p>
-                                        <p className="text-sm text-muted-foreground">International Conference on AI in Education, 2023</p>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <Badge variant="outline" className="text-xs">DOI: 10.1234/aied.2023.1234</Badge>
-                                            <Button variant="ghost" size="sm" className="h-6 p-0 text-xs text-blue-600 hover:text-blue-800">View</Button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <Button variant="outline" className="mt-2" size="sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
-                                    Add Publication
-                                </Button>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Education History</Label>
-                                <div className="border rounded-lg divide-y">
-                                    <div className="p-3 space-y-1">
-                                        <div className="flex justify-between">
-                                            <p className="font-medium">Ph.D. in Computer Science</p>
-                                            <p className="text-sm">2020 - 2024</p>
-                                        </div>
-                                        <p className="text-sm">Stanford University</p>
-                                        <p className="text-sm text-muted-foreground">Dissertation: "Advancing AI in Education: Personalized Learning Systems"</p>
-                                    </div>
-                                    <div className="p-3 space-y-1"></div>
-                                    <div className="flex justify-between">
-                                        <p className="font-medium">M.S. in Computer Science</p>
-                                        <p className="text-sm">2018 - 2020</p>
-                                    </div>
-                                    <p className="text-sm">MIT</p>
-                                    <p className="text-sm text-muted-foreground">Focus: Machine Learning and Algorithms</p>
-                                </div>
-                            </div>
-                            <Button variant="outline" className="mt-2" size="sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><path d="M5 12h14" /><path d="M12 5v14" /></svg>
-                                Add Education
-                            </Button>
-
-                        </CardContent>
-                        <CardFooter className="border-t pt-5">
-                            <Button>Save Academic Profile</Button>
-                        </CardFooter>
                     </Card>
                 </TabsContent>
 

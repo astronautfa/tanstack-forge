@@ -536,18 +536,6 @@ function DashboardComponent() {
                     </table>
                 </div>
             </div>
-
-            {/* Footer with app information */}
-            <div className="flex flex-col sm:flex-row items-center justify-between text-sm text-muted-foreground pt-4 border-t">
-                <div className="flex gap-4">
-                    <a href="#" className="hover:text-primary">Help</a>
-                    <a href="#" className="hover:text-primary">Privacy</a>
-                    <a href="#" className="hover:text-primary">Terms</a>
-                </div>
-                <div className="mt-2 sm:mt-0">
-                    <p>ScholarNotes • Academic Document Editor • v1.0.2</p>
-                </div>
-            </div>
         </div>
     )
 }
