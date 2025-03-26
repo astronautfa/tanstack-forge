@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useMatches } from "@tanstack/react-router";
 
 import { SearchForm } from "./search-form";
 import { TeamSwitcher } from "./team-switcher";
@@ -25,6 +26,7 @@ import {
     Settings,
     HelpCircle,
     LogOut,
+    LibraryBig,
 } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -52,7 +54,6 @@ const data = {
                     title: "Dashboard",
                     url: "/",
                     icon: LayoutDashboard,
-                    isActive: true,
                 },
                 {
                     title: "Insights",
@@ -75,14 +76,9 @@ const data = {
                     icon: Link,
                 },
                 {
-                    title: "Layouts",
-                    url: "/layouts",
-                    icon: Link,
-                },
-                {
-                    title: "Reports",
-                    url: "/reports",
-                    icon: Leaf,
+                    title: "Library",
+                    url: "/library",
+                    icon: LibraryBig,
                 },
             ],
         },
@@ -110,6 +106,28 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ onSignOut, ...props }: AppSidebarProps) {
+    // Get all active route matches from TanStack Router
+    const matches = useMatches();
+
+    // Function to check if a URL is currently active
+    const isRouteActive = (url: string) => {
+        // Special case for root route - it should only match exactly "/" path
+        if (url === "/") {
+            // Check if we're exactly at the root route with no other segments
+            return matches.some(match => match.pathname === "/") &&
+                !matches.some(match => match.pathname !== "/");
+        }
+
+        // For other routes, check if any match has this path
+        return matches.some(match => {
+            // Exact match
+            if (match.pathname === url) return true;
+
+            // Or check if it's a parent route (for nested routes highlighting)
+            return match.pathname.startsWith(url + "/");
+        });
+    };
+
     return (
         <Sidebar {...props}>
             <SidebarHeader>
@@ -131,7 +149,7 @@ export function AppSidebar({ onSignOut, ...props }: AppSidebarProps) {
                                         <SidebarMenuButton
                                             asChild
                                             className="group/menu-button font-medium gap-3 h-8 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
-                                            isActive={item.isActive}
+                                            isActive={isRouteActive(item.url)}
                                         >
                                             <a href={item.url}>
                                                 {item.icon && (
