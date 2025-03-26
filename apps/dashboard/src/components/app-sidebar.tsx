@@ -22,7 +22,6 @@ import {
     Users,
     Code,
     Link,
-    Leaf,
     Settings,
     HelpCircle,
     LogOut,

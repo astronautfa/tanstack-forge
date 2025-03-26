@@ -1,5 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
-
+import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import {
     Book,
@@ -8,25 +7,43 @@ import {
     Search,
     Filter,
     Plus,
-    File,
     FileText,
     Globe,
     Code,
     Star,
     Clock,
-    SortAsc,
-    SortDesc,
-    BookOpen,
-    Bookmark,
-    Edit3,
     MoreHorizontal,
     Download,
     Share2,
-    CheckCircle,
-    ExternalLink,
-    Layers,
-    FolderPlus
+    CheckCircle2,
+    FolderPlus,
+    ChevronDown,
 } from 'lucide-react';
+import { Button } from "@app/ui/components/button";
+import { Input } from "@app/ui/components/input";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from "@app/ui/components/select";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardFooter
+} from "@app/ui/components/card";
+import { Badge } from "@app/ui/components/badge";
+import { Progress } from "@app/ui/components/progress";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from "@app/ui/components/table";
 
 // Sample data - would come from your backend in a real app
 const SAMPLE_LIBRARY_ITEMS = [
@@ -169,28 +186,9 @@ const SAMPLE_LIBRARY_ITEMS = [
     }
 ];
 
-// Categories for filters
-const CATEGORIES = [
-    'All',
-    'Textbook',
-    'Reference',
-    'Guide',
-    'Article',
-    'Paper',
-    'Code Snippets',
-    'Design'
-];
-
-// File types for filters
-const FILE_TYPES = [
-    'All',
-    'pdf',
-    'epub',
-    'web',
-    'snippet'
-];
-
-// Tags for filters
+// Categories, file types, tags, and folders remain unchanged
+const CATEGORIES = ['All', 'Textbook', 'Reference', 'Guide', 'Article', 'Paper', 'Code Snippets', 'Design'];
+const FILE_TYPES = ['All', 'pdf', 'epub', 'web', 'snippet'];
 const ALL_TAGS = [
     'Machine Learning',
     'Statistics',
@@ -212,10 +210,8 @@ const ALL_TAGS = [
     'Humanities',
     'Python',
     'Data Science',
-    'Code'
+    'Code',
 ];
-
-// Folders for filters
 const FOLDERS = [
     'All',
     'Computer Science',
@@ -225,7 +221,7 @@ const FOLDERS = [
     'Humanities',
     'Research Guides',
     'Code Resources',
-    'Uncategorized'
+    'Uncategorized',
 ];
 
 const LibraryPage = () => {
@@ -241,95 +237,45 @@ const LibraryPage = () => {
     const [selectedType, setSelectedType] = useState('All');
     const [selectedFolder, setSelectedFolder] = useState('All');
     const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-    const [selectedItem, setSelectedItem] = useState(null);
     const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
 
-    // Filter and sort items whenever filters or sort options change
+    // Filter and sort items
     useEffect(() => {
         let result = [...items];
 
-        // Apply search filter
         if (searchQuery) {
-            result = result.filter(item =>
-                item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                item.author.toLowerCase().includes(searchQuery.toLowerCase())
+            result = result.filter(
+                (item) =>
+                    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    item.author.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
 
-        // Apply category filter
-        if (selectedCategory !== 'All') {
-            result = result.filter(item => item.category === selectedCategory);
-        }
-
-        // Apply type filter
-        if (selectedType !== 'All') {
-            result = result.filter(item => item.type === selectedType);
-        }
-
-        // Apply folder filter
-        if (selectedFolder !== 'All') {
-            result = result.filter(item => item.folder === selectedFolder);
-        }
-
-        // Apply tag filter
+        if (selectedCategory !== 'All') result = result.filter((item) => item.category === selectedCategory);
+        if (selectedType !== 'All') result = result.filter((item) => item.type === selectedType);
+        if (selectedFolder !== 'All') result = result.filter((item) => item.folder === selectedFolder);
         if (selectedTags.length > 0) {
-            result = result.filter(item =>
-                selectedTags.every(tag => item.tags.includes(tag))
-            );
+            result = result.filter((item) => selectedTags.every((tag) => item.tags.includes(tag)));
         }
+        if (showOnlyFavorites) result = result.filter((item) => item.favorite);
 
-        // Apply favorites filter
-        if (showOnlyFavorites) {
-            result = result.filter(item => item.favorite);
-        }
-
-        // Apply sorting
         result.sort((a, b) => {
             let comparison = 0;
-
-            if (sortOption === 'title') {
-                comparison = a.title.localeCompare(b.title);
-            } else if (sortOption === 'author') {
-                comparison = a.author.localeCompare(b.author);
-            } else if (sortOption === 'dateAdded') {
-                comparison = new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
-            } else if (sortOption === 'lastOpened') {
+            if (sortOption === 'title') comparison = a.title.localeCompare(b.title);
+            else if (sortOption === 'author') comparison = a.author.localeCompare(b.author);
+            else if (sortOption === 'dateAdded') comparison = new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime();
+            else if (sortOption === 'lastOpened')
                 comparison = new Date(a.lastOpened).getTime() - new Date(b.lastOpened).getTime();
-            } else if (sortOption === 'progress') {
-                comparison = a.progress - b.progress;
-            }
-
-            return comparison;
+            else if (sortOption === 'progress') comparison = a.progress - b.progress;
+            return sortDirection === 'asc' ? comparison : -comparison;
         });
 
         setFilteredItems(result);
-    }, [
-        items,
-        searchQuery,
-        sortOption,
-        sortDirection,
-        selectedTags,
-        selectedCategory,
-        selectedType,
-        selectedFolder,
-        showOnlyFavorites
-    ]);
+    }, [items, searchQuery, sortOption, sortDirection, selectedTags, selectedCategory, selectedType, selectedFolder, showOnlyFavorites]);
 
-    // Toggle sort direction
-    const toggleSortDirection = () => {
-        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    };
-
-    // Toggle tag selection
-    const toggleTag = (tag: string) => {
-        if (selectedTags.includes(tag)) {
-            setSelectedTags(selectedTags.filter(t => t !== tag));
-        } else {
-            setSelectedTags([...selectedTags, tag]);
-        }
-    };
-
-    // Clear all filters
+    const toggleSortDirection = () => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    const toggleTag = (tag: string) =>
+        setSelectedTags(selectedTags.includes(tag) ? selectedTags.filter((t) => t !== tag) : [...selectedTags, tag]);
     const clearFilters = () => {
         setSearchQuery('');
         setSortOption('dateAdded');
@@ -340,664 +286,460 @@ const LibraryPage = () => {
         setSelectedFolder('All');
         setShowOnlyFavorites(false);
     };
+    const toggleFavorite = (id: string) =>
+        setItems(items.map((item) => (item.id === id ? { ...item, favorite: !item.favorite } : item)));
 
-    // Toggle favorite status
-    const toggleFavorite = (id: string) => {
-        setItems(items.map(item =>
-            item.id === id ? { ...item, favorite: !item.favorite } : item
-        ));
-    };
-
-    // Get icon based on file type
     const getFileIcon = (type: string) => {
         switch (type) {
             case 'pdf':
-                return <FileText size={16} />;
+                return <FileText className="h-4 w-4" />;
             case 'epub':
-                return <Book size={16} />;
+                return <Book className="h-4 w-4" />;
             case 'web':
-                return <Globe size={16} />;
+                return <Globe className="h-4 w-4" />;
             case 'snippet':
-                return <Code size={16} />;
+                return <Code className="h-4 w-4" />;
             default:
-                return <File size={16} />;
+                return <FileText className="h-4 w-4" />;
         }
     };
 
-    // Render progress bar
-    const ProgressBar = ({ progress }: { progress: number }) => (
-        <div className="w-full bg-gray-200 rounded h-2">
-            <div
-                className="bg-blue-500 h-2 rounded"
-                style={{ width: `${progress}%` }}
-            />
-        </div>
-    );
-
-    // Render card view
     const renderCardView = () => (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredItems.map(item => (
-                <div
-                    key={item.id}
-                    className="rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col"
-                >
-                    <div className="p-4 flex-1 flex flex-col">
-                        {/* Top section with cover and basic info */}
-                        <div className="flex mb-4">
-                            <div className="w-24 h-32 flex-shrink-0 overflow-hidden rounded mr-3">
-                                {item.cover ? (
-                                    <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-primary">
-                                        {item.type === 'web' ? (
-                                            <Globe size={32} />
-                                        ) : item.type === 'snippet' ? (
-                                            <Code size={32} />
-                                        ) : (
-                                            <FileText size={32} />
-                                        )}
-                                    </div>
-                                )}
-                            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredItems.map((item) => (
+                <Card key={item.id} className="flex flex-col hover:border-primary/50 hover:shadow-md transition-all">
+                    <CardHeader className="p-4 border-b">
+                        <div className="flex items-center gap-3">
+                            {item.cover ? (
+                                <img src={item.cover} alt={item.title} className="h-12 w-12 object-cover rounded" />
+                            ) : (
+                                <div className="h-12 w-12 flex items-center justify-center rounded bg-muted">{getFileIcon(item.type)}</div>
+                            )}
                             <div className="flex-1">
-                                <div className="flex items-start justify-between">
-                                    <div className="flex items-center space-x-1 text-xs text-muted-foreground mb-1">
-                                        {getFileIcon(item.type)}
-                                        <span className="uppercase">{item.type}</span>
-                                    </div>
-                                    <button
+                                <div className="flex items-center justify-between">
+                                    <Badge variant="secondary" className="uppercase text-xs">
+                                        {item.type}
+                                    </Badge>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
                                         onClick={() => toggleFavorite(item.id)}
-                                        className="text-gray-400 hover:text-yellow-500 dark:text-gray-600 dark:hover:text-yellow-500"
+                                        className="h-6 w-6"
                                     >
-                                        {item.favorite ? (
-                                            <Star size={16} className="fill-yellow-500 text-yellow-500" />
-                                        ) : (
-                                            <Star size={16} />
-                                        )}
-                                    </button>
+                                        <Star
+                                            className={`h-4 w-4 ${item.favorite ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
+                                        />
+                                    </Button>
                                 </div>
-                                <h3 className="font-medium text-primary line-clamp-2 mb-1">{item.title}</h3>
-                                <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1 mb-2">{item.author}</p>
-                                <div className="flex items-center text-xs text-muted-foreground">
-                                    <Clock size={12} className="mr-1" />
-                                    <span>Last opened: {item.lastOpened}</span>
-                                </div>
+                                <h3 className="font-medium text-sm truncate">{item.title}</h3>
+                                <p className="text-xs text-muted-foreground">{item.author}</p>
                             </div>
                         </div>
-
-                        {/* Progress section */}
-                        <div className="mt-auto">
-                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    </CardHeader>
+                    <CardContent className="p-4 flex-1">
+                        <div className="flex items-center text-xs text-muted-foreground mb-2">
+                            <Clock className="h-3 w-3 mr-1" />
+                            Last opened: {item.lastOpened}
+                        </div>
+                        <div className="space-y-1">
+                            <div className="flex justify-between text-xs text-muted-foreground">
                                 <span>Progress</span>
                                 <span>{item.progress}%</span>
                             </div>
-                            <ProgressBar progress={item.progress} />
+                            <Progress value={item.progress} className="h-2" />
                         </div>
-
-                        {/* Annotations and highlights */}
-                        <div className="flex justify-between mt-3 text-xs text-muted-foreground">
-                            <div className="flex space-x-3">
-                                <span className="flex items-center">
-                                    <Bookmark size={12} className="mr-1" />
-                                    {item.annotations}
-                                </span>
-                                <span className="flex items-center">
-                                    <Edit3 size={12} className="mr-1" />
-                                    {item.highlights}
-                                </span>
-                                <span className="flex items-center">
-                                    <FileText size={12} className="mr-1" />
-                                    {item.notes}
-                                </span>
-                            </div>
-                            <div className="flex space-x-1">
-                                <button className="hover:text-blue-500">
-                                    <ExternalLink size={14} />
-                                </button>
-                                <button className="hover:text-blue-500">
-                                    <MoreHorizontal size={14} />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Bottom action bar */}
-                    <div className="bg-gray-50 dark:bg-gray-900 px-4 py-2 border-t border-gray-200 dark:border-gray-700 flex justify-between">
-                        <button className="text-sm text-blue-500 hover:text-blue-700 font-medium">
+                    </CardContent>
+                    <CardFooter className="p-4 pt-0 flex justify-between">
+                        <Button variant="link" size="sm" className="p-0 h-auto">
                             Open
-                        </button>
-                        <div className="flex space-x-2">
-                            <button className="text-muted-foreground hover:text-gray-700 dark:hover:text-gray-200">
-                                <Download size={14} />
-                            </button>
-                            <button className="text-muted-foreground hover:text-gray-700 dark:hover:text-gray-200">
-                                <Share2 size={14} />
-                            </button>
+                        </Button>
+                        <div className="flex gap-2">
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                                <Download className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                                <Share2 className="h-4 w-4" />
+                            </Button>
                         </div>
-                    </div>
-                </div>
+                    </CardFooter>
+                </Card>
             ))}
         </div>
     );
 
-    // Render list view
     const renderListView = () => (
-        <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-800">
-                    <tr>
-                        <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <span>Title</span>
-                                <button
-                                    onClick={() => {
-                                        setSortOption('title');
-                                        toggleSortDirection();
-                                    }}
-                                    className="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                                >
-                                    {sortOption === 'title' && sortDirection === 'asc' ? (
-                                        <SortAsc size={14} />
-                                    ) : (
-                                        <SortDesc size={14} />
-                                    )}
-                                </button>
-                            </div>
-                        </th>
-                        <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <span>Author</span>
-                                <button
-                                    onClick={() => {
-                                        setSortOption('author');
-                                        toggleSortDirection();
-                                    }}
-                                    className="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                                >
-                                    {sortOption === 'author' && sortDirection === 'asc' ? (
-                                        <SortAsc size={14} />
-                                    ) : (
-                                        <SortDesc size={14} />
-                                    )}
-                                </button>
-                            </div>
-                        </th>
-                        <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <span>Type</span>
-                            </div>
-                        </th>
-                        <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <span>Progress</span>
-                                <button
-                                    onClick={() => {
-                                        setSortOption('progress');
-                                        toggleSortDirection();
-                                    }}
-                                    className="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                                >
-                                    {sortOption === 'progress' && sortDirection === 'asc' ? (
-                                        <SortAsc size={14} />
-                                    ) : (
-                                        <SortDesc size={14} />
-                                    )}
-                                </button>
-                            </div>
-                        </th>
-                        <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <span>Last opened</span>
-                                <button
-                                    onClick={() => {
-                                        setSortOption('lastOpened');
-                                        toggleSortDirection();
-                                    }}
-                                    className="ml-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                                >
-                                    {sortOption === 'lastOpened' && sortDirection === 'asc' ? (
-                                        <SortAsc size={14} />
-                                    ) : (
-                                        <SortDesc size={14} />
-                                    )}
-                                </button>
-                            </div>
-                        </th>
-                        <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            <div className="flex items-center">
-                                <span>Actions</span>
-                            </div>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800">
-                    {filteredItems.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                            <td className="px-3 py-4 whitespace-nowrap">
-                                <div className="flex items-center">
-                                    <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded bg-gray-100 dark:bg-gray-800 mr-3">
+        <div className="rounded-lg border bg-card text-card-foreground shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+                <Table>
+                    <TableHeader>
+                        <TableRow className="bg-muted/50">
+                            <TableHead className="px-4 py-3">
+                                <div className="flex items-center gap-1">
+                                    Title
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => {
+                                            setSortOption('title');
+                                            toggleSortDirection();
+                                        }}
+                                        className="h-6 w-6"
+                                    >
+                                        <ChevronDown className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </TableHead>
+                            <TableHead className="px-4 py-3">Author</TableHead>
+                            <TableHead className="px-4 py-3">Type</TableHead>
+                            <TableHead className="px-4 py-3">Progress</TableHead>
+                            <TableHead className="px-4 py-3">Last Opened</TableHead>
+                            <TableHead className="px-4 py-3">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredItems.map((item) => (
+                            <TableRow key={item.id} className="hover:bg-muted/50">
+                                <TableCell className="px-4 py-4">
+                                    <div className="flex items-center gap-3">
                                         {item.cover ? (
                                             <img src={item.cover} alt={item.title} className="h-10 w-10 object-cover rounded" />
                                         ) : (
-                                            <div className="flex items-center justify-center h-full w-full">
+                                            <div className="h-10 w-10 flex items-center justify-center rounded bg-muted">
                                                 {getFileIcon(item.type)}
                                             </div>
                                         )}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center">
-                                            <p className="text-sm font-medium text-primary truncate mr-2">{item.title}</p>
-                                            {item.favorite && <Star size={14} className="fill-yellow-500 text-yellow-500" />}
+                                        <div>
+                                            <div className="flex items-center gap-1">
+                                                <p className="font-medium text-sm truncate">{item.title}</p>
+                                                {item.favorite && <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />}
+                                            </div>
+                                            <div className="flex gap-1 mt-1">
+                                                {item.tags.slice(0, 2).map((tag) => (
+                                                    <Badge key={tag} variant="secondary" className="text-xs">
+                                                        {tag}
+                                                    </Badge>
+                                                ))}
+                                                {item.tags.length > 2 && (
+                                                    <Badge variant="outline" className="text-xs">
+                                                        +{item.tags.length - 2}
+                                                    </Badge>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="flex space-x-2 mt-1">
-                                            {item.tags.slice(0, 2).map((tag, index) => (
-                                                <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                            {item.tags.length > 2 && (
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
-                                                    +{item.tags.length - 2}
-                                                </span>
-                                            )}
-                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td className="px-3 py-4 whitespace-nowrap">
-                                <div className="text-sm text-primary">{item.author}</div>
-                                <div className="text-xs text-muted-foreground">{item.folder}</div>
-                            </td>
-                            <td className="px-3 py-4 whitespace-nowrap">
-                                <div className="flex items-center text-sm text-muted-foreground">
-                                    {getFileIcon(item.type)}
-                                    <span className="ml-1 uppercase text-xs">{item.type}</span>
-                                </div>
-                            </td>
-                            <td className="px-3 py-4 whitespace-nowrap">
-                                <div className="flex items-center">
-                                    <div className="w-24 mr-2">
-                                        <ProgressBar progress={item.progress} />
+                                </TableCell>
+                                <TableCell className="px-4 py-4">
+                                    <p className="text-sm">{item.author}</p>
+                                    <p className="text-xs text-muted-foreground">{item.folder}</p>
+                                </TableCell>
+                                <TableCell className="px-4 py-4">
+                                    <div className="flex items-center gap-1 text-xs uppercase">
+                                        {getFileIcon(item.type)}
+                                        {item.type}
                                     </div>
-                                    <span className="text-xs text-muted-foreground">{item.progress}%</span>
-                                </div>
-                            </td>
-                            <td className="px-3 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                                {item.lastOpened}
-                            </td>
-                            <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div className="flex space-x-2">
-                                    <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                        Open
-                                    </button>
-                                    <button
-                                        onClick={() => toggleFavorite(item.id)}
-                                        className={`text-gray-400 hover:text-yellow-500 ${item.favorite ? 'text-yellow-500' : ''}`}
-                                    >
-                                        <Star size={16} className={item.favorite ? 'fill-yellow-500' : ''} />
-                                    </button>
-                                    <button className="text-gray-400 hover:text-gray-600 dark:text-muted-foreground dark:hover:text-gray-300">
-                                        <MoreHorizontal size={16} />
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                                </TableCell>
+                                <TableCell className="px-4 py-4">
+                                    <div className="flex items-center gap-2">
+                                        <Progress value={item.progress} className="w-24 h-2" />
+                                        <span className="text-xs text-muted-foreground">{item.progress}%</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="px-4 py-4 text-sm text-muted-foreground">{item.lastOpened}</TableCell>
+                                <TableCell className="px-4 py-4">
+                                    <div className="flex gap-2">
+                                        <Button variant="link" size="sm" className="p-0 h-auto">
+                                            Open
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => toggleFavorite(item.id)}
+                                            className="h-6 w-6"
+                                        >
+                                            <Star
+                                                className={`h-4 w-4 ${item.favorite ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
+                                            />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     );
 
-    // Render the advanced filter panel
     const renderFilterPanel = () => (
-        <div className={`${isFilterMenuOpen ? 'block' : 'hidden'} border rounded-lg bg-white dark:bg-gray-800 shadow-md p-4 mt-4 mb-6`}>
-            <h3 className="text-lg font-medium mb-4 text-primary">Advanced Filters</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Categories filter */}
+        <Card className={`${isFilterMenuOpen ? 'block' : 'hidden'} mt-4 mb-6`}>
+            <CardHeader>
+                <h3 className="font-medium">Advanced Filters</h3>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">Category</label>
+                        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {CATEGORIES.map((category) => (
+                                    <SelectItem key={category} value={category}>
+                                        {category}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">File Type</label>
+                        <Select value={selectedType} onValueChange={setSelectedType}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {FILE_TYPES.map((type) => (
+                                    <SelectItem key={type} value={type}>
+                                        {type}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-muted-foreground mb-1">Folder</label>
+                        <Select value={selectedFolder} onValueChange={setSelectedFolder}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {FOLDERS.map((folder) => (
+                                    <SelectItem key={folder} value={folder}>
+                                        {folder}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-                    <select
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-sm text-primary shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    >
-                        {CATEGORIES.map((category) => (
-                            <option key={category} value={category}>{category}</option>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Tags</label>
+                    <div className="flex flex-wrap gap-2">
+                        {ALL_TAGS.map((tag) => (
+                            <Badge
+                                key={tag}
+                                variant={selectedTags.includes(tag) ? 'default' : 'outline'}
+                                className="cursor-pointer"
+                                onClick={() => toggleTag(tag)}
+                            >
+                                {tag}
+                                {selectedTags.includes(tag) && <CheckCircle2 className="h-3 w-3 ml-1" />}
+                            </Badge>
                         ))}
-                    </select>
+                    </div>
                 </div>
-
-                {/* File types filter */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">File Type</label>
-                    <select
-                        value={selectedType}
-                        onChange={(e) => setSelectedType(e.target.value)}
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-sm text-primary shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    >
-                        {FILE_TYPES.map((type) => (
-                            <option key={type} value={type}>{type}</option>
-                        ))}
-                    </select>
+                <div className="flex items-center gap-2">
+                    <input
+                        type="checkbox"
+                        id="showFavorites"
+                        checked={showOnlyFavorites}
+                        onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="showFavorites" className="text-sm text-muted-foreground">
+                        Show only favorites
+                    </label>
                 </div>
-
-                {/* Folders filter */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Folder</label>
-                    <select
-                        value={selectedFolder}
-                        onChange={(e) => setSelectedFolder(e.target.value)}
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-sm text-primary shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    >
-                        {FOLDERS.map((folder) => (
-                            <option key={folder} value={folder}>{folder}</option>
-                        ))}
-                    </select>
-                </div>
-            </div>
-
-            {/* Tags section */}
-            <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tags</label>
-                <div className="flex flex-wrap gap-2">
-                    {ALL_TAGS.map((tag) => (
-                        <button
-                            key={tag}
-                            onClick={() => toggleTag(tag)}
-                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${selectedTags.includes(tag)
-                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-                                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                }`}
-                        >
-                            {tag}
-                            {selectedTags.includes(tag) && (
-                                <span className="ml-1">✓</span>
-                            )}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Show only favorites */}
-            <div className="mt-4 flex items-center">
-                <input
-                    type="checkbox"
-                    id="showFavorites"
-                    checked={showOnlyFavorites}
-                    onChange={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
-                />
-                <label htmlFor="showFavorites" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                    Show only favorites
-                </label>
-            </div>
-
-            {/* Actions */}
-            <div className="mt-6 flex justify-end">
-                <button
-                    onClick={clearFilters}
-                    className="mr-2 rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                >
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2">
+                <Button variant="outline" onClick={clearFilters}>
                     Clear Filters
-                </button>
-                <button
-                    onClick={() => setIsFilterMenuOpen(false)}
-                    className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                    Apply Filters
-                </button>
-            </div>
-        </div>
+                </Button>
+                <Button onClick={() => setIsFilterMenuOpen(false)}>Apply Filters</Button>
+            </CardFooter>
+        </Card>
     );
 
     return (
-        <div className="container mx-auto px-4 py-6">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <div className="space-y-6 p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-primary">Library</h1>
-                    <p className="text-gray-600 mt-1">
-                        Manage all your books, articles, and resources in one place
-                    </p>
+                    <h1 className="text-2xl font-bold tracking-tight">Library</h1>
+                    <p className="text-muted-foreground mt-1">Manage all your books, articles, and resources in one place</p>
                 </div>
-                <div className="mt-4 md:mt-0 flex">
-                    <button className="mr-2 flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        <Plus size={16} className="mr-1" />
+                <div className="flex gap-2">
+                    <Button className="flex items-center gap-2">
+                        <Plus className="h-4 w-4" />
                         Add Resource
-                    </button>
-                    <button className="flex items-center rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                        <FolderPlus size={16} className="mr-1" />
+                    </Button>
+                    <Button variant="outline" className="flex items-center gap-2">
+                        <FolderPlus className="h-4 w-4" />
                         New Folder
-                    </button>
+                    </Button>
                 </div>
             </div>
 
             {/* Stats cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-                    <div className="flex justify-between">
-                        <div>
-                            <p className="text-sm text-muted-foreground">Total Resources</p>
-                            <p className="text-2xl font-semibold text-primary mt-1">{items.length}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                    <CardContent className="p-4">
+                        <div className="flex justify-between">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Total Resources</p>
+                                <p className="text-2xl font-bold">{items.length}</p>
+                            </div>
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                                <Book className="h-5 w-5 text-primary" />
+                            </div>
                         </div>
-                        <div className="rounded-full p-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                            <Layers size={20} />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-4">
+                        <div className="flex justify-between">
+                            <div>
+                                <p className="text-sm text-muted-foreground">In Progress</p>
+                                <p className="text-2xl font-bold">
+                                    {items.filter((item) => item.progress > 0 && item.progress < 100).length}
+                                </p>
+                            </div>
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-500/10">
+                                <Book className="h-5 w-5 text-yellow-500" />
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-                    <div className="flex justify-between">
-                        <div>
-                            <p className="text-sm text-muted-foreground">In Progress</p>
-                            <p className="text-2xl font-semibold text-primary mt-1">
-                                {items.filter(item => item.progress > 0 && item.progress < 100).length}
-                            </p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-4">
+                        <div className="flex justify-between">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Completed</p>
+                                <p className="text-2xl font-bold">{items.filter((item) => item.progress === 100).length}</p>
+                            </div>
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10">
+                                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                            </div>
                         </div>
-                        <div className="rounded-full p-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300">
-                            <BookOpen size={20} />
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-4">
+                        <div className="flex justify-between">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Favorites</p>
+                                <p className="text-2xl font-bold">{items.filter((item) => item.favorite).length}</p>
+                            </div>
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10">
+                                <Star className="h-5 w-5 text-red-500" />
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-                    <div className="flex justify-between">
-                        <div>
-                            <p className="text-sm text-muted-foreground">Completed</p>
-                            <p className="text-2xl font-semibold text-primary mt-1">
-                                {items.filter(item => item.progress === 100).length}
-                            </p>
-                        </div>
-                        <div className="rounded-full p-2 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">
-                            <CheckCircle size={20} />
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-                    <div className="flex justify-between">
-                        <div>
-                            <p className="text-sm text-muted-foreground">Favorites</p>
-                            <p className="text-2xl font-semibold text-primary mt-1">
-                                {items.filter(item => item.favorite).length}
-                            </p>
-                        </div>
-                        <div className="rounded-full p-2 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300">
-                            <Star size={20} />
-                        </div>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
 
-            {/* Search and filters bar */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-200 dark:border-gray-700 mb-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                    {/* Search */}
-                    <div className="flex-1 relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search size={18} className="text-gray-400" />
-                        </div>
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search by title, author, or content..."
-                            className="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 pl-10 pr-3 text-sm placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:text-white"
-                        />
-                    </div>
-
-                    {/* View toggle and sort */}
-                    <div className="flex items-center space-x-2">
-                        {/* View toggle */}
-                        <div className="inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700">
-                            <button
-                                onClick={() => setViewMode('grid')}
-                                className={`px-3 py-2 text-sm ${viewMode === 'grid'
-                                    ? 'bg-gray-100 dark:bg-gray-600 text-primary'
-                                    : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-200'
-                                    }`}
-                            >
-                                <Grid size={18} />
-                            </button>
-                            <button
-                                onClick={() => setViewMode('list')}
-                                className={`px-3 py-2 text-sm ${viewMode === 'list'
-                                    ? 'bg-gray-100 dark:bg-gray-600 text-primary'
-                                    : 'text-muted-foreground hover:text-gray-700 dark:hover:text-gray-200'
-                                    }`}
-                            >
-                                <List size={18} />
-                            </button>
-                        </div>
-
-                        {/* Sort dropdown */}
-                        <div className="relative inline-block">
-                            <select
-                                value={sortOption}
-                                onChange={(e) => setSortOption(e.target.value)}
-                                className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 pl-3 pr-8 text-sm text-primary shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            >
-                                <option value="title">Sort by Title</option>
-                                <option value="author">Sort by Author</option>
-                                <option value="dateAdded">Sort by Date Added</option>
-                                <option value="lastOpened">Sort by Last Opened</option>
-                                <option value="progress">Sort by Progress</option>
-                            </select>
-                            <button
-                                onClick={toggleSortDirection}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gray-700 dark:hover:text-gray-300"
-                            >
-                                {sortDirection === 'asc' ? (
-                                    <SortAsc size={16} />
-                                ) : (
-                                    <SortDesc size={16} />
-                                )}
-                            </button>
-                        </div>
-
-                        {/* Filter button */}
-                        <button
-                            onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
-                            className={`inline-flex items-center rounded-md border ${isFilterMenuOpen || selectedTags.length > 0 || selectedCategory !== 'All' || selectedType !== 'All' || selectedFolder !== 'All' || showOnlyFavorites
-                                ? 'border-blue-500 bg-blue-50 text-blue-600 dark:border-blue-400 dark:bg-blue-900/30 dark:text-blue-400'
-                                : 'border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200'
-                                } px-3 py-2 text-sm font-medium shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600`}
+            {/* Search and filters */}
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                <div className="relative w-full md:w-96">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by title, author, or content..."
+                        value={searchQuery}
+                        onChange={(e: any) => setSearchQuery(e.target.value)}
+                        className="pl-10"
+                    />
+                </div>
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                    <Select value={sortOption} onValueChange={setSortOption}>
+                        <SelectTrigger className="w-full md:w-48">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="title">Sort by Title</SelectItem>
+                            <SelectItem value="author">Sort by Author</SelectItem>
+                            <SelectItem value="dateAdded">Sort by Date Added</SelectItem>
+                            <SelectItem value="lastOpened">Sort by Last Opened</SelectItem>
+                            <SelectItem value="progress">Sort by Progress</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <div className="flex items-center rounded-md border bg-card">
+                        <Button
+                            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                            size="icon"
+                            onClick={() => setViewMode('grid')}
+                            className="h-9 w-9"
                         >
-                            <Filter size={16} className="mr-1" />
-                            <span>Filter</span>
-                            {(selectedTags.length > 0 || selectedCategory !== 'All' || selectedType !== 'All' || selectedFolder !== 'All' || showOnlyFavorites) && (
-                                <span className="ml-1 inline-flex items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white h-5 w-5 dark:bg-blue-500">
-                                    {selectedTags.length +
-                                        (selectedCategory !== 'All' ? 1 : 0) +
-                                        (selectedType !== 'All' ? 1 : 0) +
-                                        (selectedFolder !== 'All' ? 1 : 0) +
-                                        (showOnlyFavorites ? 1 : 0)}
-                                </span>
-                            )}
-                        </button>
+                            <Grid className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                            size="icon"
+                            onClick={() => setViewMode('list')}
+                            className="h-9 w-9"
+                        >
+                            <List className="h-4 w-4" />
+                        </Button>
                     </div>
+                    <Button
+                        variant={isFilterMenuOpen || selectedTags.length > 0 || selectedCategory !== 'All' || selectedType !== 'All' || selectedFolder !== 'All' || showOnlyFavorites ? 'default' : 'outline'}
+                        onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
+                        className="flex items-center gap-2"
+                    >
+                        <Filter className="h-4 w-4" />
+                        Filter
+                        {(selectedTags.length > 0 || selectedCategory !== 'All' || selectedType !== 'All' || selectedFolder !== 'All' || showOnlyFavorites) && (
+                            <Badge variant="secondary" className="ml-1">
+                                {selectedTags.length +
+                                    (selectedCategory !== 'All' ? 1 : 0) +
+                                    (selectedType !== 'All' ? 1 : 0) +
+                                    (selectedFolder !== 'All' ? 1 : 0) +
+                                    (showOnlyFavorites ? 1 : 0)}
+                            </Badge>
+                        )}
+                    </Button>
                 </div>
             </div>
 
-            {/* Advanced filter panel */}
             {renderFilterPanel()}
 
-            {/* Content - Empty state */}
-            {filteredItems.length === 0 && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-8 border border-gray-200 dark:border-gray-700 text-center">
-                    <div className="mx-auto h-12 w-12 text-gray-400 dark:text-muted-foreground mb-4">
-                        <SearchIcon size={48} />
-                    </div>
-                    <h3 className="text-lg font-medium text-primary mb-1">No resources found</h3>
-                    <p className="text-muted-foreground mb-4">
-                        {searchQuery
-                            ? `No results found for "${searchQuery}". Try adjusting your search or filters.`
-                            : "There are no resources matching your current filters."}
-                    </p>
-                    <button
-                        onClick={clearFilters}
-                        className="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                    >
-                        Clear Filters
-                    </button>
-                </div>
-            )}
-
-            {/* Content - Items */}
-            {filteredItems.length > 0 && (
+            {filteredItems.length === 0 ? (
+                <Card className="text-center py-12">
+                    <CardContent>
+                        <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-medium">No resources found</h3>
+                        <p className="text-muted-foreground mt-2">
+                            {searchQuery ? `No results found for "${searchQuery}". Try adjusting your search or filters.` : 'There are no resources matching your current filters.'}
+                        </p>
+                        <Button variant="outline" onClick={clearFilters} className="mt-4">
+                            Clear Filters
+                        </Button>
+                    </CardContent>
+                </Card>
+            ) : (
                 <>
-                    {/* View mode toggle */}
                     {viewMode === 'grid' ? renderCardView() : renderListView()}
-
-                    {/* Pagination */}
-                    <div className="mt-6 flex items-center justify-between">
-                        <div className="text-sm text-gray-700 dark:text-gray-300">
+                    <div className="flex items-center justify-between mt-6">
+                        <div className="text-sm text-muted-foreground">
                             Showing <span className="font-medium">{filteredItems.length}</span> of{' '}
                             <span className="font-medium">{items.length}</span> resources
                         </div>
-                        <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                            <button className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-gray-700">
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" disabled>
                                 Previous
-                            </button>
-                            <button className="relative inline-flex items-center bg-blue-600 px-3 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                                1
-                            </button>
-                            <button className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-gray-700">
-                                Next
-                            </button>
-                        </nav>
-                    </div>
-                </>
-            )}
-
-            {/* Resource detail modal - would be implemented with React state */}
-            {selectedItem && (
-                <div className="fixed inset-0 z-50 overflow-y-auto">
-                    <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                        <div className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6 dark:bg-gray-800">
-                            {/* Modal content would go here */}
-                            <button
-                                onClick={() => setSelectedItem(null)}
-                                className="absolute right-4 top-4 text-gray-400 hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-gray-400"
-                            >
-                                <span className="sr-only">Close</span>
-                                <XIcon size={24} />
-                            </button>
+                            </Button>
+                            <Button variant="default">1</Button>
+                            <Button variant="outline">Next</Button>
                         </div>
                     </div>
-                </div>
+                </>
             )}
         </div>
     );
 };
 
-const SearchIcon = Search;
-const XIcon = ({ size }: { size: number }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-    </svg>
-);
-
-
 export const Route = createFileRoute('/(app)/library')({
     component: LibraryPage,
-})
+});

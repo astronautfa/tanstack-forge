@@ -1,21 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import {
-    Link,
     Search,
     Plus,
-    ExternalLink,
     Settings,
     Grid,
     List,
     Clock,
     AlertCircle,
     CheckCircle2,
-    RefreshCw,
-    ArrowRight,
     Sparkles,
     Info,
-    HelpCircle
 } from 'lucide-react'
 
 export const Route = createFileRoute('/(app)/integration')({
@@ -306,8 +301,8 @@ function IntegrationsComponent() {
                                     <div className="p-4 pt-0">
                                         <button
                                             className={`w-full rounded-md px-4 py-2 text-sm font-medium ${integration.connected
-                                                    ? 'bg-muted hover:bg-muted/80 text-foreground'
-                                                    : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                                                ? 'bg-muted hover:bg-muted/80 text-foreground'
+                                                : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                                                 }`}
                                         >
                                             {integration.connected ? 'Manage Connection' : 'Connect'}
@@ -365,8 +360,8 @@ function IntegrationsComponent() {
                                 <div className="p-4 pt-0 flex items-center gap-2">
                                     <button
                                         className={`flex-1 rounded-md px-4 py-2 text-sm font-medium ${integration.connected
-                                                ? 'bg-muted hover:bg-muted/80 text-foreground'
-                                                : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                                            ? 'bg-muted hover:bg-muted/80 text-foreground'
+                                            : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                                             }`}
                                     >
                                         {integration.connected ? 'Manage' : 'Connect'}
@@ -419,8 +414,8 @@ function IntegrationsComponent() {
                                     )}
                                     <button
                                         className={`rounded-md px-4 py-2 text-sm font-medium ${integration.connected
-                                                ? 'bg-muted hover:bg-muted/80 text-foreground'
-                                                : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+                                            ? 'bg-muted hover:bg-muted/80 text-foreground'
+                                            : 'bg-primary hover:bg-primary/90 text-primary-foreground'
                                             }`}
                                     >
                                         {integration.connected ? 'Manage' : 'Connect'}

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { BarChart, LineChart, PieChart, TrendingUp, Filter, Download, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { BarChart, LineChart, PieChart, TrendingUp, Download, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 
 export const Route = createFileRoute('/(app)/insights')({
   component: InsightsComponent,
