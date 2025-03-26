@@ -1,24 +1,19 @@
 import * as React from "react";
-import type { HTMLProps, RefObject } from 'react';
+import type { HTMLProps } from 'react';
 import {
     Tree,
     ControlledTreeEnvironment,
     type TreeItemIndex,
     type DraggingPosition,
     type TreeEnvironmentRef,
-    // Use the specific type provided in the library definition
     type TreeItemRenderContext as LibraryTreeItemRenderContext,
     type TreeInformation,
     type TreeChangeHandlers,
     type ExplicitDataSource,
-    type TreeCapabilities,
-    type DraggingPositionItem,
-    type DraggingPositionBetweenItems,
-    type DraggingPositionRoot,
-    type TreeItem,
+    type TreeCapabilities
 } from "react-complex-tree";
-import "react-complex-tree/lib/style-modern.css"; // Or your preferred style
-import { ChevronRight, MoreHorizontal, FileText } from "lucide-react"; // Removed GripVertical
+import "react-complex-tree/lib/style-modern.css";
+import { ChevronRight, MoreHorizontal, FileText, Edit2, Copy, ArrowRight, EyeOff, Trash2, LockIcon } from "lucide-react";
 import { cn } from "@app/ui/lib/utils";
 import {
     SidebarGroup,
@@ -27,6 +22,11 @@ import {
     SidebarMenuItem,
 } from "@app/ui/components/sidebar";
 import { Button } from "@app/ui/components/button";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger
+} from "@app/ui/components/popover";
 import { type ItemData, type ExtendedTreeItem, type TreeItems, defaultIcons } from "@/lib/mock/sidebar-data";
 
 // Define our context type based on the library's, specifying 'never' for custom flags
@@ -47,7 +47,7 @@ function getTargetParentId(target: DraggingPosition, rootId: TreeItemIndex): Tre
         return rootId;
     } else if (target.targetType === 'item') {
         return target.targetItem;
-    } else { // target.targetType === 'between-items'
+    } else {
         return target.parentItem;
     }
 }
@@ -69,8 +69,8 @@ function isDescendant(items: TreeItems, parentId: TreeItemIndex, potentialChildI
     }
     return parent.children.some(childId => isDescendant(items, childId, potentialChildId));
 }
-// --- End Helper Functions ---
 
+// --- End Helper Functions ---
 
 export function HierarchicalSection({
     title,
@@ -89,7 +89,6 @@ export function HierarchicalSection({
     });
     const [selectedItems, setSelectedItems] = React.useState<TreeItemIndex[]>([]);
 
-    // Correct ref type using 'never' for custom flags
     const environmentRef = React.useRef<TreeEnvironmentRef<ItemData, never>>(null);
 
     // --- Search Logic (filteredItems, itemsToExpand) remains the same ---
@@ -159,7 +158,6 @@ export function HierarchicalSection({
 
         const expansionSet = new Set<TreeItemIndex>();
         necessaryItemIds.forEach(id => {
-            // Expand folders that are necessary (either matched or are ancestors)
             if (resultItems[id]?.isFolder) {
                 expansionSet.add(id);
             }
@@ -268,7 +266,6 @@ export function HierarchicalSection({
         children,
         title,
         context,
-        info // info is available if needed
     }: {
         item: ExtendedTreeItem;
         depth: number;
@@ -286,7 +283,6 @@ export function HierarchicalSection({
         const isExpanded = context.isExpanded ?? false;
         const isDraggingOver = context.isDraggingOver ?? false; // Dragging over this item or its vicinity
         const canDropOn = context.canDropOn ?? false; // Can the current drag operation drop here?
-        const isFolder = item.isFolder ?? false; // Get isFolder status from the item itself
 
         const isActive = isSelected || isFocused;
         // Highlight for dropping ONTO this specific item
@@ -312,8 +308,8 @@ export function HierarchicalSection({
                 {/* Inner container: The interactive part (clickable, draggable) */}
                 <div
                     className={cn(
-                        "flex items-center w-full h-7 px-2 rounded text-sm group/button cursor-pointer", // Added cursor-pointer
-                        "hover:bg-muted/50", // Hover effect
+                        "flex items-center w-full h-8 px-2 rounded text-sm group/button cursor-pointer", // Added cursor-pointer
+                        "hover:bg-muted", // Hover effect
                         isActive && !isDraggingOver && !isDropTargetOnto && "bg-accent text-accent-foreground", // Active state
                     )}
                     // Props for measurement, accessibility, NO children
@@ -361,7 +357,7 @@ export function HierarchicalSection({
                             <input
                                 type="text"
                                 defaultValue={item.data.name}
-                                onBlur={(e) => context.stopRenamingItem()}
+                                onBlur={() => context.stopRenamingItem()}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         e.preventDefault();
@@ -382,15 +378,91 @@ export function HierarchicalSection({
                     {/* Actions on Hover */}
                     {!isRenaming && (
                         <div className="ml-auto pl-1 opacity-0 group-hover/button:opacity-100">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-5 w-5"
-                                onClick={(e) => { e.stopPropagation(); console.log("Actions for:", item.data.name); }}
-                                aria-label={`Actions for ${item.data.name}`}
-                            >
-                                <MoreHorizontal size={14} />
-                            </Button>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-5 w-5"
+                                        onClick={(e) => e.stopPropagation()}
+                                        aria-label="Actions"
+                                    >
+                                        <MoreHorizontal size={14} />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent
+                                    className="w-52 p-1"
+                                    align="start"
+                                    side="right"
+                                    sideOffset={5}
+                                >
+                                    <div className="flex flex-col space-y-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="justify-start text-sm font-normal"
+                                            onClick={() => console.log("Rename clicked")}
+                                        >
+                                            <Edit2 size={14} className="mr-2" />
+                                            Rename
+                                        </Button>
+
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="justify-start text-sm font-normal"
+                                            onClick={() => console.log("Duplicate clicked")}
+                                        >
+                                            <Copy size={14} className="mr-2" />
+                                            Duplicate
+                                        </Button>
+
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="justify-start text-sm font-normal"
+                                            onClick={() => console.log("Move to subpage clicked")}
+                                        >
+                                            <ArrowRight size={14} className="mr-2" />
+                                            Move to subpage
+                                        </Button>
+
+                                        <hr className="my-1" />
+
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="justify-start text-sm font-normal"
+                                            onClick={() => console.log("Lock clicked")}
+                                        >
+                                            <LockIcon size={14} className="mr-2" />
+                                            Lock
+                                        </Button>
+
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="justify-start text-sm font-normal"
+                                            onClick={() => console.log("Hide clicked")}
+                                        >
+                                            <EyeOff size={14} className="mr-2" />
+                                            Hide
+                                        </Button>
+
+                                        <hr className="my-1" />
+
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="justify-start text-sm font-normal text-red-500 hover:text-red-600 hover:bg-red-50"
+                                            onClick={() => console.log("Delete clicked")}
+                                        >
+                                            <Trash2 size={14} className="mr-2" />
+                                            Delete
+                                        </Button>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
                         </div>
                     )}
                 </div>
@@ -402,7 +474,7 @@ export function HierarchicalSection({
     // --- End Render Item Function ---
 
     // --- Render Drag Placeholder Line - remains the same ---
-    const renderDragBetweenLine = ({ draggingPosition, lineProps }: {
+    const renderDragBetweenLine = ({ lineProps }: {
         draggingPosition: DraggingPosition;
         lineProps: HTMLProps<HTMLDivElement>;
     }) => (
@@ -447,10 +519,7 @@ export function HierarchicalSection({
                 }
             }
 
-            // 3. Removed rule: Allow dropping onto anything (since any item can become a parent)
-            // if (target.targetType === 'item') { ... }
-
-            return true; // Default allow
+            return true;
         },
     };
 
