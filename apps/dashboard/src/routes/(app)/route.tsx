@@ -40,14 +40,11 @@ function AppLayout() {
             <div className="flex h-screen w-full overflow-hidden bg-sidebar">
                 <AppSidebar onSignOut={handleSignOut} />
                 <SidebarInset className="overflow-auto bg-background text-foreground">
-                    <div className="grid gap-6">
-                        {/* Dashboard Header */}
-                        <div className="flex items-center justify-start gap-2">
-                            <SidebarTrigger className="" />
-                            <h1 className="text-lg font-semibold tracking-tight text-foreground">Dashboard</h1>
-                        </div>
-                        <Outlet />
+                    <div className="flex items-center justify-start gap-2">
+                        <SidebarTrigger className="" />
+                        <h1 className="text-lg font-semibold tracking-tight text-foreground">Dashboard</h1>
                     </div>
+                    <Outlet />
                 </SidebarInset>
             </div>
         </SidebarProvider>

@@ -1,5 +1,3 @@
-"use client";
-
 import { createContext, useContext, useState, useEffect } from "react";
 import { authClient } from "@app/auth/client";
 

@@ -1,42 +1,27 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  Send,
-  Sparkles,
-  RefreshCw,
+  ArrowUp,
+  Bot,
+  Check,
+  ChevronDown,
+  Clipboard,
+  ClipboardCheck,
+  Loader2, Paperclip,
+  Plus,
+  RefreshCcw,
   Settings,
-  Copy,
-  User,
-  Paperclip,
+  Sparkles,
+  ThumbsDown,
+  ThumbsUp,
+  User, Wand2,
   X,
   Zap,
-  MoreHorizontal,
-  Terminal,
-  Clock,
-  ArrowUpRight,
-  MessageSquare,
-  ChevronDown,
-  Plus,
-  Trash2,
-  Download,
-  ClipboardCopy,
-  Info,
-  CheckSquare,
-  Share2,
-  Bot,
-  SunMedium,
-  Moon,
-  Palette,
+  FileText,
+  Edit3
 } from 'lucide-react';
 
 import { Button } from "@app/ui/components/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@app/ui/components/select";
 import { Badge } from "@app/ui/components/badge";
 import { Textarea } from "@app/ui/components/textarea";
 import { ScrollArea } from "@app/ui/components/scroll-area";
@@ -48,751 +33,954 @@ import {
 } from "@app/ui/components/tooltip";
 import { Card, CardContent } from "@app/ui/components/card";
 import { Avatar, AvatarFallback } from "@app/ui/components/avatar";
-import { Separator } from "@app/ui/components/separator";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@app/ui/components/dropdown-menu";
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  DialogTrigger,
 } from "@app/ui/components/dialog";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@app/ui/components/popover";
-import { Switch } from "@app/ui/components/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@app/ui/components/tabs";
-import { Label } from "@app/ui/components/label";
-import { Checkbox } from "@app/ui/components/checkbox";
-import { Alert, AlertDescription } from "@app/ui/components/alert";
-import { Command } from '@app/ui/components/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@app/ui/components/command";
+import { cn } from "@app/ui/lib/utils";
 
-// Type definitions
+import ChatSettingsDialog, {
+  type ModelSettings as DialogModelSettings,
+  type ChatUISettings as DialogChatUISettings,
+  type ModelOption
+} from '@/components/chat-settings-dialog';
+
+// --- Type Definitions ---
+
+interface FilePreview {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  previewUrl?: string | null;
+  fileObject: File;
+}
+
 interface Message {
-  id: number;
+  id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
-  files?: string[];
-}
-
-interface Conversation {
-  id: number;
-  title: string;
-  date?: string;
-  model?: string;
+  modelUsed?: string;
+  files?: { name: string; type: string; size: number }[];
+  feedback?: 'good' | 'bad' | null;
+  isLoading?: boolean;
 }
 
 interface Model {
   id: string;
   name: string;
   provider: string;
+  description: string;
   tags: string[];
-  icon: string;
+  icon?: React.ElementType;
+  strengths: string[];
+  limitations?: string[];
+  contextWindow?: number;
+  supportsFiles?: boolean;
 }
 
+// UPDATED ModelSettings interface to match the new dialog's expected structure
+interface ModelSettings extends DialogModelSettings {
+  // Inherits: systemPrompt, temperature, maxTokens, topP, frequencyPenalty, presencePenalty, modelId?
+}
+
+// UPDATED ChatUISettings interface to include new fields
+interface ChatUISettings extends DialogChatUISettings {
+  // Inherits: showTimestamps, compactMode, autoScroll
+  // New: darkMode?, enableKeyboardShortcuts?, messageSounds?, enableMarkdown?
+}
+
+// --- Mock Data & Defaults ---
+
+const availableModels: Model[] = [
+  { id: "claude-35-sonnet", name: "Claude 3.5 Sonnet", provider: "Anthropic", description: "Balanced intelligence and speed, strong vision capabilities.", tags: ["Vision", "Balanced", "Latest"], icon: Wand2, strengths: ["Complex reasoning", "Nuanced content creation", "Code generation", "Vision analysis"], limitations: ["Potential for verbosity"], contextWindow: 200000, supportsFiles: true },
+  { id: "gpt-4o", name: "GPT-4o", provider: "OpenAI", description: "Flagship multimodal model, optimized for speed and cost.", tags: ["Multimodal", "Fast", "Flagship"], icon: Zap, strengths: ["Text, audio, image understanding", "Conversational AI", "Broad knowledge"], contextWindow: 128000, supportsFiles: true },
+  { id: "claude-3-opus", name: "Claude 3 Opus", provider: "Anthropic", description: "Most powerful model for highly complex tasks.", tags: ["Powerful", "Reasoning", "Large Context"], icon: Sparkles, strengths: ["Top-tier reasoning", "Math & coding", "Long context understanding"], contextWindow: 200000, supportsFiles: true },
+  { id: "llama-3-70b", name: "Llama 3 70B", provider: "Meta", description: "Large open-source model, great for research and customization.", tags: ["Open Source", "Large"], icon: Bot, strengths: ["Strong general performance", "Good instruction following"], contextWindow: 8000, supportsFiles: false },
+  { id: "claude-3-haiku", name: "Claude 3 Haiku", provider: "Anthropic", description: "Fastest and most compact model for near-instant responsiveness.", tags: ["Fast", "Compact", "Affordable"], icon: Wand2, strengths: ["Quick responses", "Simple summarization", "Customer interactions"], contextWindow: 200000, supportsFiles: true },
+];
+
+const defaultModelSettings: ModelSettings = {
+  temperature: 0.7,
+  maxTokens: 4096,
+  topP: 1.0,
+  frequencyPenalty: 0.0,
+  presencePenalty: 0.0,
+  systemPrompt: "You are a helpful AI assistant.",
+  modelId: availableModels[0].id,
+};
+
+const defaultUISettings: ChatUISettings = {
+  showTimestamps: true,
+  compactMode: false,
+  autoScroll: true,
+  darkMode: false,
+  enableKeyboardShortcuts: true,
+  messageSounds: false,
+  enableMarkdown: true,
+};
+
+const MAX_FILE_SIZE_MB = 25;
+const MAX_FILES = 5;
+
+// --- Route Definition ---
 export const Route = createFileRoute('/(app)/tools')({
   component: ModernAIChatComponent,
 });
 
-// Mock data for conversation history
-const mockConversations: Conversation[] = [
-  { id: 1, title: "Project planning assistance", date: "2 hours ago", model: "Claude 3.5 Sonnet" },
-  { id: 2, title: "Code review for React components", date: "Yesterday", model: "GPT-4o" },
-  { id: 3, title: "Marketing copy ideas", date: "3 days ago", model: "Claude 3.5 Haiku" },
-  { id: 4, title: "Data analysis workflow", date: "Last week", model: "Llama 3" },
-  { id: 5, title: "UI/UX design feedback", date: "Last week", model: "Claude 3 Opus" },
-];
-
-// Sample models with capabilities
-const availableModels: Model[] = [
-  { id: "claude-35-sonnet", name: "Claude 3.5 Sonnet", provider: "Anthropic", tags: ["Reasoning", "Vision"], icon: "sparkles" },
-  { id: "gpt-4o", name: "GPT-4o", provider: "OpenAI", tags: ["Multimodal", "Latest"], icon: "zap" },
-  { id: "claude-3-opus", name: "Claude 3 Opus", provider: "Anthropic", tags: ["Most Capable"], icon: "sparkles" },
-  { id: "llama-3", name: "Llama 3", provider: "Meta", tags: ["Open Source"], icon: "terminal" },
-  { id: "claude-35-haiku", name: "Claude 3.5 Haiku", provider: "Anthropic", tags: ["Fast"], icon: "sparkles" },
-];
-
+// --- Main Component ---
 function ModernAIChatComponent() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      role: 'assistant',
-      content: "Hi, I'm your AI assistant. How can I help you today?",
-      timestamp: new Date().toISOString(),
-    },
-  ]);
+  // --- State ---
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<FilePreview[]>([]);
   const [selectedModel, setSelectedModel] = useState<Model>(availableModels[0]);
-  const [currentConversation, setCurrentConversation] = useState<Conversation>({ id: 0, title: "New Chat" });
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [theme, setTheme] = useState<string>("system");
+  // Use updated interfaces for state
+  const [modelSettings, setModelSettings] = useState<ModelSettings>(() => ({
+    ...defaultModelSettings,
+    modelId: availableModels[0].id, // Ensure initial modelId is set
+  }));
+  const [uiSettings, setUISettings] = useState<ChatUISettings>(defaultUISettings);
+  const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState<boolean>(false);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [chatTitle, setChatTitle] = useState<string>("New Chat");
 
+  // --- Refs ---
   const messageEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // --- Effects ---
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([createInitialAssistantMessage(selectedModel)]);
+    }
+  }, []); // Keep initial message logic
 
   useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isProcessing]);
+    if (uiSettings.autoScroll && scrollAreaRef.current) {
+      setTimeout(() => {
+        // Access the viewport element directly if using shadcn's ScrollArea structure
+        const scrollViewport = scrollAreaRef.current?.querySelector<HTMLElement>('[data-radix-scroll-area-viewport]');
+        if (scrollViewport) {
+          scrollViewport.scrollTop = scrollViewport.scrollHeight;
+        }
+      }, 0);
+    }
+  }, [messages, isProcessing, uiSettings.autoScroll]);
 
-  const formatTimestamp = (timestamp: string): string => {
-    const date = new Date(timestamp);
-    return new Intl.DateTimeFormat('en-US', {
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
-    }).format(date);
-  };
 
-  const handleSubmit = () => {
-    if (!newMessage.trim() && selectedFiles.length === 0) return;
+  useEffect(() => {
+    const currentUrls = selectedFiles.map(f => f.previewUrl).filter(Boolean) as string[];
+    return () => {
+      currentUrls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [selectedFiles]);
 
-    if (currentConversation.id === 0 && messages.length === 1) {
-      setCurrentConversation({
-        id: Date.now(),
-        title: newMessage.length > 30 ? newMessage.substring(0, 30) + "..." : newMessage,
-      });
+  // EFFECT to update selectedModel when modelId changes in settings
+  useEffect(() => {
+    if (modelSettings.modelId && modelSettings.modelId !== selectedModel.id) {
+      const newModel = availableModels.find(m => m.id === modelSettings.modelId);
+      if (newModel) {
+        setSelectedModel(newModel);
+        console.log("Model changed via settings to:", newModel.name);
+        // Optionally update welcome message if chat is pristine
+        if (messages.length === 1 && messages[0].role === 'assistant' && !messages[0].isLoading) {
+          setMessages([createInitialAssistantMessage(newModel)]);
+        }
+      }
+    }
+  }, [modelSettings.modelId]); // Dependency on modelId in settings
+
+
+  // --- Helper Functions ---
+  const createInitialAssistantMessage = (model: Model): Message => ({
+    id: crypto.randomUUID(),
+    role: 'assistant',
+    content: `Hello! I'm ${model.name}. How can I assist you today? I'm using the current settings. System Prompt: "${modelSettings.systemPrompt.substring(0, 50)}..."`, // Reflect system prompt
+    timestamp: new Date().toISOString(),
+    modelUsed: model.name,
+  });
+
+  const generateUniqueId = (): string => crypto.randomUUID();
+
+  // UPDATED generateDummyResponse to use modelSettings
+  const generateDummyResponse = useCallback((input: string, files?: FilePreview[], currentModel?: Model, settings?: ModelSettings): string => {
+    const modelName = currentModel?.name || "AI";
+    const temp = settings?.temperature ?? defaultModelSettings.temperature;
+    const maxTok = settings?.maxTokens ?? defaultModelSettings.maxTokens;
+    const sysPrompt = settings?.systemPrompt ?? defaultModelSettings.systemPrompt;
+
+    const creativity = temp > 1.0 ? "highly creative" : temp > 0.5 ? "balanced" : "focused";
+
+    const baseResponses = [
+      `(${modelName}, ${creativity}) Re: "${input.substring(0, 30)}...", considering the prompt "${sysPrompt.substring(0, 40)}...", my analysis suggests... (max_tokens: ${maxTok})`,
+      `(${modelName}, ${creativity}) Interesting point: "${input.substring(0, 30)}...". Based on my instructions ("${sysPrompt.substring(0, 40)}..."), I'd say... (max_tokens: ${maxTok})`,
+      `(${modelName}, ${creativity}) Processing "${input.substring(0, 30)}..." with prompt "${sysPrompt.substring(0, 40)}...". Output limited to ${maxTok} tokens. Here are my thoughts...`,
+    ];
+    const fileText = files && files.length > 0
+      ? `\n\nNoted ${files.length} file(s): ${files.map(f => f.name).join(', ')}. ${currentModel?.supportsFiles ? 'Context considered.' : `Note: ${modelName} simulation cannot process file content.`}`
+      : '';
+    const randomResponse = baseResponses[Math.floor(Math.random() * baseResponses.length)];
+    return `${randomResponse}${fileText}\n\n_Disclaimer: Simulated response reflecting settings._`;
+  }, []); // Dependency removed as settings are passed directly
+
+  // --- Event Handlers ---
+  const handleSendMessage = useCallback(async () => {
+    const trimmedMessage = newMessage.trim();
+    if (!trimmedMessage && selectedFiles.length === 0) return;
+
+    setIsProcessing(true);
+    const timestamp = new Date().toISOString();
+    const userMessageId = generateUniqueId();
+
+    if (messages.length === 1 && messages[0].role === 'assistant' && !messages[0].isLoading) {
+      const newTitle = trimmedMessage.substring(0, 50) || `Chat ${new Date().toLocaleDateString()}`;
+      setChatTitle(newTitle);
     }
 
     const userMessage: Message = {
-      id: Date.now(),
+      id: userMessageId,
       role: 'user',
-      content: newMessage,
-      timestamp: new Date().toISOString(),
-      files: selectedFiles.length > 0 ? selectedFiles.map((file) => file.name) : undefined,
+      content: trimmedMessage,
+      timestamp: timestamp,
+      files: selectedFiles.map(f => ({ name: f.name, type: f.type, size: f.size })),
     };
 
-    setMessages([...messages, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+
+    const filesForRequest = [...selectedFiles];
     setNewMessage('');
     setSelectedFiles([]);
-    setIsProcessing(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    filesForRequest.forEach(f => { if (f.previewUrl) URL.revokeObjectURL(f.previewUrl); });
 
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: generateDummyResponse(userMessage.content, userMessage.files),
-        timestamp: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, aiResponse]);
-      setIsProcessing(false);
-    }, 1500);
-  };
+    const assistantMessageId = generateUniqueId();
+    const assistantPlaceholder: Message = {
+      id: assistantMessageId, role: 'assistant', content: "",
+      timestamp: new Date().toISOString(), modelUsed: selectedModel.name,
+      isLoading: true,
+    };
 
-  const generateDummyResponse = (input: string, files?: string[]): string => {
-    const baseResponses = [
-      "I've analyzed your request and here's what I found. The key points to consider are:\n\n1. The approach you're considering has both advantages and trade-offs\n2. There are several alternative methods that might work better in your specific context\n3. Based on best practices, I'd recommend starting with a simpler implementation",
+    setMessages(prev => [...prev, assistantPlaceholder]);
 
-      "Thanks for your question. Let me provide a comprehensive answer:\n\nThe fundamental concept here involves understanding how different components interact within the system. When we look at this from a holistic perspective, we can see that the optimal solution requires balancing several competing factors.",
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
 
-      "I've thought about your query carefully. Here's my analysis:\n\nThis is a nuanced topic with several dimensions to consider. The primary considerations include technical feasibility, implementation complexity, and long-term maintainability. Let me break this down further to help clarify the best approach for your specific needs.",
-    ];
+    // Pass current modelSettings to the dummy response generator
+    const aiResponseContent = generateDummyResponse(trimmedMessage, filesForRequest, selectedModel, modelSettings);
 
-    const fileResponse = files
-      ? `\n\nI've also reviewed the files you shared (${files.join(', ')}). The contents align with your question and provide helpful context for my response.`
-      : '';
+    const finalAssistantMessage: Message = {
+      ...assistantPlaceholder,
+      content: aiResponseContent,
+      timestamp: new Date().toISOString(),
+      isLoading: false,
+    };
 
-    return `${baseResponses[Math.floor(Math.random() * baseResponses.length)]}${fileResponse}`;
-  };
+    setMessages(prev => prev.map(msg => msg.id === assistantMessageId ? finalAssistantMessage : msg));
+    setIsProcessing(false);
+
+  }, [newMessage, selectedFiles, messages, selectedModel, modelSettings, generateDummyResponse]); // Added modelSettings dependency
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // Use uiSettings to check if shortcuts are enabled
+    if (uiSettings.enableKeyboardShortcuts && e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      handleSendMessage();
     }
+    // Could add more shortcuts here based on uiSettings.enableKeyboardShortcuts
   };
 
+  // handleFileChange, removeFile remain the same...
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files && files.length > 0) {
-      const fileArray: File[] = Array.from(files);
-      setSelectedFiles((prev: File[]) => [...prev, ...fileArray]);
+    if (!files || files.length === 0) return;
+
+    const currentFileCount = selectedFiles.length;
+    const availableSlots = MAX_FILES - currentFileCount;
+
+    if (availableSlots <= 0) {
+      console.warn("Maximum number of files reached.");
+      return;
+    }
+
+    const addedFiles: FilePreview[] = [];
+    let filesRejected = 0;
+
+    Array.from(files).slice(0, availableSlots).forEach(file => {
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        console.warn(`File ${file.name} exceeds ${MAX_FILE_SIZE_MB}MB limit.`);
+        filesRejected++;
+        return;
+      }
+
+      const fileId = generateUniqueId();
+      const isImage = file.type.startsWith('image/');
+      let previewUrl: string | null = null;
+
+      if (isImage) {
+        previewUrl = URL.createObjectURL(file);
+      }
+
+      addedFiles.push({
+        id: fileId,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        previewUrl,
+        fileObject: file
+      });
+    });
+
+    if (files.length > availableSlots) {
+      console.warn(`Added ${availableSlots} files. ${files.length - availableSlots + filesRejected} files were rejected (limit or size).`);
+    } else if (filesRejected > 0) {
+      console.warn(`${filesRejected} files were rejected due to size limit.`);
+    }
+
+    setSelectedFiles(prev => [...prev, ...addedFiles]);
+  };
+
+  const removeFile = (fileId: string) => {
+    setSelectedFiles(prev => {
+      const fileToRemove = prev.find(f => f.id === fileId);
+      if (fileToRemove?.previewUrl) {
+        URL.revokeObjectURL(fileToRemove.previewUrl);
+      }
+      return prev.filter(f => f.id !== fileId);
+    });
+    if (selectedFiles.length === 1 && fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
-  const removeFile = (fileName: string) => {
-    setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
-  };
 
-  const startNewChat = () => {
-    setMessages([
-      {
-        id: 1,
-        role: 'assistant',
-        content: "Hi, I'm your AI assistant. How can I help you today?",
-        timestamp: new Date().toISOString(),
-      },
-    ]);
-    setCurrentConversation({ id: 0, title: "New Chat" });
+  const handleStartNewChat = () => {
+    // Reset model settings to default? Or keep current? Keep current for now.
+    // Reset UI settings to default? Or keep current? Keep current.
+    setMessages([createInitialAssistantMessage(selectedModel)]);
     setNewMessage('');
+    selectedFiles.forEach(f => { if (f.previewUrl) URL.revokeObjectURL(f.previewUrl); });
     setSelectedFiles([]);
+    setChatTitle("New Chat");
+    inputRef.current?.focus();
   };
 
-  const suggestions = [
-    'Explain the differences between various JavaScript frameworks',
-    'Help me debug this React component',
-    'Generate test cases for my API',
-    'Suggest ways to improve my apps performance',
-  ];
+  const handleCopyMessage = (content: string, messageId: string) => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopiedMessageId(messageId);
+      setTimeout(() => setCopiedMessageId(null), 1500);
+    });
+  };
 
-  const getModelIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'sparkles':
-        return <Sparkles className="h-4 w-4" />;
-      case 'zap':
-        return <Zap className="h-4 w-4" />;
-      case 'terminal':
-        return <Terminal className="h-4 w-4" />;
-      default:
-        return <Bot className="h-4 w-4" />;
+  const handleRegenerateResponse = () => {
+    let lastUserMessageIndex = -1;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        lastUserMessageIndex = i;
+        break;
+      }
     }
+    if (lastUserMessageIndex === -1) return;
+
+    const lastUserMessage = messages[lastUserMessageIndex];
+    const filesForRegen = lastUserMessage.files?.map(f => ({ ...f, id: generateUniqueId(), fileObject: new File([], f.name, { type: f.type }) })) as FilePreview[] | undefined;
+
+    const messagesToKeep = messages.slice(0, lastUserMessageIndex + 1);
+    setMessages(messagesToKeep);
+
+    setIsProcessing(true);
+    setTimeout(async () => {
+      const assistantMessageId = generateUniqueId();
+      const assistantPlaceholder: Message = {
+        id: assistantMessageId, role: 'assistant', content: "", timestamp: new Date().toISOString(),
+        modelUsed: selectedModel.name, isLoading: true,
+      };
+      setMessages(prev => [...prev, assistantPlaceholder]);
+
+      await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 800));
+      // Pass current modelSettings for regeneration
+      const aiResponseContent = generateDummyResponse(lastUserMessage.content, filesForRegen, selectedModel, modelSettings);
+
+      const finalAssistantMessage: Message = {
+        ...assistantPlaceholder,
+        content: aiResponseContent + "\n\n_(Regenerated response)_",
+        timestamp: new Date().toISOString(), isLoading: false,
+      };
+
+      setMessages(prev => prev.map(msg => msg.id === assistantMessageId ? finalAssistantMessage : msg));
+      setIsProcessing(false);
+    }, 100);
   };
 
-  // Rest of the component remains the same, just with proper typing
+
+  const handleFeedback = (messageId: string, feedback: 'good' | 'bad') => {
+    setMessages(prevMessages =>
+      prevMessages.map(msg =>
+        msg.id === messageId ? { ...msg, feedback: msg.feedback === feedback ? null : feedback } : msg
+      )
+    );
+    console.log(`Feedback for message ${messageId}: ${feedback}`);
+  };
+
+  // Placeholder functions for new settings actions
+  const handleClearHistory = useCallback(() => {
+    console.log("Action: Clear History triggered");
+    // Implement actual logic: confirmation + clearing messages array
+    setMessages([createInitialAssistantMessage(selectedModel)]); // Simple reset for now
+    setChatTitle("New Chat"); // Reset title
+    console.log("Chat history cleared (mock).");
+    setIsSettingsDialogOpen(false); // Close dialog after action
+  }, [selectedModel, modelSettings.systemPrompt]); // Dependency needed
+
+  const handleExportChat = useCallback(() => {
+    console.log("Action: Export Chat triggered");
+    // Implement actual logic: format messages + trigger download
+    const chatContent = messages.map(m => `[${m.role} - ${m.timestamp}] ${m.content}`).join('\n\n');
+    const blob = new Blob([chatContent], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${chatTitle.replace(/ /g, '_')}_export_${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+    console.log("Chat exported (mock).");
+  }, [messages, chatTitle]);
+
+
+  // Map availableModels (Model[]) to ModelOption[] for the dialog
+  const modelOptions: ModelOption[] = availableModels.map(model => ({
+    id: model.id,
+    name: model.name,
+    description: model.description,
+    // Use tags or strengths as capabilities
+    capabilities: [...model.tags, ...(model.strengths?.slice(0, 1) || [])],
+    // Check if it's the very first model in the original list
+    isDefault: model.id === availableModels[0].id
+  }));
+
+
+  // --- Render ---
   return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-72' : 'w-0'} transition-all duration-300 flex flex-col overflow-hidden`}>
-        {isSidebarOpen && (
-          <>
-            <div className="p-2">
-              <Button
-                onClick={startNewChat}
-                className="w-full gap-2"
-                size="lg"
-              >
-                <Plus className="h-4 w-4" />
-                New Chat
-              </Button>
-            </div>
+    <TooltipProvider delayDuration={100}>
+      <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
 
-            <ScrollArea className="flex-1">
-              <div className="space-y-2 pb-4">
-                <div className="flex items-center justify-between py-1.5">
-                  <h3 className="text-sm font-medium text-muted-foreground">Recent Conversations</h3>
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {mockConversations.map((chat) => (
-                  <Card
-                    key={chat.id}
-                    className={`cursor-pointer hover:bg-accent transition-colors p-3 space-y-1 ${currentConversation.id === chat.id ? 'bg-accent/50' : ''}`}
-                    onClick={() => setCurrentConversation(chat)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="text-sm font-medium truncate">{chat.title}</h4>
-                        <p className="text-xs text-muted-foreground">{chat.date}</p>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem>
-                            <ClipboardCopy className="mr-2 h-4 w-4" />
-                            Copy chat link
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Download className="mr-2 h-4 w-4" />
-                            Export chat
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete chat
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <div className="flex items-center">
-                      <Badge variant="outline" className="text-xs">
-                        {chat.model}
-                      </Badge>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </ScrollArea>
-
-
-            <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle>Settings</DialogTitle>
-                  <DialogDescription>
-                    Customize your chat experience and preferences
-                  </DialogDescription>
-                </DialogHeader>
-
-                <Tabs defaultValue="general">
-                  <TabsList className="grid grid-cols-3 mb-4">
-                    <TabsTrigger value="general">General</TabsTrigger>
-                    <TabsTrigger value="models">Models</TabsTrigger>
-                    <TabsTrigger value="privacy">Privacy</TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="general" className="space-y-4">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label>Theme</Label>
-                          <p className="text-sm text-muted-foreground">Choose your preferred visual theme</p>
-                        </div>
-                        <Select value={theme} onValueChange={setTheme}>
-                          <SelectTrigger className="w-[140px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="system">
-                              <div className="flex items-center gap-2">
-                                <Palette className="h-4 w-4" />
-                                System
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="light">
-                              <div className="flex items-center gap-2">
-                                <SunMedium className="h-4 w-4" />
-                                Light
-                              </div>
-                            </SelectItem>
-                            <SelectItem value="dark">
-                              <div className="flex items-center gap-2">
-                                <Moon className="h-4 w-4" />
-                                Dark
-                              </div>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label>Message Timestamps</Label>
-                          <p className="text-sm text-muted-foreground">Show timestamps on messages</p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label>Auto-scroll</Label>
-                          <p className="text-sm text-muted-foreground">Automatically scroll to latest messages</p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="models" className="space-y-4">
-                    <div className="space-y-4">
-                      <div>
-                        <Label>Default Model</Label>
-                        <p className="text-sm text-muted-foreground">Select your preferred model for new chats</p>
-                      </div>
-
-                      {availableModels.map((model) => (
-                        <div key={model.id} className="flex items-center space-x-2">
-                          <Checkbox id={model.id} defaultChecked={model.id === selectedModel.id} />
-                          <Label htmlFor={model.id} className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarFallback className="bg-primary/10 text-primary">
-                                {getModelIcon(model.icon)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <span>{model.name}</span>
-                              <span className="text-xs text-muted-foreground ml-2">{model.provider}</span>
-                            </div>
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="privacy" className="space-y-4">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label>Conversation History</Label>
-                          <p className="text-sm text-muted-foreground">Store conversation history</p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Label>Usage Analytics</Label>
-                          <p className="text-sm text-muted-foreground">Share anonymous usage data</p>
-                        </div>
-                        <Switch defaultChecked />
-                      </div>
-
-                      <Button variant="outline" className="w-full">
-                        Clear All Conversation History
-                      </Button>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsSettingsOpen(false)}>Cancel</Button>
-                  <Button onClick={() => setIsSettingsOpen(false)}>Save Changes</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </>
-        )}
-      </div>
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col h-full">
-        {/* Header */}
-        <header className="border-b px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="mr-2"
-            >
-              <MessageSquare className="h-5 w-5" />
-            </Button>
-            <div>
-              <h2 className="text-lg font-medium">{currentConversation.title}</h2>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-xs">
-                  {selectedModel.name}
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  {currentConversation.id !== 0 ?
-                    `Started ${currentConversation.date || 'just now'}` :
-                    'New conversation'}
-                </span>
-              </div>
-            </div>
+        {/* Chat Header */}
+        <header className="border-b p-3 flex items-center justify-between h-16 shrink-0 z-10 bg-background">
+          <div className="flex items-center gap-2">
+            {/* Existing header elements */}
+            <ModelIcon model={selectedModel} className="size-5 text-muted-foreground shrink-0" />
+            <span className="font-medium text-md truncate">{chatTitle}</span>
+            <Tooltip>
+              <TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><Edit3 className="h-3 w-3 text-muted-foreground hover:text-foreground" /></Button></TooltipTrigger>
+              <TooltipContent>Rename Chat</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={handleStartNewChat} className="h-9 w-9">
+                  <Plus className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>New Chat</TooltipContent>
+            </Tooltip>
           </div>
 
           <div className="flex items-center gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-1">
-                  <span className="hidden sm:inline-block">Model:</span> {selectedModel.name}
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[350px] p-0" align="end">
-                <Command>
-                  <div className="p-2">
-                    <h3 className="text-sm font-medium">Select Model</h3>
-                    <p className="text-xs text-muted-foreground">Choose which AI model to use</p>
-                  </div>
-                  <Separator />
-                  <div className="p-2 space-y-1">
-                    {availableModels.map((model) => (
-                      <div
-                        key={model.id}
-                        className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${selectedModel.id === model.id ? 'bg-accent' : 'hover:bg-accent/50'}`}
-                        onClick={() => setSelectedModel(model)}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-primary/10 text-primary">
-                              {getModelIcon(model.icon)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="text-sm font-medium">{model.name}</p>
-                            <p className="text-xs text-muted-foreground">{model.provider}</p>
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {model.tags.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </Command>
-              </PopoverContent>
-            </Popover>
+            {/* Model Selector remains */}
+            <ModelSelector
+              availableModels={availableModels}
+              selectedModel={selectedModel}
+              onSelectModel={(model) => {
+                setSelectedModel(model);
+                // Update modelId in settings state when selected via dropdown
+                setModelSettings(prev => ({ ...prev, modelId: model.id }));
+                if (messages.length === 1 && messages[0].role === 'assistant' && !messages[0].isLoading) {
+                  setMessages([createInitialAssistantMessage(model)]);
+                }
+              }}
+            />
+            {/* Settings Dialog Trigger using original Settings icon */}
+            <Dialog open={isSettingsDialogOpen} onOpenChange={setIsSettingsDialogOpen}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                      <Settings className="h-5 w-5" /> {/* Use original icon for trigger */}
+                    </Button>
+                  </DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Settings</TooltipContent>
+              </Tooltip>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={startNewChat}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    New chat
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Share2 className="mr-2 h-4 w-4" />
-                    Share conversation
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Download className="mr-2 h-4 w-4" />
-                    Export conversation
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              {/* Render the NEW ChatSettingsDialog */}
+              {/* Pass required props including mapped models and new handlers */}
+              <ChatSettingsDialog
+                isOpen={isSettingsDialogOpen}
+                onOpenChange={setIsSettingsDialogOpen}
+                modelSettings={modelSettings} // Pass the full model settings state
+                setModelSettings={setModelSettings} // Pass the state setter
+                uiSettings={uiSettings}
+                setUISettings={setUISettings}
+                availableModels={modelOptions} // Pass the mapped ModelOption[]
+                onClearHistory={handleClearHistory} // Pass the clear handler
+                onExportChat={handleExportChat} // Pass the export handler
+                // Pass defaults for reset functionality in dialog
+                defaultModelSettings={defaultModelSettings}
+                defaultUISettings={defaultUISettings}
+              />
+            </Dialog>
           </div>
         </header>
 
         {/* Messages Area */}
-        <ScrollArea className="flex-1 p-4">
-          <div className="max-w-3xl mx-auto space-y-6">
-            {messages.map((message) => (
-              <div
+        <ScrollArea className="flex-1" ref={scrollAreaRef}> {/* Ensure ref is on ScrollArea */}
+          <div className="max-w-4xl mx-auto px-4 pt-6 pb-10 space-y-4">
+            {messages.length <= 1 && !isProcessing && !messages.some(m => m.role === 'user') && (
+              <ChatWelcomeSuggestions onSuggestionClick={(text) => { setNewMessage(text); inputRef.current?.focus(); }} />
+            )}
+
+            {messages.map((message, index) => (
+              <MessageItem
                 key={message.id}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`${message.role === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted'
-                    } rounded-lg p-4 max-w-[80%] shadow-sm relative group`}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback className={`${message.role === 'user' ? 'bg-primary-foreground/20' : 'bg-background'}`}>
-                        {message.role === 'user' ? (
-                          <User className="h-4 w-4" />
-                        ) : (
-                          getModelIcon(selectedModel.icon)
-                        )}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs font-medium">
-                      {message.role === 'user' ? 'You' : selectedModel.name}
-                    </span>
-                    <span className="text-xs opacity-70">
-                      {formatTimestamp(message.timestamp)}
-                    </span>
-                  </div>
-
-                  <div className="prose prose-sm dark:prose-invert">
-                    {message.content.split('\n\n').map((paragraph, idx) => (
-                      <p key={idx} className="mb-2 last:mb-0">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
-
-                  {message.files && message.files.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {message.files.map((file) => (
-                        <Badge key={file} variant="secondary">
-                          <Paperclip className="h-3 w-3 mr-1" />
-                          {file}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => navigator.clipboard.writeText(message.content)}
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Copy message</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                </div>
-              </div>
+                message={message}
+                selectedModel={selectedModel} // Pass the current selected Model object
+                isLastMessage={index === messages.length - 1 && message.role === 'assistant'}
+                onCopy={handleCopyMessage}
+                copiedMessageId={copiedMessageId}
+                onRegenerate={handleRegenerateResponse}
+                onFeedback={handleFeedback}
+                showTimestamp={uiSettings.showTimestamps} // Use state value
+                isCompact={uiSettings.compactMode} // Use state value
+              // Pass markdown setting if MessageItem will handle rendering
+              // enableMarkdown={uiSettings.enableMarkdown}
+              />
             ))}
-
-            {isProcessing && (
-              <div className="flex justify-start">
-                <div className="bg-muted rounded-lg p-4 max-w-[80%] shadow-sm">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarFallback className="bg-background">
-                        {getModelIcon(selectedModel.icon)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs font-medium">{selectedModel.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
-                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse delay-75"></div>
-                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse delay-150"></div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {messages.length === 1 && !isProcessing && (
-              <div className="flex flex-col items-center justify-center py-8">
-                <div className="rounded-full bg-primary/10 p-3 mb-4">
-                  <Bot className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-medium mb-2">How can I help you today?</h3>
-                <p className="text-muted-foreground text-center max-w-md mb-6">
-                  Ask me anything - from answering questions and generating content to helping with code and brainstorming ideas.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
-                  {suggestions.map((suggestion, index) => (
-                    <Card
-                      key={index}
-                      className="cursor-pointer hover:bg-accent/50 transition-colors"
-                      onClick={() => {
-                        setNewMessage(suggestion);
-                        inputRef.current?.focus();
-                      }}
-                    >
-                      <CardContent className="p-4 flex items-start gap-3">
-                        <ArrowUpRight className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                        <p className="text-sm">{suggestion}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div ref={messageEndRef} />
+            <div ref={messageEndRef} className="h-px" />
           </div>
         </ScrollArea>
 
         {/* Input Area */}
-        <footer className="border-t p-4">
-          <div className="max-w-3xl mx-auto space-y-3">
-            <Alert variant="default" className="py-2">
-              <Info className="h-4 w-4" />
-              <AlertDescription className="text-xs">
-                Model: <span className="font-medium">{selectedModel.name}</span>.
-                Responses may not always be accurate. Double-check important information.
-              </AlertDescription>
-            </Alert>
-
+        <footer className="border-t pt-3 shrink-0 bg-background/95 backdrop-blur-sm">
+          <div className="max-w-4xl mx-auto space-y-3">
+            {/* File Preview Area - unchanged */}
             {selectedFiles.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {selectedFiles.map((file) => (
-                  <Badge key={file.name} variant="secondary" className="flex items-center gap-1 py-1">
-                    <Paperclip className="h-3 w-3" />
-                    {file.name}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-4 w-4 p-0 ml-1"
-                      onClick={() => removeFile(file.name)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                ))}
-              </div>
+              <ScrollArea className="max-h-40 w-full">
+                <div className="flex flex-wrap gap-2 p-2 border rounded-lg bg-muted/40">
+                  {selectedFiles.map((file) =>
+                    file.previewUrl ? (
+                      <ImagePreviewBadge key={file.id} file={file} onRemove={removeFile} />
+                    ) : (
+                      <FilePreviewBadge key={file.id} file={file} onRemove={removeFile} />
+                    )
+                  )}
+                </div>
+              </ScrollArea>
             )}
 
-            <form onSubmit={handleSubmit} className="flex items-end gap-2">
+            {/* Input Form - unchanged */}
+            <div className="relative flex items-end gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 h-10 w-10 rounded-full disabled:opacity-50"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={!selectedModel.supportsFiles || isProcessing || selectedFiles.length >= MAX_FILES}
+                    aria-label="Attach file"
+                  >
+                    <Paperclip className="h-5 w-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{
+                  selectedFiles.length >= MAX_FILES ? `Maximum ${MAX_FILES} files reached`
+                    : !selectedModel.supportsFiles ? "Model does not support files"
+                      : `Attach files (Max ${MAX_FILE_SIZE_MB}MB each)`}
+                </TooltipContent>
+              </Tooltip>
+              <input
+                type="file"
+                ref={fileInputRef}
+                multiple
+                onChange={handleFileChange}
+                className="hidden"
+                accept="image/*,application/pdf,.txt,.csv,.json,.xml,.html,.css,.js,.ts,.jsx,.tsx,.py,.java,.c,.cpp,.cs,.rb,.php,.swift,.kt,.md,.docx,.xlsx,.pptx"
+              />
               <div className="relative flex-1">
                 <Textarea
                   ref={inputRef}
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Message..."
-                  className="min-h-[60px] pr-12 resize-none overflow-hidden border-primary/20 focus-visible:ring-primary/30"
+                  onKeyDown={handleKeyDown} // Uses updated handler with shortcut check
+                  placeholder={`Message ${selectedModel.name}... ${uiSettings.enableKeyboardShortcuts ? '(Enter to send, Shift+Enter for newline)' : ''}`}
+                  className="min-h-[44px] max-h-[250px] pr-4 pl-3 py-2.5 resize-none overflow-y-auto rounded-xl border-border focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 shadow-sm bg-background"
                   rows={1}
-                  style={{ height: `${Math.min(200, Math.max(60, newMessage.split('\n').length * 24))}px` }}
                 />
-                <div className="absolute bottom-2 right-2 flex">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-full"
-                          onClick={() => fileInputRef.current?.click()}
-                        >
-                          <Paperclip className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Attach files</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    multiple
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </div>
               </div>
-
               <Button
-                type="submit"
+                type="button"
+                onClick={handleSendMessage}
                 disabled={(!newMessage.trim() && selectedFiles.length === 0) || isProcessing}
-                className="rounded-full h-[50px] w-[50px] p-0 flex items-center justify-center"
+                className="shrink-0 h-10 w-10 rounded-full p-0 flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground"
+                aria-label="Send message"
               >
                 {isProcessing ? (
-                  <RefreshCw className="h-5 w-5 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <Send className="h-5 w-5" />
+                  <ArrowUp className="h-5 w-5" />
                 )}
               </Button>
-            </form>
-
-            <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-              <div className="flex items-center gap-2">
-                <CheckSquare className="h-3 w-3" />
-                <span>Input processed securely</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-3 w-3" />
-                <span>{selectedModel.provider}</span>
-              </div>
             </div>
+
+            {/* Footer Info - unchanged */}
+            <p className="text-xs text-center text-muted-foreground px-4">
+              AI responses can be inaccurate. Verify important information. Model: {selectedModel.name} ({selectedModel.provider})
+            </p>
           </div>
         </footer>
+
+      </div>
+    </TooltipProvider>
+  );
+}
+
+// --- Sub Components --- (Keep ModelIcon, ModelSelector, MessageItem, FilePreviewBadge, ImagePreviewBadge, ChatWelcomeSuggestions as they were)
+
+// Model Icon Helper
+const ModelIcon: React.FC<{ model: Model, className?: string }> = ({ model, className }) => {
+  const IconComponent = model.icon || Bot; // Default to Bot icon
+  return <IconComponent className={cn("h-4 w-4", className)} />;
+};
+
+// Model Selector Popover (Top Right)
+interface ModelSelectorProps {
+  availableModels: Model[];
+  selectedModel: Model;
+  onSelectModel: (model: Model) => void;
+}
+const ModelSelector: React.FC<ModelSelectorProps> = ({ availableModels, selectedModel, onSelectModel }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="sm" className="gap-1.5 px-2 h-9">
+          <ModelIcon model={selectedModel} className="h-4 w-4 shrink-0" />
+          <span className="font-medium truncate max-w-[100px] sm:max-w-[180px] text-sm">{selectedModel.name}</span>
+          <ChevronDown className="h-4 w-4 text-muted-foreground ml-0.5 opacity-75 shrink-0" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[380px] p-0" align="end">
+        <Command>
+          <CommandInput placeholder="Search models..." />
+          <CommandList>
+            <CommandEmpty>No model found.</CommandEmpty>
+            <CommandGroup heading="Available Models">
+              {availableModels.map((model) => (
+                <CommandItem
+                  key={model.id}
+                  value={model.name} // Use name for search/value, id for selection logic
+                  onSelect={() => {
+                    onSelectModel(model); // Call the handler with the full Model object
+                    setIsOpen(false);
+                  }}
+                  className="cursor-pointer aria-selected:bg-accent group"
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3">
+                      <ModelIcon model={model} className="h-5 w-5 group-aria-selected:text-foreground text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium">{model.name}</p>
+                        <p className="text-xs text-muted-foreground">{model.provider}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1 justify-end max-w-[45%]">
+                      {model.tags.slice(0, 2).map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs px-1.5 py-0.5">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  {selectedModel.id === model.id && (
+                    <Check className="ml-auto h-4 w-4 text-primary pl-2" /> // Position check correctly
+                  )}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+// Message Item Component
+interface MessageItemProps {
+  message: Message;
+  selectedModel: Model;
+  isLastMessage: boolean;
+  onCopy: (content: string, messageId: string) => void;
+  copiedMessageId: string | null;
+  onRegenerate: () => void;
+  onFeedback: (messageId: string, feedback: 'good' | 'bad') => void;
+  showTimestamp: boolean;
+  isCompact: boolean;
+  // enableMarkdown?: boolean; // Optional: Add if markdown rendering logic is inside
+}
+
+const MessageItem: React.FC<MessageItemProps> = React.memo(({ message, selectedModel, isLastMessage, onCopy, copiedMessageId, onRegenerate, onFeedback, showTimestamp, isCompact }) => {
+  const isUser = message.role === 'user';
+  const CopyIcon = copiedMessageId === message.id ? ClipboardCheck : Clipboard;
+  // Ensure modelUsed lookup uses the correct list and fallback
+  const modelForMessage = availableModels.find(m => m.name === message.modelUsed) || selectedModel;
+
+
+  const messagePadding = isCompact ? 'px-3 py-2' : 'px-4 py-3';
+
+  const formatTimestamp = (timestamp: string): string => {
+    try {
+      const date = new Date(timestamp);
+      return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+    } catch (e) {
+      return "Invalid date"; // Fallback for invalid timestamp
+    }
+  };
+
+  // Simple Markdown rendering placeholder (replace with a proper library like react-markdown if needed)
+  const renderContent = (content: string, enableMarkdown?: boolean) => {
+    if (!enableMarkdown) {
+      // Basic paragraph splitting for non-markdown
+      return content.split('\n').map((paragraph, idx) => (
+        <p key={idx} className={idx > 0 ? "mt-2" : ""}>{paragraph || '\u00A0'}</p>
+      ));
+    }
+
+    // VERY basic Markdown simulation (bold, italic, code) - USE A LIBRARY FOR REAL MARKDOWN
+    let processedContent = content
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+      .replace(/\*(.*?)\*/g, '<em>$1</em>') // Italic
+      .replace(/`(.*?)`/g, '<code>$1</code>'); // Inline code
+
+    // Split into paragraphs and render with dangerouslySetInnerHTML (USE WITH CAUTION or a sanitizer)
+    return processedContent.split('\n').map((paragraph, idx) => (
+      <p key={idx} className={idx > 0 ? "mt-2" : ""} dangerouslySetInnerHTML={{ __html: paragraph || ' ' }} />
+    ));
+  };
+
+
+  return (
+    <div className={cn('flex w-full', isUser ? 'justify-end' : 'justify-start')}>
+      <div className={cn('flex gap-2.5 max-w-[85%]', isUser ? 'flex-row-reverse' : 'flex-row')}>
+        <Avatar className={cn('h-7 w-7 border shrink-0', isUser ? 'mt-auto' : '')}>
+          <AvatarFallback className={cn(isUser ? 'bg-primary/10' : 'bg-muted')}>
+            {isUser ? (
+              <User className="h-4 w-4 text-primary" />
+            ) : (
+              <ModelIcon model={modelForMessage} className="h-4 w-4 text-foreground" />
+            )}
+          </AvatarFallback>
+        </Avatar>
+
+        <div className="flex flex-col">
+          <div
+            className={cn(
+              "relative group flex flex-col rounded-xl shadow-sm",
+              messagePadding,
+              isUser
+                ? 'bg-primary text-primary-foreground rounded-br-sm'
+                : 'bg-muted text-foreground rounded-bl-sm'
+            )}
+          >
+            {!isUser && !isCompact && (
+              <div className="text-xs font-medium mb-1.5 text-muted-foreground">{modelForMessage.name}</div>
+            )}
+
+            {/* Use prose for better typography and render content */}
+            <div className="prose prose-sm dark:prose-invert max-w-none break-words leading-relaxed">
+              {message.isLoading ? (
+                <div className="flex items-center space-x-1 py-1">
+                  <div className="h-1.5 w-1.5 rounded-full bg-current animate-pulse animation-delay-[-0.3s]"></div>
+                  <div className="h-1.5 w-1.5 rounded-full bg-current animate-pulse animation-delay-[-0.15s]"></div>
+                  <div className="h-1.5 w-1.5 rounded-full bg-current animate-pulse"></div>
+                </div>
+              ) : (
+                // Example: Pass uiSettings.enableMarkdown here if managed globally
+                // For now, assuming 'true' for demo, replace with actual prop if needed
+                renderContent(message.content, true /* uiSettings.enableMarkdown */)
+              )}
+            </div>
+
+
+            {isUser && message.files && message.files.length > 0 && (
+              <div className="mt-2.5 flex flex-wrap gap-1.5 border-t border-primary/20 pt-2">
+                {message.files.map((file, index) => (
+                  <Badge key={index} variant="secondary" className="text-xs py-0.5 px-1.5 bg-primary/10 hover:bg-primary/20 cursor-default"> {/* Made non-interactive */}
+                    <FileText className="h-3 w-3 mr-1" />
+                    {file.name}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Action Buttons - No changes needed here */}
+            {!isUser && !message.isLoading && (
+              <div className="absolute -bottom-7 right-0 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground" onClick={() => onCopy(message.content, message.id)}>
+                      <CopyIcon className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{copiedMessageId === message.id ? "Copied!" : "Copy"}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className={cn("h-6 w-6 text-muted-foreground hover:text-emerald-500", message.feedback === 'good' ? 'text-emerald-500 bg-emerald-500/10' : '')} onClick={() => onFeedback(message.id, 'good')}>
+                      <ThumbsUp className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">Good response</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className={cn("h-6 w-6 text-muted-foreground hover:text-red-500", message.feedback === 'bad' ? 'text-red-500 bg-red-500/10' : '')} onClick={() => onFeedback(message.id, 'bad')}>
+                      <ThumbsDown className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">Bad response</TooltipContent>
+                </Tooltip>
+                {isLastMessage && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground" onClick={onRegenerate}>
+                        <RefreshCcw className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">Regenerate</TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+            )}
+          </div>
+          {showTimestamp && (
+            <div className={cn('text-xs text-muted-foreground mt-1', isUser ? 'text-right' : 'text-left')}>
+              {formatTimestamp(message.timestamp)}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
+});
+MessageItem.displayName = 'MessageItem';
+
+
+// Generic File Preview Badge
+interface FilePreviewBadgeProps {
+  file: FilePreview;
+  onRemove: (fileId: string) => void;
 }
+const FilePreviewBadge: React.FC<FilePreviewBadgeProps> = ({ file, onRemove }) => {
+  const fileSizeMB = (file.size / 1024 / 1024).toFixed(1);
+  return (
+    <div className="relative group flex items-center gap-1.5 pl-2 pr-1 py-1 h-8 rounded-md bg-muted border border-transparent hover:border-border text-xs max-w-[180px]">
+      <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+      <span className="truncate shrink" title={file.name}>{file.name}</span>
+      {/* Show size only if > 0.1 MB */}
+      {parseFloat(fileSizeMB) > 0 && (
+        <span className="text-muted-foreground/80 text-[10px] shrink-0">({fileSizeMB}MB)</span>
+      )}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute -top-2 -right-2 h-5 w-5 p-0 rounded-full bg-background border border-border text-muted-foreground hover:bg-destructive hover:text-destructive-foreground opacity-0 group-hover:opacity-100 z-10" // Ensure button is clickable
+        onClick={() => onRemove(file.id)}
+        aria-label={`Remove ${file.name}`}
+      >
+        <X className="h-3 w-3" />
+      </Button>
+    </div>
+  );
+};
+
+// Image File Preview Badge
+const ImagePreviewBadge: React.FC<FilePreviewBadgeProps> = ({ file, onRemove }) => {
+  return (
+    <div className="relative group w-20 h-20 rounded-md overflow-hidden border bg-muted">
+      {file.previewUrl && (
+        <img
+          src={file.previewUrl}
+          alt={file.name}
+          className="object-cover w-full h-full"
+          loading="lazy"
+        />
+      )}
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-1">
+        <p className="text-xs text-white truncate" title={file.name}>{file.name}</p>
+      </div>
+      <Button
+        variant="destructive" // More visible remove
+        size="icon"
+        className="absolute top-1 right-1 h-5 w-5 p-0 rounded-full opacity-0 group-hover:opacity-100 z-10" // Ensure button is clickable
+        onClick={() => onRemove(file.id)}
+        aria-label={`Remove ${file.name}`}
+      >
+        <X className="h-3 w-3" />
+      </Button>
+    </div>
+  );
+};
+
+
+// Chat Welcome/Suggestions Component
+interface ChatWelcomeSuggestionsProps {
+  onSuggestionClick: (text: string) => void;
+}
+const ChatWelcomeSuggestions: React.FC<ChatWelcomeSuggestionsProps> = ({ onSuggestionClick }) => {
+  const suggestions = [
+    'Explain quantum computing simply',
+    'Python script to scrape website data',
+    'Ideas for a 10-day trip to Japan',
+    'Compare React and Vue',
+  ];
+
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="rounded-full border bg-background p-4 mb-6 shadow-sm">
+        <Wand2 className="h-10 w-10 text-primary" />
+      </div>
+      <h2 className="text-2xl font-semibold mb-4">How can I help you today?</h2>
+      <p className="text-muted-foreground mb-6 max-w-md">Start chatting or try one of these examples:</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl mt-4">
+        {suggestions.map((suggestion, index) => (
+          <Card
+            key={index}
+            className="cursor-pointer hover:bg-accent transition-colors group text-left shadow-sm hover:shadow-md"
+            onClick={() => onSuggestionClick(suggestion)}
+          >
+            <CardContent className="p-4 flex items-center gap-3">
+              <p className="text-sm font-medium flex-1">{suggestion}</p>
+              <ArrowUp className="h-4 w-4 text-muted-foreground ml-auto shrink-0 opacity-0 group-hover:opacity-100 transition-opacity -rotate-45 group-hover:rotate-0" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// REMOVED old ChatSettingsDialog component from here
 
 export default ModernAIChatComponent;
