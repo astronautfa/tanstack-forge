@@ -68,6 +68,9 @@ importers:
       react:
         specifier: ^19.0.0
         version: 19.0.0
+      react-complex-tree:
+        specifier: ^2.6.0
+        version: 2.6.0(react@19.0.0)
       react-dom:
         specifier: ^19.0.0
         version: 19.0.0(react@19.0.0)
@@ -4734,6 +4737,11 @@ packages:
     resolution: {integrity: sha512-/y7nWZKS9tb2cKx7vT7h1aQzBZnWEH2xrXFWauBTySg1TDwRY7PNt3h7Q1ogyS4MaGhbJf7FGzitRSrMq0+DOw==}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
+
+  react-complex-tree@2.6.0:
+    resolution: {integrity: sha512-kDDuWih5VUz9cXgTKGnDBnMMoM4lvbn3/yCPs2D0jI9Z724BNeraeA5yBqyKqbIRhESQOlCyAyYW9WUqljFP1Q==}
+    peerDependencies:
+      react: '>=16.0.0'
 
   react-day-picker@9.6.3:
     resolution: {integrity: sha512-rDqCSKAl5MLX0z1fLkYcBenQK4ANlYaAhUR0ruVSVAhAa7/ZmKQqgDpXPoS7bYEkgBRH06LO1qNFP1Ki8uiZpw==}
@@ -10267,6 +10275,10 @@ snapshots:
       destr: 2.0.3
 
   react-compiler-runtime@19.0.0-beta-b2e8e9c-20241220(react@19.0.0):
+    dependencies:
+      react: 19.0.0
+
+  react-complex-tree@2.6.0(react@19.0.0):
     dependencies:
       react: 19.0.0
 
