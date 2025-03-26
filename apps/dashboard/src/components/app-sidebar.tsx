@@ -1,6 +1,6 @@
-import { useMatches, useNavigate } from "@tanstack/react-router"; // Import useNavigate
+import { useMatches, useNavigate } from "@tanstack/react-router";
 
-import { TeamSwitcher } from "./team-switcher";
+import { WorkSpaceSwitcher } from "./workspace-switcher";
 import {
     Sidebar,
     SidebarContent,
@@ -19,32 +19,14 @@ import {
     BarChart2,
     Users,
     Code,
-    Link as LinkIcon, // Renamed to avoid conflict
+    Link as LinkIcon,
     Settings,
     HelpCircle,
-    LogOut,
-    // LibraryBig // We'll replace this section
 } from "lucide-react";
-import { ThemeToggle } from "./theme-toggle";
-import { HierarchicalSection } from "./hierarchical-section"; // Import the new component
-import { initialDocumentItems, initialLibraryItems, type ExtendedTreeItem } from "@/lib/mock/sidebar-data"; // Import data and types
+import { HierarchicalSection } from "./hierarchical-section";
+import { initialDocumentItems, initialLibraryItems, type ExtendedTreeItem } from "@/lib/mock/sidebar-data";
 
-// Keep your existing data for static items
 const staticNavData = {
-    teams: [
-        {
-            name: "InnovaCraft",
-            logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345507/logo-01_kp2j8x.png",
-        },
-        {
-            name: "Acme Corp.",
-            logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345507/logo-01_kp2j8x.png",
-        },
-        {
-            name: "Evil Corp.",
-            logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345507/logo-01_kp2j8x.png",
-        },
-    ],
     navMain: [
         {
             title: "Sections",
@@ -69,11 +51,12 @@ const staticNavData = {
 };
 
 
-interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-    onSignOut?: () => Promise<void> | void;
+interface AppSidebarProps {
+    user: User;
+    onSignOut: () => Promise<void>;
 }
 
-export function AppSidebar({ onSignOut, ...props }: AppSidebarProps) {
+export function AppSidebar({ user, onSignOut }: AppSidebarProps) {
     const matches = useMatches();
     const navigate = useNavigate(); // Hook for navigation
     const [searchTerm, setSearchTerm] = React.useState("");
@@ -104,9 +87,12 @@ export function AppSidebar({ onSignOut, ...props }: AppSidebarProps) {
     };
 
     return (
-        <Sidebar {...props}>
+        <Sidebar>
             <SidebarHeader>
-                <TeamSwitcher teams={staticNavData.teams} />
+                <WorkSpaceSwitcher
+                    user={user}
+                    onSignOut={onSignOut} // Pass the handler down
+                />
                 <hr className="border-t border-border" />
                 <SearchForm
                     value={searchTerm}
@@ -170,24 +156,7 @@ export function AppSidebar({ onSignOut, ...props }: AppSidebarProps) {
 
             </SidebarContent>
             <SidebarFooter>
-                <hr className="border-t border-border" />
                 <SidebarMenu>
-                    <SidebarMenuItem>
-                        <ThemeToggle />
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton
-                            onClick={onSignOut}
-                            className="font-medium gap-3 h-8 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 [&>svg]:size-auto"
-                        >
-                            <LogOut
-                                className="text-muted-foreground/60"
-                                size={16}
-                                aria-hidden="true"
-                            />
-                            <span>Sign Out</span>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>
             <SidebarRail />
@@ -200,6 +169,7 @@ export function AppSidebar({ onSignOut, ...props }: AppSidebarProps) {
 import * as React from "react";
 import { Search } from "lucide-react";
 import { Input } from "@app/ui/components/input"; // Adjust path
+import type { User } from "@/lib/providers/session";
 
 interface SearchFormProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
     value: string;
