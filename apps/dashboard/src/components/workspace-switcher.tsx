@@ -9,7 +9,7 @@ import {
     SunIcon,
 } from 'lucide-react';
 import * as React from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouteContext } from '@tanstack/react-router';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@app/ui/components/avatar';
 import { Button } from '@app/ui/components/button';
@@ -80,15 +80,18 @@ const WorkspaceIcon: React.FC<{ workspace: Workspace; className?: string }> = ({
 };
 
 interface WorkSpaceSwitcherProps {
-    user: User;
     onSignOut: () => Promise<void>;
 }
 
 export function WorkSpaceSwitcher({
-    user,
     onSignOut,
 }: WorkSpaceSwitcherProps) {
     const navigate = useNavigate();
+
+    const { user } = useRouteContext({
+        from: '__root__',
+        select: (context) => ({ user: context.user }),
+    });
 
     const { toggleTheme, theme } = useTheme();
 

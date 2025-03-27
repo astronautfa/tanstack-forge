@@ -1,4 +1,4 @@
-import { useMatches, useNavigate } from "@tanstack/react-router";
+import { useMatches, useNavigate, useRouteContext } from "@tanstack/react-router";
 
 import { WorkSpaceSwitcher } from "./workspace-switcher";
 import {
@@ -50,13 +50,15 @@ const staticNavData = {
     ],
 };
 
-
 interface AppSidebarProps {
-    user: User;
     onSignOut: () => Promise<void>;
 }
 
-export function AppSidebar({ user, onSignOut }: AppSidebarProps) {
+export function AppSidebar({ onSignOut }: AppSidebarProps) {
+    const { user } = useRouteContext({
+        from: '__root__',
+        select: (context) => ({ user: context.user }),
+    });
     const matches = useMatches();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = React.useState("");
@@ -91,7 +93,6 @@ export function AppSidebar({ user, onSignOut }: AppSidebarProps) {
         <Sidebar>
             <SidebarHeader>
                 <WorkSpaceSwitcher
-                    user={user}
                     onSignOut={onSignOut} // Pass the handler down
                 />
                 <hr className="border-t border-border" />

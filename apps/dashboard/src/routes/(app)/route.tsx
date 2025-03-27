@@ -5,10 +5,6 @@ import { authClient } from "@app/auth/client";
 
 export const Route = createFileRoute("/(app)")({
     component: AppLayout,
-    loader: ({ context }) => {
-        const user = context.user;
-        return { user };
-    },
     beforeLoad: async ({ context }) => {
         const { user } = context;
         if (!user) {
@@ -19,7 +15,6 @@ export const Route = createFileRoute("/(app)")({
 
 function AppLayout() {
     const { queryClient } = Route.useRouteContext();
-    const { user } = Route.useLoaderData();
     const router = useRouter();
 
     const handleSignOut = async () => {
@@ -32,12 +27,10 @@ function AppLayout() {
         }
     };
 
-    if (!user) return null;
-
     return (
         <SidebarProvider defaultOpen={true}>
             <div className="flex h-screen w-full overflow-hidden bg-sidebar">
-                <AppSidebar user={user} onSignOut={handleSignOut} />
+                <AppSidebar onSignOut={handleSignOut} />
                 <SidebarInset className="overflow-auto bg-background text-foreground">
                     <Outlet />
                 </SidebarInset>
