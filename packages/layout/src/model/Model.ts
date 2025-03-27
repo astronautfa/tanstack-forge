@@ -407,7 +407,7 @@ export class Model {
         if (json.popouts) {
             for (const windowId in json.popouts) {
                 const windowJson = json.popouts[windowId];
-                const layoutWindow = LayoutWindow.fromJson(windowJson, model, windowId);
+                const layoutWindow = LayoutWindow.fromJson(windowJson!, model, windowId);
                 model.windows.set(windowId, layoutWindow);
             }
         }

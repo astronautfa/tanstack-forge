@@ -96,7 +96,7 @@ export class AttributeDefinitions {
         // const sorted = this.attributes;
         lines.push("export interface I" + name + "Attributes {");
         for (let i = 0; i < sorted.length; i++) {
-            const c = sorted[i];
+            const c = sorted[i]!;
             let type = c.type;
             let defaultValue = undefined;
 

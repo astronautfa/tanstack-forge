@@ -432,7 +432,7 @@ export class TabSetNode extends Node implements IDraggable, IDropTarget {
             } else {
                 for (let i = 0; i < dragNode.getChildren().length; i++) {
                     const child = dragNode.getChildren()[i];
-                    this.addChild(child, insertPos);
+                    this.addChild(child!, insertPos);
                     // console.log("added child at : " + insertPos);
                     insertPos++;
                 }

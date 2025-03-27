@@ -87,7 +87,7 @@ const researchFields = [
 ]
 
 function SettingsComponent() {
-    const [activeTab, setActiveTab] = useState('account')
+    const [, setActiveTab] = useState('account')
     const [institutionOpen, setInstitutionOpen] = useState(false)
     const [institution, setInstitution] = useState('stanford')
     const [researchFieldOpen, setResearchFieldOpen] = useState(false)

@@ -100,28 +100,28 @@ export class RowNode extends Node implements IDropTarget {
         const h = this.getOrientation() === Orientation.HORZ;
         const c = this.getChildren();
         const ss = this.model.getSplitterSize();
-        const fr = c[0].getRect();
-        const lr = c[c.length - 1].getRect();
+        const fr = c[0]!.getRect();
+        const lr = c[c.length - 1]!.getRect();
         let p = h ? [fr.x, lr.getRight()] : [fr.y, lr.getBottom()];
         const q = h ? [fr.x, lr.getRight()] : [fr.y, lr.getBottom()];
 
         for (let i = 0; i < index; i++) {
             const n = c[i] as TabSetNode | RowNode;
-            p[0] += h ? n.getMinWidth() : n.getMinHeight();
-            q[0] += h ? n.getMaxWidth() : n.getMaxHeight();
+            p[0]! += h ? n.getMinWidth() : n.getMinHeight();
+            q[0]! += h ? n.getMaxWidth() : n.getMaxHeight();
             if (i > 0) {
-                p[0] += ss;
-                q[0] += ss;
+                p[0]! += ss;
+                q[0]! += ss;
             }
         }
 
         for (let i = c.length - 1; i >= index; i--) {
             const n = c[i] as TabSetNode | RowNode;
-            p[1] -= (h ? n.getMinWidth() : n.getMinHeight()) + ss;
-            q[1] -= (h ? n.getMaxWidth() : n.getMaxHeight()) + ss;
+            p[1]! -= (h ? n.getMinWidth() : n.getMinHeight()) + ss;
+            q[1]! -= (h ? n.getMaxWidth() : n.getMaxHeight()) + ss;
         }
 
-        p = [Math.max(q[1], p[0]), Math.min(q[0], p[1])];
+        p = [Math.max(q[1]!, p[0]!), Math.min(q[0]!, p[1]!)];
 
         return p;
     }
@@ -143,7 +143,7 @@ export class RowNode extends Node implements IDropTarget {
             sum += s;
         }
 
-        const startRect = c[index].getRect()
+        const startRect = c[index]!.getRect()
         const startPosition = (h ? startRect.x : startRect.y) - ss;
 
         return { initialSizes, sum, startPosition };
@@ -161,21 +161,21 @@ export class RowNode extends Node implements IDropTarget {
         if (splitterPos < startPosition) { // moved left
             let shift = startPosition - splitterPos;
             let altShift = 0;
-            if (sizes[index] + shift > smax) {
-                altShift = sizes[index] + shift - smax;
+            if (sizes[index]! + shift > smax) {
+                altShift = sizes[index]! + shift - smax;
                 sizes[index] = smax;
             } else {
-                sizes[index] += shift;
+                sizes[index]! += shift;
             }
 
             for (let i = index - 1; i >= 0; i--) {
                 const n = c[i] as TabSetNode | RowNode;
                 const m = h ? n.getMinWidth() : n.getMinHeight();
-                if (sizes[i] - shift > m) {
-                    sizes[i] -= shift;
+                if (sizes[i]! - shift > m) {
+                    sizes[i]! -= shift;
                     break;
                 } else {
-                    shift -= sizes[i] - m;
+                    shift -= sizes[i]! - m;
                     sizes[i] = m;
                 }
             }
@@ -183,11 +183,11 @@ export class RowNode extends Node implements IDropTarget {
             for (let i = index+1; i < c.length; i++) {
                 const n = c[i] as TabSetNode | RowNode;
                 const m = h ? n.getMaxWidth() : n.getMaxHeight();
-                if (sizes[i] + altShift < m) {
-                    sizes[i] += altShift;
+                if (sizes[i]! + altShift < m) {
+                    sizes[i]! += altShift;
                     break;
                 } else {
-                    altShift -= m - sizes[i];
+                    altShift -= m - sizes[i]!;
                     sizes[i] = m;
                 }
             }
@@ -196,21 +196,21 @@ export class RowNode extends Node implements IDropTarget {
         } else {
             let shift = splitterPos - startPosition;
             let altShift = 0;
-            if (sizes[index-1] + shift > smax) {
-                altShift = sizes[index-1] + shift - smax;
+            if (sizes[index-1]! + shift > smax) {
+                altShift = sizes[index-1]! + shift - smax;
                 sizes[index-1] = smax;
             } else {
-                sizes[index-1] += shift;
+                sizes[index-1]! += shift;
             }
 
             for (let i = index; i < c.length; i++) {
                 const n = c[i] as TabSetNode | RowNode;
                 const m = h ? n.getMinWidth() : n.getMinHeight();
-                if (sizes[i] - shift > m) {
-                    sizes[i] -= shift;
+                if (sizes[i]! - shift > m) {
+                    sizes[i]! -= shift;
                     break;
                 } else {
-                    shift -= sizes[i] - m;
+                    shift -= sizes[i]! - m;
                     sizes[i] = m;
                 }
             }
@@ -218,11 +218,11 @@ export class RowNode extends Node implements IDropTarget {
             for (let i = index - 1; i >= 0; i--) {
                 const n = c[i] as TabSetNode | RowNode;
                 const m = h ? n.getMaxWidth() : n.getMaxHeight();
-                if (sizes[i] + altShift < m) {
-                    sizes[i] += altShift;
+                if (sizes[i]! + altShift < m) {
+                    sizes[i]! += altShift;
                     break;
                 } else {
-                    altShift -= m - sizes[i];
+                    altShift -= m - sizes[i]!;
                     sizes[i] = m;
                 }
             }
@@ -335,8 +335,8 @@ export class RowNode extends Node implements IDropTarget {
                             this.addChild(subsubChild, i + j);
                         }
                     } else {
-                        subchild.setWeight(child.getWeight());
-                        this.addChild(subchild, i);
+                        subchild!.setWeight(child.getWeight());
+                        this.addChild(subchild!, i);
                     }
                 } else {
                     i++;
