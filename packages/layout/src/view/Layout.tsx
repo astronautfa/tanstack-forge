@@ -390,8 +390,8 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                 {tabStamps}
                 {this.state.portal}
                 {floatingWindows}
-                </div>
-            );
+            </div>
+        );
     }
 
     renderBorders(
@@ -482,44 +482,8 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
         return (
             <>
                 <Row key="__row__" layout={this} node={this.props.model.getRoot(this.windowId)} />
-                {this.renderEdgeIndicators()}
             </>
         );
-    }
-
-    renderEdgeIndicators() {
-        const edges: React.ReactNode[] = [];
-        const arrowIcon = this.icons.edgeArrow;
-        if (this.state.showEdges) {
-            const r = this.props.model.getRoot(this.windowId).getRect();
-            const length = edgeRectLength;
-            const width = edgeRectWidth;
-            const offset = edgeRectLength / 2;
-            const className = this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT);
-            const radius = 50;
-            edges.push(<div key="North" style={{ top: 0, left: r.width / 2 - offset, width: length, height: width, borderBottomLeftRadius: radius, borderBottomRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_TOP)}>
-                <div style={{ transform: "rotate(180deg)" }}>
-                    {arrowIcon}
-                </div>
-            </div>);
-            edges.push(<div key="West" style={{ top: r.height / 2 - offset, left: 0, width: width, height: length, borderTopRightRadius: radius, borderBottomRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_LEFT)}>
-                <div style={{ transform: "rotate(90deg)" }}>
-                    {arrowIcon}
-                </div>
-            </div>);
-            edges.push(<div key="South" style={{ top: r.height - width, left: r.width / 2 - offset, width: length, height: width, borderTopLeftRadius: radius, borderTopRightRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_BOTTOM)}>
-                <div>
-                    {arrowIcon}
-                </div>
-            </div>);
-            edges.push(<div key="East" style={{ top: r.height / 2 - offset, left: r.width - width, width: width, height: length, borderTopLeftRadius: radius, borderBottomLeftRadius: radius }} className={className + " " + this.getClassName(CLASSES.FLEXLAYOUT__EDGE_RECT_RIGHT)}>
-                <div style={{ transform: "rotate(-90deg)" }}>
-                    {arrowIcon}
-                </div>
-            </div>);
-        }
-
-        return edges;
     }
 
     renderWindows() {
@@ -541,7 +505,7 @@ export class LayoutInternal extends React.Component<ILayoutInternalProps, ILayou
                             onCloseWindow={this.onCloseWindow}
                         >
                             <div className={this.props.popoutClassName}>
-                                 <LayoutInternal {...this.props} windowId={windowId} mainLayout={this} />
+                                <LayoutInternal {...this.props} windowId={windowId} mainLayout={this} />
                             </div>
                         </PopoutWindow>
                     );

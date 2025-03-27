@@ -165,17 +165,6 @@
   box-sizing: border-box;
 }
 
-.flexlayout__edge_rect {
-  position: absolute;
-  z-index: 1000;
-  background-color: var(--muted);
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  display: none;
-}
-
 .flexlayout__drag_rect {
   color: var(--accent-foreground);
   background-color: var(--accent);
