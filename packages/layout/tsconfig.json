@@ -3,6 +3,7 @@
   "extends": "@app/typescript-config/react-library.json",
   "compilerOptions": {
     "moduleResolution": "bundler",
+    "module": "ESNext",
     "noEmit": true,
     "sourceMap": true
   },

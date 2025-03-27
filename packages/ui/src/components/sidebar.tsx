@@ -244,7 +244,7 @@ const SidebarTrigger = React.forwardRef<React.ElementRef<typeof Button>, Sidebar
 				ref={ref}
 				size="icon"
 				variant="ghost"
-				className={cn(className, 'size-6 mt-0.5 md:mt-0')}
+				className={cn('size-6', className)}
 				onClick={(event) => {
 					onClick?.(event);
 					toggleSidebar();
@@ -318,8 +318,8 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
 	return (
 		<main
 			className={cn(
-				'relative shadow-lg flex flex-1 flex-col overflow-hidden bg-background p-3',
-				'md:peer-data-[state=expanded]:border-1 md:peer-data-[state=expanded]:border-border md:peer-data-[state=expanded]:m-1 md:peer-data-[state=expanded]:ml-0 md:peer-data-[state=expanded]:rounded-xl md:peer-data-[state=expanded]:pt-2',
+				'relative shadow-lg flex flex-1 flex-col overflow-hidden bg-background',
+				'md:peer-data-[state=expanded]:border-1 md:peer-data-[state=expanded]:border-border md:peer-data-[state=expanded]:m-1 md:peer-data-[state=expanded]:ml-0 md:peer-data-[state=expanded]:rounded-xl',
 				'peer-data-[variant=inset]:max-h-[calc(100svh-theme(spacing.3))] md:peer-data-[variant=inset]:my-1.5 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl',
 				className
 			)}

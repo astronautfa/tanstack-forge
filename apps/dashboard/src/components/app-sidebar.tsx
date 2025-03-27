@@ -58,31 +58,32 @@ interface AppSidebarProps {
 
 export function AppSidebar({ user, onSignOut }: AppSidebarProps) {
     const matches = useMatches();
-    const navigate = useNavigate(); // Hook for navigation
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = React.useState("");
 
     const isRouteActive = (url: string) => {
-        // Your existing isRouteActive logic...
-        if (!url || url === '#') return false; // Don't match placeholder URLs
+        if (!url || url === '#') return false;
+
+        if (!matches || !Array.isArray(matches)) return false;
+
+        const currentPathname = matches[matches.length - 1]?.pathname || '';
+
         if (url === "/") {
-            return matches.length === 1 && matches[0].pathname === "/";
+            return currentPathname === "/";
         }
+
         return matches.some(match => {
             if (match.pathname === url) return true;
-            // Only highlight parent if it's not the exact root and the current path starts with it
-            return url !== "/" && match.pathname.startsWith(url + "/");
+            return url !== "/" && currentPathname.startsWith(url + "/");
         });
     };
 
-    // Handler for clicking on a tree item
     const handleTreeItemClick = (item: ExtendedTreeItem) => {
         if (item.data.url) {
             console.log("Navigating to:", item.data.url);
-            // Use TanStack Router's navigate function
             navigate({ to: item.data.url });
         } else {
             console.log("Clicked item without URL:", item.data.name);
-            // Maybe expand/collapse folder on primary click? RCT handles this by default.
         }
     };
 

@@ -39,10 +39,6 @@ function AppLayout() {
             <div className="flex h-screen w-full overflow-hidden bg-sidebar">
                 <AppSidebar user={user} onSignOut={handleSignOut} />
                 <SidebarInset className="overflow-auto bg-background text-foreground">
-                    <div className="flex items-center justify-start gap-2 border-b pb-2">
-                        <SidebarTrigger className="text-muted-foreground" />
-                        <h1 className="text-sm font-semibold tracking-tight text-foreground">Dashboard</h1>
-                    </div>
                     <Outlet />
                 </SidebarInset>
             </div>

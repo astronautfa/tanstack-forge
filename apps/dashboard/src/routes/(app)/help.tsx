@@ -161,7 +161,7 @@ function HelpCenterComponent() {
     });
 
     return (
-        <div className="space-y-8 pb-10">
+        <div className="space-y-8 p-4">
             {/* Hero section with search */}
             <div className="rounded-xl bg-gradient-to-r from-primary/20 via-primary/10 to-primary/5 p-8 text-center">
                 <h1 className="text-3xl font-bold tracking-tight mb-2">How can we help you?</h1>

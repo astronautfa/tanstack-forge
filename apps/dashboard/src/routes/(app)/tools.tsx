@@ -476,18 +476,21 @@ function ModernAIChatComponent() {
       <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
 
         {/* Chat Header */}
-        <header className="border-b p-3 flex items-center justify-between h-16 shrink-0 z-10 bg-background">
+        <header className="border-b p-3 flex items-center justify-between h-11 shrink-0 z-10 bg-background">
           <div className="flex items-center gap-2">
             {/* Existing header elements */}
             <ModelIcon model={selectedModel} className="size-5 text-muted-foreground shrink-0" />
-            <span className="font-medium text-md truncate">{chatTitle}</span>
+            <span className="text-sm truncate">{chatTitle}</span>
             <Tooltip>
-              <TooltipTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><Edit3 className="h-3 w-3 text-muted-foreground hover:text-foreground" /></Button></TooltipTrigger>
+              <TooltipTrigger asChild><Button variant="ghost" size="icon">
+                <Edit3 className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+              </Button>
+              </TooltipTrigger>
               <TooltipContent>Rename Chat</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={handleStartNewChat} className="h-9 w-9">
+                <Button variant="ghost" size="icon" onClick={handleStartNewChat}>
                   <Plus className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>

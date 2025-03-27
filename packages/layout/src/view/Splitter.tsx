@@ -167,11 +167,11 @@ export const Splitter = (props: ISplitterProps) => {
     const getBoundPosition = (p: number) => {
         const bounds = pBounds.current as number[];
         let rtn = p;
-        if (p < bounds[0]) {
-            rtn = bounds[0];
+        if (p < bounds[0]!) {
+            rtn = bounds[0]!;
         }
-        if (p > bounds[1]) {
-            rtn = bounds[1];
+        if (p > bounds[1]!) {
+            rtn = bounds[1]!;
         }
 
         return rtn;

@@ -14,6 +14,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@app/ui/components/car
 import { Input } from '@app/ui/components/input'
 
 import { LayoutDashboard, Settings, MessageSquare } from 'lucide-react'
+import { SidebarTrigger } from '@app/ui/components/sidebar'
+import { cn } from '@app/ui/lib/utils'
 
 export const Route = createFileRoute('/(app)/layout')({
     component: LayoutDemoComponent,
@@ -148,8 +150,14 @@ function LayoutDemoComponent() {
     const layoutRef = useRef<Layout>(null)
 
     return (
-        <div className="flex flex-col h-full w-full p-1">
-            <div className="flex-grow relative rounded-md overflow-hidden bg-card h-screen">
+        <div className="flex flex-col h-full w-full">
+            <div className="flex-grow rounded-md overflow-hidden bg-card h-screen relative">
+                <SidebarTrigger
+                    className={cn(
+                        "text-muted-foreground absolute left-2 z-10",
+                        "top-2",
+                    )}
+                />
                 <Layout
                     ref={layoutRef}
                     model={model}

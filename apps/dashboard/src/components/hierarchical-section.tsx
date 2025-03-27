@@ -395,14 +395,14 @@ export function HierarchicalSection({
                 className={cn(
                     "rct-tree-item-li group/item relative",
                     isDraggingOverArea && "bg-muted/20",
-                    isDropTargetOnto && "bg-primary/10 outline-2 outline-offset-[-1px] outline-primary/30 rounded",
+                    isDropTargetOnto && "bg-primary/10 outline-2 outline-offset-[-1px] outline-primary rounded",
                 )}
-                style={{ paddingLeft: `${depth * 12}px`, paddingTop: '1px', paddingBottom: '1px' }}
+                style={{ paddingLeft: `${depth * 12}px` }}
                 {...context.itemContainerWithChildrenProps}
             >
                 <div
                     className={cn(
-                        "flex items-center w-full h-8 px-2 rounded text-sm group/button",
+                        "flex items-center w-full h-8 px-2 rounded text-sm group/button py-2",
                         !isRenaming && "cursor-pointer hover:bg-muted",
                         isActive && !isDraggingOver && "bg-accent text-accent-foreground",
                         isDropTargetOnto && "bg-transparent",
@@ -480,7 +480,7 @@ export function HierarchicalSection({
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent
-                                    className="w-52 p-1" align="start" side="right" sideOffset={5}
+                                    className="w-16 p-1" align="start" side="right" sideOffset={5}
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <div className="flex flex-col">
@@ -520,17 +520,21 @@ export function HierarchicalSection({
         <div
             {...lineProps}
             style={{
-                ...lineProps.style,
+                ...(lineProps.style ?? {}),
                 height: '2px',
-                width: '100%',
+                top: typeof lineProps.style?.top === 'number' ? lineProps.style.top : 0 + 3,
+                width: '100%', // Ensure width is still set if needed
                 position: 'absolute',
                 zIndex: 9999,
-                backgroundColor: 'var(--primary)',
+                backgroundColor: 'var(--primary)', // Use your theme variable
                 opacity: 0.6,
-                display: 'block',
+                display: 'block', // Ensure it's visible
+                // Optional: Add pointer-events none if it interferes with hover
+                // pointerEvents: 'none',
             }}
+            // --- END OF CHANGE ---
             data-testid="rct-drag-line-debug"
-            className="rct-tree-drag-between-line"
+            className="rct-tree-drag-between-line" // Keep original class if needed
         />
     );
     // --- End Render Drag Placeholder Line ---
