@@ -17,9 +17,11 @@
   background-color: var(--background);
 }
 
-.flexlayout__tabset_container:first-of-type
+.flexlayout__layout
+  .flexlayout__tabset_container:first-child
   .flexlayout__tabset_tabbar_inner_tab_container {
   padding-left: 40px;
+  gap: 1px;
 }
 
 .flexlayout__layout_overlay {
@@ -29,7 +31,7 @@
   bottom: 0;
   position: absolute;
   z-index: 1000;
-  background-color: oklch(from var(--primary) l c h / 0.02);
+  background-color: oklch(from var(--primary) l c h / 0.05);
 }
 
 .flexlayout__layout_tab_stamps {
@@ -232,7 +234,8 @@
 }
 
 .flexlayout__tabset_tab_divider {
-  width: 0px; /* Keep small divider for spacing logic if needed */
+  width: 0px;
+  padding: 0px;
 }
 
 /* Tab Content Area - Background overridden later */
@@ -791,7 +794,6 @@
 /* Reset padding for subsequent/nested tabsets */
 .flexlayout__tabset_tabbar_inner_tab_container {
   padding-left: 4px; /* Minimal padding for others */
-  gap: 4px; /* Add small gap between tab buttons */
 }
 
 /* Tab Button base styles */

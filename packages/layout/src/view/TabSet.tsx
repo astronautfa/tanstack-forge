@@ -124,7 +124,7 @@ export const TabSet = (props: ITabSetProps) => {
     };
 
     const onCloseTab = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
-        layout.doAction(Actions.deleteTab(node.getChildren()[0].getId()));
+        layout.doAction(Actions.deleteTab(node.getChildren()[0]!.getId()));
         event.stopPropagation();
     };
 
