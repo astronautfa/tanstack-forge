@@ -13,7 +13,6 @@ import {
     type TreeCapabilities,
     type TreeItem,
 } from "react-complex-tree";
-import "react-complex-tree/lib/style-modern.css";
 import { ChevronRight, MoreHorizontal, FileText, Edit2, Copy, ArrowRight, Trash2, Link } from "lucide-react";
 import { cn } from "@app/ui/lib/utils";
 import {
@@ -96,6 +95,7 @@ export function HierarchicalSection({
                 initialExpanded.add(childId);
             }
         });
+        initialExpanded.add(rootItem);
         return Array.from(initialExpanded);
     });
     const [selectedItems, setSelectedItems] = React.useState<TreeItemIndex[]>([]);
@@ -168,13 +168,9 @@ export function HierarchicalSection({
 
         const expansionSet = new Set<TreeItemIndex>();
         necessaryItemIds.forEach(id => {
-            const itemToCheck = items[id] ?? (id === rootItem ? baseRootItem : undefined);
-            if (itemToCheck?.isFolder || (itemToCheck?.children && itemToCheck.children.length > 0)) {
-                if (resultItems[id]?.children && resultItems[id].children.length > 0) {
-                    expansionSet.add(id);
-                } else if (id === rootItem && resultItems[rootItem]?.children && resultItems[rootItem].children.length > 0) {
-                    expansionSet.add(id);
-                }
+            // Check if the item in the *filtered* result has children to determine if it should be expandable
+            if (resultItems[id]?.isFolder && resultItems[id]?.children && resultItems[id].children.length > 0) {
+                expansionSet.add(id);
             }
         });
         if (resultItems[rootItem]?.children && resultItems[rootItem].children.length > 0) {
@@ -186,41 +182,21 @@ export function HierarchicalSection({
 
     // --- Expand necessary parents effect ---
     // --- Expand necessary parents effect (MODIFIED) ---
-    const prevSearchTermRef = React.useRef(searchTerm);
     React.useEffect(() => {
-        const prevSearchTerm = prevSearchTermRef.current;
-
-        // Logic for applying expansion when search term is active
         if (searchTerm && itemsToExpand.length > 0) {
+            // Add necessary expansions for search results
             setExpandedItems(prev => {
                 const newExpanded = new Set(prev ?? []);
                 itemsToExpand.forEach(id => newExpanded.add(id));
-                // Ensure root is expanded if search yields results/folders under it
-                if (Object.keys(filteredItems).length > 1 || (filteredItems[rootItem]?.children?.length ?? 0) > 0) {
+                // Ensure root is expanded if search yields results
+                if (Object.keys(filteredItems).length > 1) {
                     newExpanded.add(rootItem);
                 }
                 return Array.from(newExpanded);
             });
         }
-        // Logic for resetting expansion ONLY when search is CLEARED (transitioned to empty)
-        else if (!searchTerm && prevSearchTerm) { // <-- Check if search *became* empty
-            // Reset expansion to default (root + direct children)
-            const root = items[rootItem]; // Read from current items state
-            const defaultExpanded = new Set<TreeItemIndex>([rootItem]);
-            (root?.children ?? []).forEach(childId => {
-                if (items[childId]) { // Check against current items
-                    defaultExpanded.add(childId);
-                }
-            });
-            setExpandedItems(Array.from(defaultExpanded));
-        }
-        // Else: If search term is empty and was already empty, or if search yields no results to expand, DO NOTHING to expandedItems state.
-
-        // Update the ref *after* using the previous value
-        prevSearchTermRef.current = searchTerm;
-
         // Ensure 'items' is included if the reset logic depends on it, which it does.
-    }, [searchTerm, itemsToExpand, rootItem, filteredItems, items]);
+    }, [searchTerm, itemsToExpand, rootItem, filteredItems]);
     // --- End Expand Effect ---
     // --- End Expand Effect ---
 
