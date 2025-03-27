@@ -9,8 +9,7 @@ import {
     SunIcon,
 } from 'lucide-react';
 import * as React from 'react';
-import { useNavigate, useRouter } from '@tanstack/react-router';
-
+import { useNavigate } from '@tanstack/react-router';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@app/ui/components/avatar';
 import { Button } from '@app/ui/components/button';
@@ -42,8 +41,8 @@ import type { User } from '@/lib/providers/session';
 export type Workspace = {
     id: string;
     name: string;
-    icon?: React.ElementType; // Optional: Lucide icon component
-    color?: string;          // Optional: CSS color string
+    icon?: React.ElementType;
+    color?: string;
     role: 'Owner' | 'Admin' | 'Member';
     members: number;
 };
@@ -64,35 +63,32 @@ function getInitials(name?: string | null): string {
     return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
 }
 
-// --- Helper Function for Workspace Icon ---
 const WorkspaceIcon: React.FC<{ workspace: Workspace; className?: string }> = ({ workspace, className = 'size-5' }) => {
-    const IconComponent = workspace.icon ?? UserIcon; // Default icon if none provided
-    const initials = getInitials(workspace.name);
-    const bgColor = workspace.color ?? 'hsl(var(--muted))'; // Use muted color if none provided
+    const IconComponent = workspace.icon ?? UserIcon;
+    const bgColor = workspace.color ?? 'hsl(var(--muted))';
 
     return (
         <Avatar className={` ${className}`}>
             <AvatarFallback
-                className="text-[9px] font-medium text-white" // Adjusted text size
+                className="text-[9px] font-medium text-white"
                 style={{ backgroundColor: bgColor }}
             >
-                <IconComponent className="size-3/5" /> {/* Icon takes most of the space */}
+                <IconComponent className="size-3/5" />
             </AvatarFallback>
         </Avatar>
     );
 };
 
 interface WorkSpaceSwitcherProps {
-    user: User; // <-- Accept user as prop
-    onSignOut: () => Promise<void>; // <-- Accept onSignOut as prop
+    user: User;
+    onSignOut: () => Promise<void>;
 }
 
 export function WorkSpaceSwitcher({
-    user, // <-- Use prop
-    onSignOut, // <-- Use prop
+    user,
+    onSignOut,
 }: WorkSpaceSwitcherProps) {
     const navigate = useNavigate();
-    const router = useRouter();
 
     const { toggleTheme, theme } = useTheme();
 
@@ -120,12 +116,6 @@ export function WorkSpaceSwitcher({
         // Add logic: Open modal, navigate to create page, etc.
         // pushModal('CreateWorkspace'); // If using a modal system
         // toast.info('Create Workspace dialog would open here'); // Optional notification
-    };
-
-    const handleThemeToggle = () => {
-        console.log('Trigger Theme Toggle action');
-        // Implement your theme toggling logic here
-        // e.g., using context, local storage, etc.
     };
     // --- End Action Handlers ---
 
@@ -186,10 +176,10 @@ export function WorkSpaceSwitcher({
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent
-                            className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-lg pb-2" // Use lg radius for modern feel
+                            className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-lg pb-2"
                             align="start"
                             side="bottom"
-                            sideOffset={6} // Slightly more offset
+                            sideOffset={6}
                         >
                             {/* User Info Header */}
                             <div className="flex items-center space-x-3 p-3 relative">
@@ -206,8 +196,8 @@ export function WorkSpaceSwitcher({
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
-                                            onClick={() => navigate({ to: '/settings' })} // Navigate to settings
+                                            className="absolute top-1 right-1 text-muted-foreground hover:text-foreground"
+                                            onClick={() => navigate({ to: '/settings' })}
                                         >
                                             <Settings className="size-4" />
                                             <span className="sr-only">Account Settings</span>
@@ -222,13 +212,13 @@ export function WorkSpaceSwitcher({
                             <DropdownMenuLabel className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
                                 Workspaces
                             </DropdownMenuLabel>
-                            <DropdownMenuGroup className="max-h-[250px] overflow-y-auto"> {/* Scrollable if many workspaces */}
+                            <DropdownMenuGroup className="max-h-[250px] overflow-y-auto">
                                 {workspaces.map((workspace) => (
                                     <DropdownMenuItem
                                         key={workspace.id}
                                         className="flex items-center gap-2.5 px-2 py-1.5 cursor-pointer"
                                         onClick={() => handleSwitchWorkspace(workspace.id)}
-                                        disabled={workspace.id === currentWorkspaceId} // Disable selecting the current one
+                                        disabled={workspace.id === currentWorkspaceId}
                                     >
                                         <WorkspaceIcon workspace={workspace} className="size-5" />
                                         <div className="flex flex-col flex-1">
@@ -262,7 +252,7 @@ export function WorkSpaceSwitcher({
                                 {/* Placeholder: Theme Toggle */}
                                 <DropdownMenuItem
                                     onClick={toggleTheme}
-                                    className="font-medium gap-3 h-8 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
+                                    className="gap-2 h-7 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
                                 >
                                     {theme === 'light' ? (
                                         <SunIcon
@@ -280,13 +270,12 @@ export function WorkSpaceSwitcher({
                                     <span>Theme</span>
                                 </DropdownMenuItem>
 
-                                {/* Sign Out */}
                                 <DropdownMenuItem
-                                    className="flex items-center gap-2.5 px-2 py-1.5 cursor-pointer"
+                                    className="flex items-center gap-2.5 h-7 cursor-pointer"
                                     onClick={onSignOut}
                                 >
-                                    <LogOut className="size-4 text-muted-foreground" />
-                                    <span className="text-sm">Sign Out</span>
+                                    <LogOut className="size-3.5 text-muted-foreground" />
+                                    <span className="text-xs">Sign Out</span>
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
                         </DropdownMenuContent>

@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { HTMLProps, Ref } from 'react'; // Added Ref
+import type { HTMLProps } from 'react';
 import {
     Tree,
     ControlledTreeEnvironment,
@@ -11,10 +11,10 @@ import {
     type TreeChangeHandlers,
     type ExplicitDataSource,
     type TreeCapabilities,
-    type TreeItem, // Import TreeItem type
+    type TreeItem,
 } from "react-complex-tree";
 import "react-complex-tree/lib/style-modern.css";
-import { ChevronRight, MoreHorizontal, FileText, Edit2, Copy, ArrowRight, EyeOff, Trash2, LockIcon, Link } from "lucide-react";
+import { ChevronRight, MoreHorizontal, FileText, Edit2, Copy, ArrowRight, Trash2, Link } from "lucide-react";
 import { cn } from "@app/ui/lib/utils";
 import {
     SidebarGroup,
@@ -23,24 +23,18 @@ import {
     SidebarMenuItem,
 } from "@app/ui/components/sidebar";
 import { Button } from "@app/ui/components/button";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger
-} from "@app/ui/components/popover";
-// Assuming these types are defined correctly elsewhere
 import { type ItemData, type ExtendedTreeItem, type TreeItems, defaultIcons } from "@/lib/mock/sidebar-data";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@app/ui/components/dropdown-menu";
 
-// Use the type provided by the library directly
 type TreeItemRenderContext = LibraryTreeItemRenderContext<never>;
 
 interface HierarchicalSectionProps {
     title: string;
     treeId: string;
-    initialItems: TreeItems; // Assuming TreeItems is Record<TreeItemIndex, ExtendedTreeItem>
+    initialItems: TreeItems;
     rootItem?: TreeItemIndex;
     searchTerm?: string;
-    onPrimaryAction?: (item: ExtendedTreeItem) => void; // Keep ExtendedTreeItem if your handler needs it
+    onPrimaryAction?: (item: ExtendedTreeItem) => void;
 }
 
 // --- Helper functions (getTargetParentId, getTargetItemId, isDescendant) - Adjusted based on provided types ---
@@ -83,7 +77,6 @@ function isDescendant(items: TreeItems, parentId: TreeItemIndex, potentialChildI
     // Ensure parentId itself exists before starting
     return items[parentId] ? check(parentId) : false;
 }
-// --- End Helper Functions ---
 
 export function HierarchicalSection({
     title,
@@ -96,7 +89,6 @@ export function HierarchicalSection({
     const [items, setItems] = React.useState<TreeItems>(initialItems);
     const [focusedItem, setFocusedItem] = React.useState<TreeItemIndex>();
     const [expandedItems, setExpandedItems] = React.useState<TreeItemIndex[]>(() => {
-        // Default expansion logic (same as before)
         const root = items[rootItem];
         const initialExpanded = new Set<TreeItemIndex>([rootItem]);
         (root?.children ?? []).forEach(childId => {
@@ -110,10 +102,7 @@ export function HierarchicalSection({
 
     const environmentRef = React.useRef<TreeEnvironmentRef<ItemData, never>>(null);
 
-    // --- Search Logic (filteredItems, itemsToExpand) ---
-    // Assuming this logic is correct based on your needs, no changes based on errors provided
     const { filteredItems, itemsToExpand } = React.useMemo(() => {
-        // ... (search logic remains the same as your previous working version) ...
         const rootExists = items[rootItem];
         const baseRootItem: ExtendedTreeItem = rootExists
             ? items[rootItem]
@@ -128,7 +117,7 @@ export function HierarchicalSection({
 
         const lowerSearchTerm = searchTerm.toLowerCase();
         const matchingItemIds = new Set<TreeItemIndex>();
-        const necessaryItemIds = new Set<TreeItemIndex>([rootItem]); // Always include root
+        const necessaryItemIds = new Set<TreeItemIndex>([rootItem]);
 
         for (const itemId in items) {
             if (items[itemId].data.name.toLowerCase().includes(lowerSearchTerm)) {
@@ -194,7 +183,6 @@ export function HierarchicalSection({
 
         return { filteredItems: resultItems, itemsToExpand: Array.from(expansionSet) };
     }, [searchTerm, items, rootItem]);
-    // --- End Search Logic ---
 
     // --- Expand necessary parents effect ---
     // --- Expand necessary parents effect (MODIFIED) ---
@@ -371,7 +359,6 @@ export function HierarchicalSection({
         children, // The rendered children list (ul) or null
         title,    // The rendered title (string or component)
         context,  // Correctly typed TreeItemRenderContext
-        info      // Correctly typed TreeInformation
     }: {
         item: TreeItem<ItemData>; // Use base type from library prop
         depth: number;
@@ -403,36 +390,30 @@ export function HierarchicalSection({
         const isDraggingOverArea = isDraggingOver && !isDropTargetOnto;
 
         return (
-            // Outer container (li)
             <SidebarMenuItem
                 key={item.index}
                 className={cn(
-                    "rct-tree-item-li group/item relative", // Base classes
-                    // Remove isDragging style - library handles drag preview
-                    isDraggingOverArea && "bg-muted/20", // Subtle highlight when dragging nearby
-                    // More prominent highlight for dropping ONTO
+                    "rct-tree-item-li group/item relative",
+                    isDraggingOverArea && "bg-muted/20",
                     isDropTargetOnto && "bg-primary/10 outline-2 outline-offset-[-1px] outline-primary/30 rounded",
                 )}
-                style={{ paddingLeft: `${depth * 16}px` }}
-                {...context.itemContainerWithChildrenProps} // Props for the <li> wrapper
+                style={{ paddingLeft: `${depth * 12}px`, paddingTop: '1px', paddingBottom: '1px' }}
+                {...context.itemContainerWithChildrenProps}
             >
-                {/* Inner container (div): Interactive row */}
                 <div
                     className={cn(
                         "flex items-center w-full h-8 px-2 rounded text-sm group/button",
                         !isRenaming && "cursor-pointer hover:bg-muted",
                         isActive && !isDraggingOver && "bg-accent text-accent-foreground",
-                        isDropTargetOnto && "bg-transparent", // Avoid double background
+                        isDropTargetOnto && "bg-transparent",
                     )}
-                    {...context.itemContainerWithoutChildrenProps} // Props for the inner <div>
-                    {...context.interactiveElementProps} // Click, drag handle, focus props
+                    {...context.itemContainerWithoutChildrenProps}
+                    {...context.interactiveElementProps}
                 >
-                    {/* Arrow */}
                     <div
                         className="w-4 h-4 mr-1 flex items-center justify-center shrink-0"
-                        {...context.arrowProps} // Expand/collapse props
+                        {...context.arrowProps}
                     >
-                        {/* Render arrow if it's potentially a folder */}
                         {(item.isFolder || (item.children && item.children.length > 0)) && (
                             <ChevronRight
                                 size={14}
@@ -444,7 +425,6 @@ export function HierarchicalSection({
                         )}
                     </div>
 
-                    {/* Icon */}
                     <div className="w-4 h-4 mr-1.5 flex items-center justify-center shrink-0">
                         {extendedItem.data.emoji ? (
                             <span className="text-sm select-none">{extendedItem.data.emoji}</span>
@@ -459,120 +439,97 @@ export function HierarchicalSection({
                         )}
                     </div>
 
-                    {/* Title / Rename Input */}
                     <span className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap pr-1">
                         {isRenaming ? (
                             <input
                                 type="text"
-                                // Use defaultValue, library handles state via onRenameItem
                                 defaultValue={extendedItem.data.name}
                                 onBlur={() => {
-                                    // Stop renaming; library calls onRenameItem if value changed OR onAbortRenamingItem
                                     context.stopRenamingItem();
                                 }}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         e.preventDefault();
-                                        // Stop renaming, triggering save via onRenameItem
                                         context.stopRenamingItem();
                                     } else if (e.key === 'Escape') {
-                                        // Stop renaming, triggering abort via onAbortRenamingItem
                                         context.stopRenamingItem();
                                     }
                                 }}
                                 autoFocus
                                 className="w-full bg-transparent outline-none ring-1 ring-inset ring-input focus:ring-ring px-1 py-0 text-sm rounded-sm"
-                                onClick={(e) => e.stopPropagation()} // Prevent item selection
+                                onClick={(e) => e.stopPropagation()}
                             />
                         ) : (
-                            title // Render the title provided by the library
+                            title
                         )}
                     </span>
 
-                    {/* Actions Menu (only if not renaming) */}
                     {!isRenaming && (
-                        // --- Replace the className of the div wrapping Popover ---
                         <div className="ml-auto pl-1 opacity-0 group-hover/button:opacity-100 data-[state=open]:opacity-100">
-                            {/* Popover component remains the same inside */}
-                            <Popover open={dropDownOpen} onOpenChange={setDropDownOpen}>
-                                <PopoverTrigger asChild>
-                                    {/* Button remains the same */}
+                            <DropdownMenu open={dropDownOpen} onOpenChange={setDropDownOpen}>
+                                <DropdownMenuTrigger asChild>
                                     <Button
                                         variant="ghost" size="icon" className="h-5 w-5"
                                         onClick={(e) => {
                                             setDropDownOpen(true)
-                                            e.stopPropagation(); // Keep this to prevent item selection/focus
+                                            e.stopPropagation();
                                         }}
                                         aria-label="Actions"
                                     >
                                         <MoreHorizontal size={14} />
                                     </Button>
-                                </PopoverTrigger>
-                                {/* PopoverContent remains the same */}
-                                <PopoverContent
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
                                     className="w-52 p-1" align="start" side="right" sideOffset={5}
-                                    // Optional: Keep stopPropagation if clicks inside content were causing issues
                                     onClick={(e) => e.stopPropagation()}
                                 >
-                                    <div className="flex flex-col space-y-0.5"> {/* Reduced space */}
-                                        <Button variant="ghost" size="sm" className="justify-start text-sm font-normal h-7 px-2">
-                                            <Trash2 size={14} className="mr-2 text-muted-foreground" /> Delete
-                                        </Button>
-                                        <Button variant="ghost" size="sm" className="justify-start text-sm font-normal h-7 px-2">
-                                            <Copy size={14} className="mr-2 text-muted-foreground" /> Duplicate
-                                        </Button>
-                                        <Button variant="ghost" size="sm" className="justify-start text-sm font-normal h-7 px-2">
-                                            <Edit2 size={14} className="mr-2 text-muted-foreground" /> Rename
-                                        </Button>
+                                    <div className="flex flex-col">
+                                        <DropdownMenuItem>
+                                            <Copy size={14} className="mr-1 text-muted-foreground" /> Duplicate
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem>
+                                            <Edit2 size={14} className="mr-1 text-muted-foreground" /> Rename
+                                        </DropdownMenuItem>
 
                                         <hr className="my-1" />
 
-                                        <Button variant="ghost" size="sm" className="justify-start text-sm font-normal h-7 px-2">
-                                            <ArrowRight size={14} className="mr-2 text-muted-foreground" /> Move to...
-                                        </Button>
-                                        <Button variant="ghost" size="sm" className="justify-start text-sm font-normal h-7 px-2">
-                                            <Link size={14} className="mr-2 text-muted-foreground" /> Copy link
-                                        </Button>
+                                        <DropdownMenuItem>
+                                            <ArrowRight size={14} className="mr-1 text-muted-foreground" /> Move to...
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem>
+                                            <Link size={14} className="mr-1 text-muted-foreground" /> Copy link
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem variant="destructive">
+                                            <Trash2 size={14} className="mr-1 text-muted-foreground" /> Delete
+                                        </DropdownMenuItem>
                                     </div>
-                                </PopoverContent>
-                            </Popover>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     )}
                 </div>
-                {/* Render children list (ul) passed by the library */}
                 {children}
             </SidebarMenuItem>
         );
     };
-    // --- End Render Item Function ---
 
-    // --- Render Drag Placeholder Line (Visibility Enhanced) ---
-    // This function signature matches the types provided
-    const renderDragBetweenLine = ({ lineProps, draggingPosition }: {
+    const renderDragBetweenLine = ({ lineProps }: {
         draggingPosition: DraggingPosition;
         lineProps: HTMLProps<HTMLDivElement>;
     }) => (
         <div
-            {...lineProps} // Base props including calculated style (top, left, width)
+            {...lineProps}
             style={{
-                // Spread the library's calculated styles first
                 ...lineProps.style,
-                // *** Force Visibility Styles ***
-                height: '2px', // Make it thicker for debugging visibility
+                height: '2px',
                 width: '100%',
-                position: 'absolute', // Ensure absolute positioning (should be default)
-                zIndex: 9999, // Use an extremely high z-index to rule out stacking issues
-                // Optional: Add a border for more visibility during debugging
+                position: 'absolute',
+                zIndex: 9999,
                 backgroundColor: 'var(--primary)',
-                // border: '1px solid hsl(var(--primary))',
-                // Ensure it's not transparent
                 opacity: 0.6,
-                // Ensure it's displayed
                 display: 'block',
             }}
-            // You can add a specific data attribute for easier CSS debugging in browser dev tools
             data-testid="rct-drag-line-debug"
-            // Keep the library class, but our inline styles should override
             className="rct-tree-drag-between-line"
         />
     );
@@ -617,22 +574,17 @@ export function HierarchicalSection({
                     }
                 }
             }
-            return true; // Default allow if no rules broken
+            return true;
         },
-        // canRename is now a prop on ControlledTreeEnvironment
     };
 
-    // Type cast for onPrimaryAction if it expects ExtendedTreeItem
     const handlePrimaryAction = React.useCallback((item: TreeItem<ItemData>) => {
         if (onPrimaryAction) {
-            // You might need to fetch the full ExtendedTreeItem from your state
-            // if onPrimaryAction truly needs more data than TreeItem<ItemData> provides
             const fullItem = items[item.index] as ExtendedTreeItem;
             if (fullItem) {
                 onPrimaryAction(fullItem);
             } else {
                 console.warn("Primary action triggered on item not found in state:", item.index);
-                // Fallback or alternative action if needed
             }
         }
     }, [onPrimaryAction, items]);
@@ -643,11 +595,10 @@ export function HierarchicalSection({
                 {title}
             </SidebarGroupLabel>
             <SidebarGroupContent>
-                {/* ControlledTreeEnvironment with corrected props */}
                 <ControlledTreeEnvironment<ItemData, never>
                     ref={environmentRef}
-                    items={filteredItems as ExplicitDataSource<ItemData>['items']} // Cast needed if filteredItems doesn't exactly match
-                    getItemTitle={(item: TreeItem<ItemData>) => (item.data as ItemData)?.name ?? ''} // Use base TreeItem type
+                    items={filteredItems as ExplicitDataSource<ItemData>['items']}
+                    getItemTitle={(item: TreeItem<ItemData>) => (item.data as ItemData)?.name ?? ''}
                     viewState={{
                         [treeId]: {
                             focusedItem: focusedItem,
@@ -655,31 +606,24 @@ export function HierarchicalSection({
                             selectedItems: selectedItems ?? [],
                         },
                     }}
-                    // Handlers (ensure types match TreeChangeHandlers)
                     onFocusItem={(item) => setFocusedItem(item.index)}
                     onExpandItem={(item) => setExpandedItems(prev => [...new Set([...(prev ?? []), item.index])])}
                     onCollapseItem={(item) => setExpandedItems(prev => (prev ?? []).filter((id) => id !== item.index))}
-                    onSelectItems={(items) => setSelectedItems(items)} // items is TreeItemIndex[]
+                    onSelectItems={(items) => setSelectedItems(items)}
                     onDrop={handleDrop}
                     onRenameItem={handleRename}
-                    // Use the wrapped handler for onPrimaryAction
                     onPrimaryAction={handlePrimaryAction}
-
-                    // Drag & Drop configuration
                     canDragAndDrop={true}
                     canReorderItems={true}
                     canDropOnFolder={true}
-                    canDropOnNonFolder={true} // Allows dropping ON items
-                    {...treeCapabilities}     // Spread corrected canDrag/canDropAt
+                    canDropOnNonFolder={true}
+                    {...treeCapabilities}
 
-                    // *** CORRECTED: Renaming enabled via boolean prop ***
                     canRename={true}
 
-                    // Renderers
                     renderItem={renderTreeItem}
-                    renderDragBetweenLine={renderDragBetweenLine} // Use the enhanced line renderer
+                    renderDragBetweenLine={renderDragBetweenLine}
 
-                    // Container renderers (optional customization)
                     renderTreeContainer={({ children, containerProps }) => (
                         <div {...containerProps} className={cn("rct-tree-root pl-1 pr-1", containerProps?.className)}>
                             {children}
@@ -690,12 +634,10 @@ export function HierarchicalSection({
                             {children}
                         </ul>
                     )}
-                // *** REMOVED renderDraggingItem={...} as it's not a valid prop ***
                 >
-                    {/* Tree component itself */}
                     <Tree
                         treeId={treeId}
-                        rootItem={String(rootItem)} // Ensure rootItem is string if needed
+                        rootItem={String(rootItem)}
                         treeLabel={title}
                     />
                 </ControlledTreeEnvironment>

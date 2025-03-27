@@ -9,11 +9,13 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from "@app/ui/components/sonner"
 
-import globalsCss from "@app/ui/globals.css?url";
 import { auth } from "@app/auth";
 import { getWebRequest } from "@tanstack/react-start/server";
 import { createServerFn } from "@tanstack/react-start";
 import type { QueryClient } from "@tanstack/react-query";
+
+import globalsCss from "@app/ui/globals.css?url";
+import layoutCss from '@app/layout/style.css?url'
 
 const getUser = createServerFn({ method: "GET" }).handler(async () => {
 	const { headers } = getWebRequest()!;
@@ -51,12 +53,16 @@ export const Route = createRootRouteWithContext<{
 				rel: "stylesheet",
 				href: globalsCss,
 			},
+			{
+				rel: "stylesheet",
+				href: layoutCss,
+			},
 		],
 	}),
 	component: () => (
 		<RootDocument>
 			<Outlet />
-			{/* <TanStackRouterDevtools /> */}
+			<TanStackRouterDevtools />
 			<ReactQueryDevtools initialIsOpen={false} position="right" />
 			<Toaster />
 		</RootDocument>

@@ -20,6 +20,9 @@ importers:
       '@app/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@app/layout':
+        specifier: workspace:*
+        version: link:../../packages/layout
       '@app/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -213,6 +216,31 @@ importers:
       '@types/node':
         specifier: 22.13.11
         version: 22.13.11
+      typescript:
+        specifier: ^5.8.2
+        version: 5.8.2
+
+  packages/layout:
+    dependencies:
+      react:
+        specifier: ^19.0.0
+        version: 19.0.0
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.0.0(react@19.0.0)
+    devDependencies:
+      '@app/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.13.11
+        version: 22.13.11
+      '@types/react':
+        specifier: ^19.0.12
+        version: 19.0.12
+      '@types/react-dom':
+        specifier: ^19.0.4
+        version: 19.0.4(@types/react@19.0.12)
       typescript:
         specifier: ^5.8.2
         version: 5.8.2
