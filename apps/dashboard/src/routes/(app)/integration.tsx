@@ -273,7 +273,7 @@ function IntegrationsComponent() {
                             .map(integration => (
                                 <div
                                     key={integration.id}
-                                    className="flex flex-col rounded-lg border bg-card overflow-hidden hover:border-primary/50 hover:shadow-md transition-all"
+                                    className="flex flex-col rounded-lg border bg-card overflow-hidden hover:border-primary/50 hover:shadow-md transition-shadow"
                                 >
                                     <div className="flex items-center gap-3 p-4 border-b">
                                         <img
@@ -378,7 +378,7 @@ function IntegrationsComponent() {
                         {filteredIntegrations.map(integration => (
                             <div
                                 key={integration.id}
-                                className="flex items-center gap-4 rounded-lg border bg-card p-4 hover:border-primary/50 hover:shadow-md transition-all"
+                                className="flex items-center gap-4 rounded-lg border bg-card p-4 hover:border-primary/50 hover:shadow-md transition-shadow duration-150"
                             >
                                 <img
                                     src={integration.icon}

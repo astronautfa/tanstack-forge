@@ -189,8 +189,7 @@ function HelpCenterComponent() {
                     {categories.map(category => (
                         <button
                             key={category.id}
-                            className={`flex flex-col items-center p-4 rounded-lg border text-center hover:border-primary/50 hover:bg-muted/50 transition-all ${activeTab === category.id ? 'border-primary bg-primary/5' : ''
-                                }`}
+                            className={`flex flex-col items-center p-4 rounded-lg border text-center hover:border-primary/50 hover:bg-muted/50 ${activeTab === category.id ? 'border-primary bg-primary/5' : ''}`}
                             onClick={() => setActiveTab(category.id)}
                         >
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary mb-2">

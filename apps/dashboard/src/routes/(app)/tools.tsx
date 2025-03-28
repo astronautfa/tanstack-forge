@@ -853,7 +853,7 @@ const ChatWelcomeSuggestions: React.FC<ChatWelcomeSuggestionsProps> = ({ onSugge
       <p className="text-muted-foreground mb-6 max-w-md">Start chatting or try one of these examples:</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl mt-4">
         {suggestions.map((suggestion, index) => (
-          <Card key={index} className="cursor-pointer hover:bg-accent transition-colors group text-left shadow-sm hover:shadow-md" onClick={() => onSuggestionClick(suggestion)}>
+          <Card key={index} className="cursor-pointer hover:bg-accent  group text-left shadow-sm hover:shadow-md" onClick={() => onSuggestionClick(suggestion)}>
             <CardContent className="p-4 flex items-center gap-3">
               <p className="text-sm font-medium flex-1">{suggestion}</p>
               <ArrowUp className="h-4 w-4 text-muted-foreground ml-auto shrink-0 opacity-0 group-hover:opacity-100 transition-opacity -rotate-45 group-hover:rotate-0" />

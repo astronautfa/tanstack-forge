@@ -210,7 +210,7 @@ function DashboardComponent() {
                         </div>
                         <div className="divide-y">
                             {recentDocuments.map((doc) => (
-                                <div key={doc.id} className="p-4 hover:bg-muted/50 transition-colors">
+                                <div key={doc.id} className="p-4 hover:bg-muted/50">
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2">
@@ -265,7 +265,7 @@ function DashboardComponent() {
                                 return (
                                     <div
                                         key={collection.id}
-                                        className="rounded-lg border bg-card p-4 hover:border-primary/50 hover:shadow-md transition-all"
+                                        className="rounded-lg border bg-card p-4 hover:border-primary/50 hover:shadow-md transition-shadow duration-150"
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`flex h-10 w-10 items-center justify-center rounded-full ${collection.color}`}>
@@ -299,7 +299,7 @@ function DashboardComponent() {
                             {suggestedActions.map((action) => {
                                 const IconComponent = action.icon;
                                 return (
-                                    <div key={action.id} className="p-4 hover:bg-muted/50 cursor-pointer transition-colors">
+                                    <div key={action.id} className="p-4 hover:bg-muted/50 cursor-pointer ">
                                         <div className="flex items-center gap-3">
                                             <div className={`flex h-10 w-10 items-center justify-center rounded-full ${action.color}`}>
                                                 <IconComponent className="h-5 w-5" />
@@ -323,23 +323,23 @@ function DashboardComponent() {
                             <h2 className="font-medium">Quick Access</h2>
                         </div>
                         <div className="p-4 space-y-2">
-                            <button className="w-full flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors">
+                            <button className="w-full flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 ">
                                 <Star className="h-5 w-5 text-yellow-500" />
                                 <span>Starred Documents</span>
                             </button>
-                            <button className="w-full flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors">
+                            <button className="w-full flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 ">
                                 <Clock className="h-5 w-5 text-blue-500" />
                                 <span>Recent Activity</span>
                             </button>
-                            <button className="w-full flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors">
+                            <button className="w-full flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 ">
                                 <Users className="h-5 w-5 text-green-500" />
                                 <span>Shared With Me</span>
                             </button>
-                            <button className="w-full flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors">
+                            <button className="w-full flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 ">
                                 <Calendar className="h-5 w-5 text-purple-500" />
                                 <span>Research Calendar</span>
                             </button>
-                            <button className="w-full flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 transition-colors">
+                            <button className="w-full flex items-center gap-3 rounded-md border p-3 hover:bg-muted/50 ">
                                 <Settings className="h-5 w-5 text-gray-500" />
                                 <span>Preferences</span>
                             </button>
