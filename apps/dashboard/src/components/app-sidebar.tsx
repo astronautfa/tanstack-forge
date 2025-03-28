@@ -1,4 +1,8 @@
-import { useMatches, useNavigate, useRouteContext } from "@tanstack/react-router";
+// src/components/app-sidebar.tsx
+import { Link, useMatches, useNavigate, useRouteContext } from "@tanstack/react-router";
+import * as React from "react";
+import * as Icons from 'lucide-react'; // Import all icons
+import type { TreeItemIndex } from 'react-complex-tree'; // Import TreeItemIndex type
 
 import { WorkSpaceSwitcher } from "./workspace-switcher";
 import {
@@ -13,42 +17,53 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarRail,
+    // Removed SidebarInset and SidebarTrigger imports if they are not used here
 } from "@app/ui/components/sidebar";
-import {
-    LayoutDashboard,
-    BarChart2,
-    Users,
-    Code,
-    Link as LinkIcon,
-    Settings,
-    HelpCircle,
-} from "lucide-react";
 import { HierarchicalSection } from "./hierarchical-section";
 import { initialDocumentItems, initialLibraryItems, type ExtendedTreeItem } from "@/lib/mock/sidebar-data";
+import { SearchForm } from "./search-form"; // Assuming SearchForm is correctly defined/imported
+import { useLayoutStore } from "@/lib/store/useLayoutStore"; // Import the layout store
 
+// Define the search params interface expected by the view route
+interface ViewSearch {
+    name?: string;
+    type?: string;
+    icon?: string;
+}
+
+// Define the params interface expected by the view route
+interface ViewParams {
+    itemId: string;
+}
+
+
+// Static nav data (use specific icons from lucide-react)
 const staticNavData = {
     navMain: [
         {
             title: "Sections",
             url: "#",
             items: [
-                { title: "Dashboard", url: "/", icon: LayoutDashboard },
-                { title: "Insights", url: "/insights", icon: BarChart2 },
-                { title: "Contacts", url: "/contacts", icon: Users },
-                { title: "Tools", url: "/tools", icon: Code },
-                { title: "Integration", url: "/integration", icon: LinkIcon },
+                { title: "Dashboard", url: "/", icon: Icons.LayoutDashboard },
+                { title: "Insights", url: "/insights", icon: Icons.BarChart2 },
+                { title: "Contacts", url: "/contacts", icon: Icons.Users },
+                { title: "Tools", url: "/tools", icon: Icons.Bot },
+                { title: "Integration", url: "/integration", icon: Icons.Link },
+                { title: "Library", url: "/library", icon: Icons.Library },
+                { title: "Layout Demo", url: "/layout", icon: Icons.AppWindow },
             ],
         },
         {
             title: "Other",
             url: "#",
             items: [
-                { title: "Settings", url: "/settings", icon: Settings },
-                { title: "Help Center", url: "/help", icon: HelpCircle },
+                { title: "Settings", url: "/settings", icon: Icons.Settings },
+                { title: "Help Center", url: "/help", icon: Icons.HelpCircle },
             ],
         },
     ],
 };
+
 
 interface AppSidebarProps {
     onSignOut: () => Promise<void>;
@@ -62,47 +77,79 @@ export function AppSidebar({ onSignOut }: AppSidebarProps) {
     const matches = useMatches();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = React.useState("");
+    const activeLayoutTabId = useLayoutStore((state) => state.activeTabId);
 
-    const isRouteActive = (url: string) => {
-        if (!url || url === '#') return false;
+    // Function to check if a route (static or dynamic view) is active
+    const isRouteActive = (urlOrItemId: string, isHierarchical = false) => {
+        if (!matches || !Array.isArray(matches) || matches.length === 0) return false;
 
-        if (!matches || !Array.isArray(matches)) return false;
+        const latestMatch = matches[matches.length - 1];
+        if (!latestMatch) return false;
 
-        const currentPathname = matches[matches.length - 1]?.pathname || '';
+        const currentPathname = latestMatch.pathname;
 
-        if (url === "/") {
-            return currentPathname === "/";
+        if (isHierarchical) {
+            // FIX 1: Safely access params and ensure comparison is string vs string
+            const currentItemIdParam = (latestMatch.params as ViewParams)?.itemId; // Explicitly type params
+            const itemIdAsString = String(urlOrItemId); // Ensure we compare strings
+
+            return (currentPathname.startsWith('/view/') && currentItemIdParam === itemIdAsString) ||
+                (activeLayoutTabId === itemIdAsString);
+        } else {
+            // Handle static routes
+            if (!urlOrItemId || urlOrItemId === '#') return false;
+            if (urlOrItemId === "/") {
+                return currentPathname === "/";
+            }
+            return currentPathname === urlOrItemId || currentPathname.startsWith(urlOrItemId + '/');
+        }
+    };
+
+
+    // --- MODIFIED: Handle tree item click to navigate to the view route ---
+    const handleTreeItemClick = (item: ExtendedTreeItem) => {
+        console.log("Tree item clicked:", item.index, item.data.name);
+
+        // FIX 2: Convert item.index to string for the parameter
+        const itemIdStr = String(item.index);
+        const targetPath = `/view/$itemId`;
+        const params: ViewParams = { itemId: itemIdStr }; // Use ViewParams type
+
+        let iconName: string | undefined = undefined;
+        if (typeof item.data.icon === 'function') {
+            iconName = item.data.icon.displayName || item.data.icon.name;
+        } else if (typeof item.data.icon === 'string') {
+            iconName = item.data.icon;
         }
 
-        return matches.some(match => {
-            if (match.pathname === url) return true;
-            return url !== "/" && currentPathname.startsWith(url + "/");
+        const searchParams: ViewSearch = {
+            name: item.data.name,
+            type: item.data.type,
+            icon: iconName,
+        };
+
+        navigate({
+            to: targetPath,
+            params: params, // Pass explicitly typed params
+            search: searchParams,
+            replace: false
         });
     };
-
-    const handleTreeItemClick = (item: ExtendedTreeItem) => {
-        if (item.data.url) {
-            console.log("Navigating to:", item.data.url);
-            navigate({ to: item.data.url });
-        } else {
-            console.log("Clicked item without URL:", item.data.name);
-        }
-    };
+    // --- END MODIFICATION ---
 
     return (
         <Sidebar>
             <SidebarHeader>
-                <WorkSpaceSwitcher
-                    onSignOut={onSignOut} // Pass the handler down
-                />
+                <WorkSpaceSwitcher onSignOut={onSignOut} />
                 <hr className="border-t border-border" />
+                {/* FIX 3: Correct event type for SearchForm onChange */}
                 <SearchForm
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)} // Correct event type
                 />
             </SidebarHeader>
             <SidebarContent>
-                {/* --- Static Sections --- */}
+                {/* Static Navigation */}
                 {staticNavData.navMain.map((group) => (
                     <SidebarGroup key={group.title}>
                         <SidebarGroupLabel className="uppercase text-muted-foreground/60">
@@ -117,17 +164,16 @@ export function AppSidebar({ onSignOut }: AppSidebarProps) {
                                             className="group/menu-button font-medium gap-3 h-8 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
                                             isActive={isRouteActive(item.url)}
                                         >
-                                            {/* Use Link from @tanstack/react-router for client-side routing */}
-                                            <a href={item.url} onClick={(e) => { e.preventDefault(); navigate({ to: item.url }); }}>
+                                            <Link to={item.url}>
                                                 {item.icon && (
                                                     <item.icon
-                                                        className="text-muted-foreground/60 group-data-[active=true]/menu-button:text-primary"
+                                                        className="text-muted-foreground/60 group-data-[active=true]/menu-button:text-primary flex-shrink-0"
                                                         size={16}
                                                         aria-hidden="true"
                                                     />
                                                 )}
-                                                <span>{item.title}</span>
-                                            </a>
+                                                <span className="truncate">{item.title}</span>
+                                            </Link>
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 ))}
@@ -136,7 +182,7 @@ export function AppSidebar({ onSignOut }: AppSidebarProps) {
                     </SidebarGroup>
                 ))}
 
-                {/* --- Dynamic Document Section --- */}
+                {/* Hierarchical Sections */}
                 <HierarchicalSection
                     title="Documents"
                     treeId="documents-tree"
@@ -144,9 +190,11 @@ export function AppSidebar({ onSignOut }: AppSidebarProps) {
                     rootItem="root"
                     searchTerm={searchTerm}
                     onPrimaryAction={handleTreeItemClick}
+                    activeItemId={activeLayoutTabId}
+                    // FIX 4: Ensure itemId passed to isRouteActive is a string
+                    isItemActive={(itemId: TreeItemIndex) => isRouteActive(String(itemId), true)}
                 />
 
-                {/* --- Dynamic Library Section --- */}
                 <HierarchicalSection
                     title="Library"
                     treeId="library-tree"
@@ -154,44 +202,16 @@ export function AppSidebar({ onSignOut }: AppSidebarProps) {
                     rootItem="root"
                     searchTerm={searchTerm}
                     onPrimaryAction={handleTreeItemClick}
+                    activeItemId={activeLayoutTabId}
+                    // FIX 4: Ensure itemId passed to isRouteActive is a string
+                    isItemActive={(itemId: TreeItemIndex) => isRouteActive(String(itemId), true)}
                 />
 
             </SidebarContent>
             <SidebarFooter>
-                <SidebarMenu>
-                </SidebarMenu>
+                {/* Footer content */}
             </SidebarFooter>
             <SidebarRail />
         </Sidebar>
-    );
-}
-
-// --- Update SearchForm to be controlled ---
-// src/components/search-form.tsx (Example modification)
-import * as React from "react";
-import { Search } from "lucide-react";
-import { Input } from "@app/ui/components/input"; // Adjust path
-import type { User } from "@/lib/providers/session";
-
-interface SearchFormProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
-    value: string;
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-export function SearchForm({ value, onChange, ...props }: SearchFormProps) {
-    return (
-        <form onSubmit={(e) => e.preventDefault()} className="py-1">
-            <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                    type="search"
-                    placeholder="Search..."
-                    className="w-full rounded-md bg-background pl-8 h-8" // Adjusted height and padding
-                    value={value}
-                    onChange={onChange}
-                    {...props}
-                />
-            </div>
-        </form>
     );
 }

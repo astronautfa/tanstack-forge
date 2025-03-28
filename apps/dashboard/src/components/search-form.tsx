@@ -1,28 +1,25 @@
-import { useId } from "react";
-import { SidebarInput } from "@app/ui/components/sidebar";
-import { SidebarGroup, SidebarGroupContent } from "@app/ui/components/sidebar";
 import { Search } from "lucide-react";
+import { Input } from "@app/ui/components/input";
 
-export function SearchForm({ ...props }: React.ComponentProps<"form">) {
-    const id = useId();
+interface SearchFormProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+    value: string;
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
 
+export function SearchForm({ value, onChange, ...props }: SearchFormProps) {
     return (
-        <form {...props}>
-            <SidebarGroup className="py-0 px-0">
-                <SidebarGroupContent className="relative">
-                    <div className="relative">
-                        <SidebarInput id={id} className="ps-9 pe-9" aria-label="Search" />
-                        <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-2 text-muted-foreground/60 peer-disabled:opacity-50">
-                            <Search size={20} aria-hidden="true" />
-                        </div>
-                        <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-2 text-muted-foreground">
-                            <kbd className="inline-flex size-5 max-h-full items-center justify-center rounded bg-input px-1 font-[inherit] text-[0.625rem] font-medium text-muted-foreground/70">
-                                /
-                            </kbd>
-                        </div>
-                    </div>
-                </SidebarGroupContent>
-            </SidebarGroup>
+        <form onSubmit={(e) => e.preventDefault()} className="py-1 px-2">
+            <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                    type="search"
+                    placeholder="Search..."
+                    className="w-full rounded-md bg-background pl-8 h-8 text-sm"
+                    value={value}
+                    onChange={onChange}
+                    {...props}
+                />
+            </div>
         </form>
     );
 }

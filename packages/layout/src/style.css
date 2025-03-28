@@ -271,7 +271,7 @@
 
 /* CHANGE 3: Adjust Tab Bar Outer for Toolbar positioning */
 .flexlayout__tabset_tabbar_outer_top {
-  height: 38px; /* Match button height + border */
+  height: 40px; /* Match button height + border */
   border-bottom: var(--tab-border-width) solid var(--border);
   background-color: var(--sidebar) !important; /* Use sidebar bg for tab bar */
   position: relative; /* Needed if pseudo-elements relate to it */
@@ -283,13 +283,13 @@
   border-top: 1px solid var(--border);
 }
 
-/* CHANGE 3: Ensure Inner Tab Bar allows Toolbar at end */
 .flexlayout__tabset_tabbar_inner {
   position: relative;
   box-sizing: border-box;
   display: flex;
-  flex-grow: 1; /* Takes up available space before toolbar */
-  overflow: hidden; /* Handles tab overflow */
+  flex-grow: 1;
+  overflow: hidden;
+  height: 100%;
 }
 
 /* Tab Container - Padding overridden later */
@@ -883,8 +883,8 @@
   left: calc(-1 * var(--tab-curve-size));
   /* Gradient origin: bottom right corner of the pseudo-element box */
   background-image: radial-gradient(
-    circle at 100% 100%, /* Bottom Right */
-    transparent 0,
+    circle at 100% 100%,
+    /* Bottom Right */ transparent 0,
     transparent calc(var(--tab-curve-size) - var(--tab-border-width)),
     var(--border) calc(var(--tab-curve-size) - var(--tab-border-width)),
     var(--border) var(--tab-curve-size),
@@ -894,10 +894,10 @@
 
 .flexlayout__tab_button--selected::after {
   right: calc(-1 * var(--tab-curve-size));
-   /* Gradient origin: bottom left corner of the pseudo-element box */
-   background-image: radial-gradient(
-    circle at 0% 100%, /* Bottom Left */
-    transparent 0,
+  /* Gradient origin: bottom left corner of the pseudo-element box */
+  background-image: radial-gradient(
+    circle at 0% 100%,
+    /* Bottom Left */ transparent 0,
     transparent calc(var(--tab-curve-size) - var(--tab-border-width)),
     var(--border) calc(var(--tab-curve-size) - var(--tab-border-width)),
     var(--border) var(--tab-curve-size),
@@ -908,8 +908,8 @@
 .flexlayout__tab_button_content,
 .flexlayout__tab_button_leading,
 .flexlayout__tab_button_trailing {
-    position: relative;
-    z-index: 2; /* Ensure content is above the ::before/::after curves */
+  position: relative;
+  z-index: 2; /* Ensure content is above the ::before/::after curves */
 }
 
 /* Tab Content Area */

@@ -34,6 +34,8 @@ interface HierarchicalSectionProps {
     rootItem?: TreeItemIndex;
     searchTerm?: string;
     onPrimaryAction?: (item: ExtendedTreeItem) => void;
+    activeItemId?: string;
+    isItemActive?: (itemId: TreeItemIndex) => boolean;
 }
 
 // --- Helper functions (getTargetParentId, getTargetItemId, isDescendant) - Adjusted based on provided types ---
@@ -84,6 +86,8 @@ export function HierarchicalSection({
     rootItem = "root",
     searchTerm = "",
     onPrimaryAction,
+    activeItemId,
+    isItemActive
 }: HierarchicalSectionProps) {
     const [items, setItems] = React.useState<TreeItems>(initialItems);
     const [focusedItem, setFocusedItem] = React.useState<TreeItemIndex>();
@@ -356,7 +360,7 @@ export function HierarchicalSection({
         const isDraggingOver = context.isDraggingOver ?? false; // Dragging over this item or its vicinity
         const canDropOn = context.canDropOn ?? false; // Can the current drag operation drop *onto* this item?
 
-        const isActive = isSelected || isFocused;
+        const isActive = isItemActive ? isItemActive(item.index) : (isSelected || isFocused || item.index === activeItemId);
 
         // *** CORRECTED: Drop target highlight logic ***
         // Highlight for dropping ONTO this specific item (making it a parent)

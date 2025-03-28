@@ -26,6 +26,7 @@ import { Route as appIntegrationImport } from './routes/(app)/integration'
 import { Route as appInsightsImport } from './routes/(app)/insights'
 import { Route as appHelpImport } from './routes/(app)/help'
 import { Route as appContactsImport } from './routes/(app)/contacts'
+import { Route as appViewItemIdImport } from './routes/(app)/view.$itemId'
 
 // Create/Update Routes
 
@@ -115,6 +116,12 @@ const appHelpRoute = appHelpImport.update({
 const appContactsRoute = appContactsImport.update({
   id: '/contacts',
   path: '/contacts',
+  getParentRoute: () => appRouteRoute,
+} as any)
+
+const appViewItemIdRoute = appViewItemIdImport.update({
+  id: '/view/$itemId',
+  path: '/view/$itemId',
   getParentRoute: () => appRouteRoute,
 } as any)
 
@@ -227,6 +234,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appIndexImport
       parentRoute: typeof appRouteImport
     }
+    '/(app)/view/$itemId': {
+      id: '/(app)/view/$itemId'
+      path: '/view/$itemId'
+      fullPath: '/view/$itemId'
+      preLoaderRoute: typeof appViewItemIdImport
+      parentRoute: typeof appRouteImport
+    }
   }
 }
 
@@ -242,6 +256,7 @@ interface appRouteRouteChildren {
   appSettingsRoute: typeof appSettingsRoute
   appToolsRoute: typeof appToolsRoute
   appIndexRoute: typeof appIndexRoute
+  appViewItemIdRoute: typeof appViewItemIdRoute
 }
 
 const appRouteRouteChildren: appRouteRouteChildren = {
@@ -254,6 +269,7 @@ const appRouteRouteChildren: appRouteRouteChildren = {
   appSettingsRoute: appSettingsRoute,
   appToolsRoute: appToolsRoute,
   appIndexRoute: appIndexRoute,
+  appViewItemIdRoute: appViewItemIdRoute,
 }
 
 const appRouteRouteWithChildren = appRouteRoute._addFileChildren(
@@ -293,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
+  '/view/$itemId': typeof appViewItemIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -310,6 +327,7 @@ export interface FileRoutesByTo {
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
   '/': typeof appIndexRoute
+  '/view/$itemId': typeof appViewItemIdRoute
 }
 
 export interface FileRoutesById {
@@ -329,6 +347,7 @@ export interface FileRoutesById {
   '/auth/signin': typeof AuthSigninRoute
   '/auth/signup': typeof AuthSignupRoute
   '/(app)/': typeof appIndexRoute
+  '/(app)/view/$itemId': typeof appViewItemIdRoute
 }
 
 export interface FileRouteTypes {
@@ -348,6 +367,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/auth/signin'
     | '/auth/signup'
+    | '/view/$itemId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -364,6 +384,7 @@ export interface FileRouteTypes {
     | '/auth/signin'
     | '/auth/signup'
     | '/'
+    | '/view/$itemId'
   id:
     | '__root__'
     | '/(app)'
@@ -381,6 +402,7 @@ export interface FileRouteTypes {
     | '/auth/signin'
     | '/auth/signup'
     | '/(app)/'
+    | '/(app)/view/$itemId'
   fileRoutesById: FileRoutesById
 }
 
@@ -419,7 +441,8 @@ export const routeTree = rootRoute
         "/(app)/library",
         "/(app)/settings",
         "/(app)/tools",
-        "/(app)/"
+        "/(app)/",
+        "/(app)/view/$itemId"
       ]
     },
     "/auth": {
@@ -481,6 +504,10 @@ export const routeTree = rootRoute
     },
     "/(app)/": {
       "filePath": "(app)/index.tsx",
+      "parent": "/(app)"
+    },
+    "/(app)/view/$itemId": {
+      "filePath": "(app)/view.$itemId.tsx",
       "parent": "/(app)"
     }
   }

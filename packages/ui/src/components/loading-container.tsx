@@ -4,7 +4,7 @@ import { BorderTrail } from "@app/ui/components/border-trail";
 import { cn } from "@app/ui/lib/utils";
 
 interface LoadingContainerProps {
-    children: React.ReactNode;
+    children?: React.ReactNode;
     isLoading?: boolean;
     className?: string;
 }
