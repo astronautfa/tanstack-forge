@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { HTMLProps } from 'react';
+import type { HTMLProps, Ref } from 'react'; // Import Ref type
 import {
     Tree,
     ControlledTreeEnvironment,
@@ -13,18 +13,30 @@ import {
     type TreeCapabilities,
     type TreeItem,
 } from "react-complex-tree";
-import { ChevronRight, MoreHorizontal, FileText, Edit2, Copy, ArrowRight, Trash2, Link } from "lucide-react";
+import { ChevronRight, MoreHorizontal, FileText, Edit2, Copy, ArrowRight, Trash2, Link as LinkIconLucide, Eye, Columns2 } from "lucide-react"; // Added Eye, Columns2
 import { cn } from "@app/ui/lib/utils";
 import {
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
-    SidebarMenuItem,
+    SidebarMenuItem, // Keep this for structure if needed, or remove if AlertDialog causes issues
 } from "@app/ui/components/sidebar";
 import { Button } from "@app/ui/components/button";
 import { type ItemData, type ExtendedTreeItem, type TreeItems, defaultIcons } from "@/lib/mock/sidebar-data";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@app/ui/components/dropdown-menu";
+import {
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator
+    // Remove Submenu imports if not immediately needed for MoveTo/Tags
+} from "@app/ui/components/dropdown-menu";
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction
+} from "@app/ui/components/alert-dialog";
+import {
+    ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger
+    // Add ContextMenuSub imports if needed later
+} from "@app/ui/components/context-menu"; // Import Shadcn ContextMenu
 
+// --- Type Definitions ---
 type TreeItemRenderContext = LibraryTreeItemRenderContext<never>;
 
 interface HierarchicalSectionProps {
@@ -33,51 +45,42 @@ interface HierarchicalSectionProps {
     initialItems: TreeItems;
     rootItem?: TreeItemIndex;
     searchTerm?: string;
-    onPrimaryAction?: (item: ExtendedTreeItem) => void;
+    onPrimaryAction?: (item: ExtendedTreeItem) => void; // For "Open" action
+    // New props for active state highlighting
     activeItemId?: string;
     isItemActive?: (itemId: TreeItemIndex) => boolean;
+
+    // Actions passed down from parent
+    onOpenToSide?: (item: ExtendedTreeItem) => void;
+    onRenameConfirm?: (item: ExtendedTreeItem, newName: string) => void; // Renamed prop
+    onDuplicate?: (item: ExtendedTreeItem) => void;
+    onMoveTo?: (item: ExtendedTreeItem) => void; // Placeholder
+    onCopyLink?: (item: ExtendedTreeItem) => void;
+    onDelete?: (item: ExtendedTreeItem) => void;
 }
 
-// --- Helper functions (getTargetParentId, getTargetItemId, isDescendant) - Adjusted based on provided types ---
+// --- Helper functions ---
 function getTargetParentId(target: DraggingPosition, rootId: TreeItemIndex): TreeItemIndex {
-    // From provided types: DraggingPositionItem, DraggingPositionBetweenItems, DraggingPositionRoot
-    if (target.targetType === 'root') {
-        // According to DraggingPositionRoot type, targetItem IS the root item index
-        return target.targetItem; // Or simply rootId, should be the same
-    } else {
-        // Both 'item' and 'between-items' have parentItem property
-        return target.parentItem;
-    }
+    if (target.targetType === 'root') return target.targetItem;
+    return target.parentItem;
 }
-
 function getTargetItemId(target: DraggingPosition): TreeItemIndex | undefined {
-    // Only DraggingPositionItem has targetItem representing the item *dropped onto*
-    if (target.targetType === 'item') {
-        return target.targetItem;
-    }
+    if (target.targetType === 'item') return target.targetItem;
     return undefined;
 }
-
 function isDescendant(items: TreeItems, parentId: TreeItemIndex, potentialChildId: TreeItemIndex): boolean {
     const visited = new Set<TreeItemIndex>();
     const check = (currentParentId: TreeItemIndex): boolean => {
-        if (visited.has(currentParentId) || currentParentId === potentialChildId) return false; // Added self-check
+        if (visited.has(currentParentId) || currentParentId === potentialChildId) return false;
         visited.add(currentParentId);
-
         const parent = items[currentParentId];
-        // Check if parent exists and has children array
-        if (!parent || !Array.isArray(parent.children) || parent.children.length === 0) {
-            return false;
-        }
-        if (parent.children.includes(potentialChildId)) {
-            return true;
-        }
-        // Recurse only if children exist and are valid items
+        if (!parent || !Array.isArray(parent.children) || parent.children.length === 0) return false;
+        if (parent.children.includes(potentialChildId)) return true;
         return parent.children.some(childId => items[childId] && check(childId));
     };
-    // Ensure parentId itself exists before starting
     return items[parentId] ? check(parentId) : false;
 }
+// --- End Helper Functions ---
 
 export function HierarchicalSection({
     title,
@@ -87,7 +90,13 @@ export function HierarchicalSection({
     searchTerm = "",
     onPrimaryAction,
     activeItemId,
-    isItemActive
+    isItemActive,
+    onOpenToSide,
+    onRenameConfirm, // Renamed prop
+    onDuplicate,
+    onMoveTo,
+    onCopyLink,
+    onDelete
 }: HierarchicalSectionProps) {
     const [items, setItems] = React.useState<TreeItems>(initialItems);
     const [focusedItem, setFocusedItem] = React.useState<TreeItemIndex>();
@@ -95,9 +104,7 @@ export function HierarchicalSection({
         const root = items[rootItem];
         const initialExpanded = new Set<TreeItemIndex>([rootItem]);
         (root?.children ?? []).forEach(childId => {
-            if (items[childId]) {
-                initialExpanded.add(childId);
-            }
+            if (items[childId]) initialExpanded.add(childId);
         });
         initialExpanded.add(rootItem);
         return Array.from(initialExpanded);
@@ -106,470 +113,337 @@ export function HierarchicalSection({
 
     const environmentRef = React.useRef<TreeEnvironmentRef<ItemData, never>>(null);
 
+    // --- Filter logic (keep as is) ---
     const { filteredItems, itemsToExpand } = React.useMemo(() => {
+        // ... (filtering logic remains the same) ...
         const rootExists = items[rootItem];
-        const baseRootItem: ExtendedTreeItem = rootExists
-            ? items[rootItem]
-            : { index: rootItem, data: { name: 'Root', type: 'folder' }, isFolder: true, children: [] };
-
-        if (!searchTerm) {
-            return {
-                filteredItems: items,
-                itemsToExpand: []
-            };
-        }
-
+        const baseRootItem: ExtendedTreeItem = rootExists ? items[rootItem] : { index: rootItem, data: { name: 'Root', type: 'folder' }, isFolder: true, children: [] };
+        if (!searchTerm) return { filteredItems: items, itemsToExpand: [] };
         const lowerSearchTerm = searchTerm.toLowerCase();
         const matchingItemIds = new Set<TreeItemIndex>();
         const necessaryItemIds = new Set<TreeItemIndex>([rootItem]);
-
-        for (const itemId in items) {
-            if (items[itemId].data.name.toLowerCase().includes(lowerSearchTerm)) {
-                matchingItemIds.add(itemId);
-            }
-        }
-
-        if (matchingItemIds.size === 0) {
-            const emptyRoot = items[rootItem] ? { [rootItem]: { ...items[rootItem], children: [] } } : { [rootItem]: baseRootItem };
-            return {
-                filteredItems: emptyRoot,
-                itemsToExpand: [rootItem]
-            };
-        }
-
-        const addAncestors = (itemId: TreeItemIndex) => {
-            if (itemId === rootItem || necessaryItemIds.has(itemId)) return;
-            necessaryItemIds.add(itemId);
-            for (const potentialParentId in items) {
-                if (items[potentialParentId].children?.includes(itemId)) {
-                    addAncestors(potentialParentId);
-                    break;
-                }
-            }
-        };
-
-        matchingItemIds.forEach(id => {
-            addAncestors(id);
-        });
-
+        for (const itemId in items) { if (items[itemId].data.name.toLowerCase().includes(lowerSearchTerm)) matchingItemIds.add(itemId); }
+        if (matchingItemIds.size === 0) { const emptyRoot = items[rootItem] ? { [rootItem]: { ...items[rootItem], children: [] } } : { [rootItem]: baseRootItem }; return { filteredItems: emptyRoot, itemsToExpand: [rootItem] }; }
+        const addAncestors = (itemId: TreeItemIndex) => { if (itemId === rootItem || necessaryItemIds.has(itemId)) return; necessaryItemIds.add(itemId); for (const potentialParentId in items) { if (items[potentialParentId].children?.includes(itemId)) { addAncestors(potentialParentId); break; } } };
+        matchingItemIds.forEach(id => addAncestors(id));
         const resultItems: TreeItems = {};
-        necessaryItemIds.forEach(id => {
-            const originalItem = items[id];
-            if (originalItem) {
-                const originalChildren = originalItem.children || [];
-                const filteredChildren = originalChildren.filter(childId => necessaryItemIds.has(childId));
-                resultItems[id] = { ...originalItem, children: filteredChildren };
-            } else if (id === rootItem && !originalItem) {
-                resultItems[id] = { ...baseRootItem, children: (baseRootItem.children || []).filter(childId => necessaryItemIds.has(childId)) };
-            }
-        });
-
-        if (!resultItems[rootItem] && items[rootItem]) {
-            resultItems[rootItem] = { ...items[rootItem], children: (items[rootItem].children || []).filter(childId => necessaryItemIds.has(childId)) };
-        } else if (!resultItems[rootItem]) {
-            resultItems[rootItem] = baseRootItem;
-        }
-
+        necessaryItemIds.forEach(id => { const originalItem = items[id]; if (originalItem) { const originalChildren = originalItem.children || []; const filteredChildren = originalChildren.filter(childId => necessaryItemIds.has(childId)); resultItems[id] = { ...originalItem, children: filteredChildren }; } else if (id === rootItem && !originalItem) { resultItems[id] = { ...baseRootItem, children: (baseRootItem.children || []).filter(childId => necessaryItemIds.has(childId)) }; } });
+        if (!resultItems[rootItem] && items[rootItem]) { resultItems[rootItem] = { ...items[rootItem], children: (items[rootItem].children || []).filter(childId => necessaryItemIds.has(childId)) }; } else if (!resultItems[rootItem]) { resultItems[rootItem] = baseRootItem; }
         const expansionSet = new Set<TreeItemIndex>();
-        necessaryItemIds.forEach(id => {
-            // Check if the item in the *filtered* result has children to determine if it should be expandable
-            if (resultItems[id]?.isFolder && resultItems[id]?.children && resultItems[id].children.length > 0) {
-                expansionSet.add(id);
-            }
-        });
-        if (resultItems[rootItem]?.children && resultItems[rootItem].children.length > 0) {
-            expansionSet.add(rootItem);
-        }
-
+        necessaryItemIds.forEach(id => { if (resultItems[id]?.isFolder && resultItems[id]?.children && resultItems[id].children.length > 0) expansionSet.add(id); });
+        if (resultItems[rootItem]?.children && resultItems[rootItem].children.length > 0) expansionSet.add(rootItem);
         return { filteredItems: resultItems, itemsToExpand: Array.from(expansionSet) };
     }, [searchTerm, items, rootItem]);
 
-    // --- Expand necessary parents effect ---
-    // --- Expand necessary parents effect (MODIFIED) ---
+    // --- Expand effect (keep as is) ---
     React.useEffect(() => {
+        // ... (expansion effect remains the same) ...
         if (searchTerm && itemsToExpand.length > 0) {
-            // Add necessary expansions for search results
             setExpandedItems(prev => {
                 const newExpanded = new Set(prev ?? []);
                 itemsToExpand.forEach(id => newExpanded.add(id));
-                // Ensure root is expanded if search yields results
-                if (Object.keys(filteredItems).length > 1) {
-                    newExpanded.add(rootItem);
-                }
+                if (Object.keys(filteredItems).length > 1) newExpanded.add(rootItem);
                 return Array.from(newExpanded);
             });
         }
-        // Ensure 'items' is included if the reset logic depends on it, which it does.
     }, [searchTerm, itemsToExpand, rootItem, filteredItems]);
-    // --- End Expand Effect ---
-    // --- End Expand Effect ---
 
-
-    // --- Drag and Drop Handler (Adjusted types for clarity) ---
-    const handleDrop: TreeChangeHandlers<ItemData>['onDrop'] = (
-        draggedItems: TreeItem<ItemData>[], // Use TreeItem<ItemData> as per handler type
-        target: DraggingPosition
-    ) => {
+    // --- Internal Drag and Drop Handler (keep as is) ---
+    const handleDrop: TreeChangeHandlers<ItemData>['onDrop'] = (draggedItems, target) => {
+        // ... (internal DND logic remains the same) ...
         if (!draggedItems || draggedItems.length === 0) return;
-
         const draggedItemIds = draggedItems.map(item => item.index);
-        console.log("Attempting drop:", draggedItemIds, "onto target:", target);
-
         setItems(prevItems => {
             let newItems = { ...prevItems };
-
-            // --- 1. Remove dragged items from original parents (immutable update) ---
             const sourceParentUpdates: Record<TreeItemIndex, Partial<ExtendedTreeItem>> = {};
-            draggedItemIds.forEach(draggedId => {
-                for (const parentId in newItems) {
-                    const parent = newItems[parentId];
-                    if (parent.children?.includes(draggedId)) {
-                        // Ensure we don't modify the same parent multiple times in this loop inefficiently
-                        if (!sourceParentUpdates[parentId]) {
-                            sourceParentUpdates[parentId] = {
-                                children: parent.children.filter(childId => !draggedItemIds.includes(childId)) // Filter all dragged items at once
-                            };
-                        }
-                        // Found parent, break inner loop for this draggedId
-                        // Note: This break assumes an item only has one parent.
-                        // If multiple parents were possible (not a tree), logic needs adjustment.
-                        break;
-                    }
-                }
-            });
-
-            // Apply parent updates
-            for (const parentId in sourceParentUpdates) {
-                newItems[parentId] = { ...newItems[parentId], ...sourceParentUpdates[parentId] };
-            }
-
-
-            // --- 2. Insert dragged items into new location ---
-            let targetParentId: TreeItemIndex;
-            let insertionIndex: number | undefined = undefined;
-            let isDroppingOntoItem = false;
-
-            if (target.targetType === 'root') {
-                targetParentId = target.targetItem; // Use targetItem for root
-            } else if (target.targetType === 'item') {
-                targetParentId = target.targetItem; // Dropping ONTO this item
-                isDroppingOntoItem = true;
-            } else { // 'between-items'
-                targetParentId = target.parentItem;
-                insertionIndex = target.childIndex;
-            }
-
+            draggedItemIds.forEach(draggedId => { for (const parentId in newItems) { const parent = newItems[parentId]; if (parent.children?.includes(draggedId)) { if (!sourceParentUpdates[parentId]) { sourceParentUpdates[parentId] = { children: parent.children.filter(childId => !draggedItemIds.includes(childId)) }; } break; } } });
+            for (const parentId in sourceParentUpdates) { newItems[parentId] = { ...newItems[parentId], ...sourceParentUpdates[parentId] }; }
+            let targetParentId: TreeItemIndex; let insertionIndex: number | undefined = undefined; let isDroppingOntoItem = false;
+            if (target.targetType === 'root') targetParentId = target.targetItem; else if (target.targetType === 'item') { targetParentId = target.targetItem; isDroppingOntoItem = true; } else { targetParentId = target.parentItem; insertionIndex = target.childIndex; }
             let targetParent = newItems[targetParentId];
-
-            if (!targetParent) {
-                // Handle cases where target parent might not exist (e.g., root not in initialItems)
-                if (targetParentId === rootItem && !items[rootItem]) {
-                    targetParent = { index: rootItem, data: { name: 'Root', type: 'folder' }, isFolder: true, children: [] };
-                    newItems[rootItem] = targetParent; // Add the root if it was missing
-                } else {
-                    console.error("Drop failed: Target parent container not found or invalid:", targetParentId);
-                    return prevItems; // Abort if target parent is truly missing
-                }
-            }
-
-            // Ensure target IS a folder if dropping ONTO it
-            if (isDroppingOntoItem) {
-                targetParent = {
-                    ...targetParent,
-                    isFolder: true, // Make it a folder
-                    children: targetParent.children ?? [], // Ensure children array exists
-                };
-            }
-
-
-            const currentChildren = targetParent.children ?? [];
-            let newChildren: TreeItemIndex[];
-
-            // Filter out items already present (should be redundant due to step 1 but safe)
-            const childrenToAdd = draggedItemIds.filter(id => !currentChildren.includes(id));
-
-            if (insertionIndex !== undefined) { // 'between-items'
-                newChildren = [
-                    ...currentChildren.slice(0, insertionIndex),
-                    ...childrenToAdd,
-                    ...currentChildren.slice(insertionIndex),
-                ];
-            } else { // 'item' or 'root' target type (append to end)
-                newChildren = [...currentChildren, ...childrenToAdd];
-            }
-
-            // Update the target parent immutably
+            if (!targetParent) { if (targetParentId === rootItem && !items[rootItem]) { targetParent = { index: rootItem, data: { name: 'Root', type: 'folder' }, isFolder: true, children: [] }; newItems[rootItem] = targetParent; } else { console.error("Drop failed: Target parent container not found or invalid:", targetParentId); return prevItems; } }
+            if (isDroppingOntoItem) targetParent = { ...targetParent, isFolder: true, children: targetParent.children ?? [] };
+            const currentChildren = targetParent.children ?? []; let newChildren: TreeItemIndex[]; const childrenToAdd = draggedItemIds.filter(id => !currentChildren.includes(id));
+            if (insertionIndex !== undefined) newChildren = [...currentChildren.slice(0, insertionIndex), ...childrenToAdd, ...currentChildren.slice(insertionIndex)]; else newChildren = [...currentChildren, ...childrenToAdd];
             newItems[targetParentId] = { ...targetParent, children: newChildren };
-
-
-            console.log("Drop successful. New items state:", newItems);
             return newItems;
         });
     };
-    // --- End Drag and Drop Handler ---
 
-    // --- Rename Handler (Corrected type) ---
-    const handleRename: TreeChangeHandlers<ItemData>['onRenameItem'] = (
-        item: TreeItem<ItemData>, // Use TreeItem<ItemData> as per handler type
-        name: string
-        // treeId is also available if needed: treeId: string
-    ) => {
-        setItems(prev => {
-            // Find the item, ensure immutability
-            const currentItem = prev[item.index];
-            if (!currentItem) return prev; // Item not found
+    // --- Rename Handler (Uses passed prop onRenameConfirm) ---
+    const handleRename: TreeChangeHandlers<ItemData>['onRenameItem'] = (item, name) => {
+        const fullItem = items[item.index];
+        if (!fullItem || fullItem.data.name === name) return; // No change or item not found
 
-            return {
-                ...prev,
-                [item.index]: {
-                    ...currentItem,
-                    // Update data immutably
-                    data: { ...(currentItem.data ?? {}), name }, // Ensure data exists before spreading
-                },
-            };
-        });
+        // Optimistically update local state
+        setItems(prev => ({
+            ...prev,
+            [item.index]: {
+                ...fullItem,
+                data: { ...fullItem.data, name },
+            },
+        }));
+
+        // Call the passed prop to handle backend update/validation
+        if (onRenameConfirm) {
+            onRenameConfirm(fullItem, name);
+            // TODO: Consider adding error handling here if onRenameConfirm fails
+            // and potentially revert the optimistic update.
+        } else {
+            console.warn("onRenameConfirm prop not provided to HierarchicalSection");
+        }
     };
-    // --- End Rename Handler ---
 
-
-    // --- Render Item Function (CORRECTED based on provided types) ---
-    const renderTreeItem = ({
-        item, // Type is TreeItem<ItemData> from environment, cast to ExtendedTreeItem if needed
-        depth,
-        children, // The rendered children list (ul) or null
-        title,    // The rendered title (string or component)
-        context,  // Correctly typed TreeItemRenderContext
-    }: {
-        item: TreeItem<ItemData>; // Use base type from library prop
-        depth: number;
-        children: React.ReactNode | null;
-        title: React.ReactNode;
-        context: TreeItemRenderContext;
-        info: TreeInformation;
+    // --- Render Item Function ---
+    const renderTreeItem = ({ item, depth, children, title, context, info }: {
+        item: TreeItem<ItemData>; depth: number; children: React.ReactNode | null; title: React.ReactNode; context: TreeItemRenderContext; info: TreeInformation;
     }) => {
-        const [dropDownOpen, setDropDownOpen] = React.useState<boolean>(false)
-        // Cast to ExtendedTreeItem if you need custom properties like 'emoji' or specific 'type'
         const extendedItem = item as ExtendedTreeItem;
         const IconComponent = extendedItem.data.icon || defaultIcons[extendedItem.data.type] || FileText;
+        const isActive = isItemActive ? isItemActive(item.index) : (context.isSelected || context.isFocused || String(item.index) === activeItemId);
+        const isItemRenaming = context.isRenaming ?? false;
 
-        // Flags available on TreeItemRenderContext (use defaults for safety)
-        const isRenaming = context.isRenaming ?? false;
-        const isSelected = context.isSelected ?? false;
-        const isFocused = context.isFocused ?? false;
-        const isExpanded = context.isExpanded ?? false;
-        const isDraggingOver = context.isDraggingOver ?? false; // Dragging over this item or its vicinity
-        const canDropOn = context.canDropOn ?? false; // Can the current drag operation drop *onto* this item?
+        // --- Click Handlers ---
+        const handleChevronClick = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            if (context.isExpanded) context.collapseItem(); else context.expandItem();
+        };
+        const handleItemClick = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            if (!isItemRenaming && onPrimaryAction) onPrimaryAction(extendedItem);
+        };
 
-        const isActive = isItemActive ? isItemActive(item.index) : (isSelected || isFocused || item.index === activeItemId);
+        // --- Menu Item Actions ---
+        const menuActions = {
+            open: () => onPrimaryAction?.(extendedItem),
+            openToSide: () => onOpenToSide?.(extendedItem),
+            rename: () => context.startRenamingItem(), // Use context to trigger rename UI
+            duplicate: () => onDuplicate?.(extendedItem),
+            moveTo: () => onMoveTo?.(extendedItem),
+            copyLink: () => onCopyLink?.(extendedItem),
+            delete: () => onDelete?.(extendedItem), // Will trigger AlertDialog
+        };
 
-        // *** CORRECTED: Drop target highlight logic ***
-        // Highlight for dropping ONTO this specific item (making it a parent)
-        // Relies on context flags: dragging over this item AND it's a valid drop target *onto* it
-        const isDropTargetOnto = isDraggingOver && canDropOn;
-        // Highlight when dragging nearby (for reordering, not directly onto) - subtle is okay
-        const isDraggingOverArea = isDraggingOver && !isDropTargetOnto;
+        // --- Menu Rendering ---
+        const renderMenuItems = (isContextMenu = false) => (
+            <>
+                <ContextMenuItem key="open" onSelect={menuActions.open} disabled={!onPrimaryAction}>
+                    <Eye size={14} className="mr-2 text-muted-foreground" /> Open
+                </ContextMenuItem>
+                <ContextMenuItem key="open-side" onSelect={menuActions.openToSide} disabled={!onOpenToSide}>
+                    <Columns2 size={14} className="mr-2 text-muted-foreground" /> Open to Side
+                </ContextMenuItem>
+                <ContextMenuSeparator key="sep1" />
+                <ContextMenuItem key="rename" onSelect={menuActions.rename} disabled={!item.canRename || !onRenameConfirm}>
+                    <Edit2 size={14} className="mr-2 text-muted-foreground" /> Rename
+                </ContextMenuItem>
+                <ContextMenuItem key="duplicate" onSelect={menuActions.duplicate} disabled={!onDuplicate}>
+                    <Copy size={14} className="mr-2 text-muted-foreground" /> Duplicate
+                </ContextMenuItem>
+                <ContextMenuItem key="move" onSelect={menuActions.moveTo} disabled={!onMoveTo}>
+                    <ArrowRight size={14} className="mr-2 text-muted-foreground" /> Move to...
+                </ContextMenuItem>
+                <ContextMenuItem key="copy-link" onSelect={menuActions.copyLink} disabled={!onCopyLink}>
+                    <LinkIconLucide size={14} className="mr-2 text-muted-foreground" /> Copy link
+                </ContextMenuItem>
+                <ContextMenuSeparator key="sep2" />
+                {/* Use AlertDialogTrigger within ContextMenuItem for delete */}
+                <AlertDialogTrigger asChild>
+                    <ContextMenuItem key="delete" variant="destructive" disabled={!onDelete}>
+                        <Trash2 size={14} className="mr-2 text-muted-foreground" /> Delete
+                    </ContextMenuItem>
+                </AlertDialogTrigger>
+            </>
+        );
+
+        // Convert ContextMenuItems to DropdownMenuItems for the Dropdown
+        const renderDropdownItems = () => (
+            <>
+                <DropdownMenuItem onClick={menuActions.open} disabled={!onPrimaryAction}>
+                    <Eye size={14} className="mr-2 text-muted-foreground" /> Open
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={menuActions.openToSide} disabled={!onOpenToSide}>
+                    <Columns2 size={14} className="mr-2 text-muted-foreground" /> Open to Side
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); menuActions.rename(); }} disabled={!item.canRename || !onRenameConfirm}>
+                    <Edit2 size={14} className="mr-2 text-muted-foreground" /> Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={menuActions.duplicate} disabled={!onDuplicate}>
+                    <Copy size={14} className="mr-2 text-muted-foreground" /> Duplicate
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={menuActions.moveTo} disabled={!onMoveTo}>
+                    <ArrowRight size={14} className="mr-2 text-muted-foreground" /> Move to...
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={menuActions.copyLink} disabled={!onCopyLink}>
+                    <LinkIconLucide size={14} className="mr-2 text-muted-foreground" /> Copy link
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <AlertDialogTrigger asChild>
+                    <DropdownMenuItem variant="destructive" disabled={!onDelete}>
+                        <Trash2 size={14} className="mr-2 text-muted-foreground" /> Delete
+                    </DropdownMenuItem>
+                </AlertDialogTrigger>
+            </>
+        );
+
 
         return (
-            <SidebarMenuItem
-                key={item.index}
+            // Use a simple li for structure, context menu wraps the interactive part
+            <li
                 className={cn(
-                    "rct-tree-item-li group/item relative",
-                    isDraggingOverArea && "bg-muted/20",
-                    isDropTargetOnto && "bg-primary/10 outline-2 outline-offset-[-1px] outline-primary rounded",
+                    "rct-tree-item-li relative list-none py-0 pl-0 pr-1", // Basic list item styling
+                    context.isDraggingOver && !context.canDropOn && "bg-muted/20",
+                    context.isDraggingOver && context.canDropOn && "bg-primary/10 outline-2 outline-offset-[-1px] outline-primary rounded",
                 )}
                 style={{ paddingLeft: `${depth * 12}px` }}
-                {...context.itemContainerWithChildrenProps}
+                {...context.itemContainerWithChildrenProps} // Important for tree structure and drag-over previews
             >
-                <div
-                    className={cn(
-                        "flex items-center w-full h-8 px-2 rounded text-sm group/button py-2",
-                        !isRenaming && "cursor-pointer hover:bg-muted",
-                        isActive && !isDraggingOver && "bg-accent text-accent-foreground",
-                        isDropTargetOnto && "bg-transparent",
-                    )}
-                    {...context.itemContainerWithoutChildrenProps}
-                    {...context.interactiveElementProps}
-                >
-                    <div
-                        className="w-4 h-4 mr-1 flex items-center justify-center shrink-0"
-                        {...context.arrowProps}
-                    >
-                        {(item.isFolder || (item.children && item.children.length > 0)) && (
-                            <ChevronRight
-                                size={14}
+                {/* Wrap interactive part with ContextMenuTrigger and AlertDialog */}
+                <AlertDialog>
+                    <ContextMenu>
+                        <ContextMenuTrigger asChild>
+                            {/* Main clickable/draggable area */}
+                            <div
                                 className={cn(
-                                    "transition-transform duration-150 text-muted-foreground/80",
-                                    isExpanded && "transform rotate-90"
+                                    "flex items-center w-full h-8 px-2 rounded text-sm group/button",
+                                    !isItemRenaming && "cursor-pointer hover:bg-muted",
+                                    isActive && !context.isDraggingOver && "bg-accent text-accent-foreground",
                                 )}
-                            />
-                        )}
-                    </div>
-
-                    <div className="w-4 h-4 mr-1.5 flex items-center justify-center shrink-0">
-                        {extendedItem.data.emoji ? (
-                            <span className="text-sm select-none">{extendedItem.data.emoji}</span>
-                        ) : (
-                            <IconComponent
-                                size={14}
-                                className={cn(
-                                    "shrink-0",
-                                    isActive && !isDraggingOver ? "text-accent-foreground" : "text-muted-foreground/90"
-                                )}
-                            />
-                        )}
-                    </div>
-
-                    <span className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap pr-1">
-                        {isRenaming ? (
-                            <input
-                                type="text"
-                                defaultValue={extendedItem.data.name}
-                                onBlur={() => {
-                                    context.stopRenamingItem();
-                                }}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        context.stopRenamingItem();
-                                    } else if (e.key === 'Escape') {
-                                        context.stopRenamingItem();
-                                    }
-                                }}
-                                autoFocus
-                                className="w-full bg-transparent outline-none ring-1 ring-inset ring-input focus:ring-ring px-1 py-0 text-sm rounded-sm"
-                                onClick={(e) => e.stopPropagation()}
-                            />
-                        ) : (
-                            title
-                        )}
-                    </span>
-
-                    {!isRenaming && (
-                        <div className="ml-auto pl-1 opacity-0 group-hover/button:opacity-100 data-[state=open]:opacity-100">
-                            <DropdownMenu open={dropDownOpen} onOpenChange={setDropDownOpen}>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="ghost" size="icon" className="h-5 w-5"
-                                        onClick={(e) => {
-                                            setDropDownOpen(true)
-                                            e.stopPropagation();
-                                        }}
-                                        aria-label="Actions"
-                                    >
-                                        <MoreHorizontal size={14} />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                    className="w-16 p-1" align="start" side="right" sideOffset={5}
-                                    onClick={(e) => e.stopPropagation()}
+                                {...context.itemContainerWithoutChildrenProps}
+                                {...context.interactiveElementProps}
+                                onClick={handleItemClick}
+                                // Context menu is handled by the wrapper
+                                draggable={!isItemRenaming && item.canMove} // Internal DND still possible
+                            // Removed external onDragStart
+                            >
+                                {/* Chevron */}
+                                <div
+                                    className="w-4 h-4 mr-1 flex items-center justify-center shrink-0 cursor-pointer hover:bg-muted/50 rounded-sm"
+                                    {...context.arrowProps}
+                                    onClick={handleChevronClick}
                                 >
-                                    <div className="flex flex-col">
-                                        <DropdownMenuItem>
-                                            <Copy size={14} className="mr-1 text-muted-foreground" /> Duplicate
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            <Edit2 size={14} className="mr-1 text-muted-foreground" /> Rename
-                                        </DropdownMenuItem>
-
-                                        <hr className="my-1" />
-
-                                        <DropdownMenuItem>
-                                            <ArrowRight size={14} className="mr-1 text-muted-foreground" /> Move to...
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            <Link size={14} className="mr-1 text-muted-foreground" /> Copy link
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem variant="destructive">
-                                            <Trash2 size={14} className="mr-1 text-muted-foreground" /> Delete
-                                        </DropdownMenuItem>
+                                    {(item.isFolder || (item.children && item.children.length > 0)) && (
+                                        <ChevronRight
+                                            size={14}
+                                            className={cn("transition-transform duration-150 text-muted-foreground/80", context.isExpanded && "transform rotate-90")}
+                                        />
+                                    )}
+                                </div>
+                                {/* Icon */}
+                                <div className="w-4 h-4 mr-1.5 flex items-center justify-center shrink-0">
+                                    {extendedItem.data.emoji ? (<span className="text-sm select-none">{extendedItem.data.emoji}</span>) : (
+                                        <IconComponent size={14} className={cn("shrink-0", isActive && !context.isDraggingOver ? "text-accent-foreground" : "text-muted-foreground/90")} />
+                                    )}
+                                </div>
+                                {/* Title or Rename Input */}
+                                <span className="flex-grow overflow-hidden text-ellipsis whitespace-nowrap pr-1">
+                                    {isItemRenaming ? (
+                                        <input
+                                            type="text"
+                                            defaultValue={extendedItem.data.name}
+                                            // Stop renaming on blur
+                                            onBlur={() => context.stopRenamingItem()}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') { e.preventDefault(); context.stopRenamingItem(); }
+                                                else if (e.key === 'Escape') context.stopRenamingItem();
+                                            }}
+                                            autoFocus
+                                            className="w-full bg-transparent outline-none ring-1 ring-inset ring-input focus:ring-primary px-1 py-0 text-sm rounded-sm"
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                    ) : (title)}
+                                </span>
+                                {/* Hover Dropdown Trigger */}
+                                {!isItemRenaming && (
+                                    <div className="ml-auto pl-1 opacity-0 group-hover/button:opacity-100 group-focus-within/button:opacity-100">
+                                        <DropdownMenu> {/* Set modal={false} if AlertDialog is used inside */}
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()} aria-label="Actions">
+                                                    <MoreHorizontal size={14} />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent className="w-48" align="start" side="right" sideOffset={5} onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+                                                {renderDropdownItems()}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     </div>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
+                                )}
+                            </div>
+                        </ContextMenuTrigger>
+                        {/* Context Menu Content */}
+                        <ContextMenuContent className="w-48">
+                            {renderMenuItems(true)}
+                        </ContextMenuContent>
+                    </ContextMenu>
+
+                    {/* Delete Confirmation Dialog Content */}
+                    <AlertDialogContent onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Are you sure you want to delete "{extendedItem.data.name}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction variant="destructive" onClick={menuActions.delete}>
+                                Delete
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                {/* Render Children with Animation */}
+                <AnimatePresence initial={false}>
+                    {context.isExpanded && children && (
+                        <motion.div
+                            key="children"
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="overflow-hidden pl-3"
+                        >
+                            {children}
+                        </motion.div>
                     )}
-                </div>
-                {children}
-            </SidebarMenuItem>
+                </AnimatePresence>
+            </li>
         );
     };
 
-    const renderDragBetweenLine = ({ lineProps }: {
-        draggingPosition: DraggingPosition;
-        lineProps: HTMLProps<HTMLDivElement>;
-    }) => (
-        <div
-            {...lineProps}
-            style={{
-                ...(lineProps.style ?? {}),
-                height: '2px',
-                top: typeof lineProps.style?.top === 'number' ? lineProps.style.top : 0 + 3,
-                width: '100%', // Ensure width is still set if needed
-                position: 'absolute',
-                zIndex: 9999,
-                backgroundColor: 'var(--primary)', // Use your theme variable
-                opacity: 0.6,
-                display: 'block', // Ensure it's visible
-                // Optional: Add pointer-events none if it interferes with hover
-                // pointerEvents: 'none',
-            }}
-            // --- END OF CHANGE ---
-            data-testid="rct-drag-line-debug"
-            className="rct-tree-drag-between-line" // Keep original class if needed
-        />
+    // --- Render Drag Placeholder Line (keep as is) ---
+    const renderDragBetweenLine = ({ lineProps }: { draggingPosition: DraggingPosition; lineProps: HTMLProps<HTMLDivElement>; }) => (
+        <div {...lineProps} style={{ ...lineProps.style, height: '2px', top: `${(lineProps.style?.top as number ?? 0) + 1}px`, width: '100%', position: 'absolute', zIndex: 9999, backgroundColor: 'var(--primary)', opacity: 0.6, display: 'block' }} className="rct-tree-drag-between-line" />
     );
-    // --- End Render Drag Placeholder Line ---
 
-    // --- Tree Capabilities (CORRECTED - removed invalid canRename function) ---
-    // The main canRename flag is set directly on the environment props
+    // --- Tree Capabilities (keep as is for internal DND) ---
     const treeCapabilities: TreeCapabilities<ItemData, never> = {
-        // Check if *all* selected items are draggable (and not the root)
-        canDrag: (draggedItems: TreeItem<ItemData>[]) =>
-            draggedItems.every(item => {
-                // Assume ExtendedTreeItem if needed for canMove
-                const extendedItem = item as ExtendedTreeItem;
-                return (extendedItem.canMove ?? true) && item.index !== rootItem
-            }),
-
-        // Check if the drop target is valid
-        canDropAt: (draggedItems: TreeItem<ItemData>[], target: DraggingPosition): boolean => {
+        canDrag: (draggedItems) => draggedItems.every(item => (item as ExtendedTreeItem).canMove !== false && item.index !== rootItem),
+        canDropAt: (draggedItems, target) => { /* ... internal drop validation ... */
             const draggedItemIds = draggedItems.map(item => item.index);
-            const targetItemId = getTargetItemId(target); // ID of item being dropped ONTO
-
-            // Cannot drop onto self
-            if (targetItemId !== undefined && draggedItemIds.includes(targetItemId)) {
-                return false;
-            }
-
-            // Cannot drop item into its own descendant or itself
+            const targetItemId = getTargetItemId(target);
+            if (targetItemId !== undefined && draggedItemIds.includes(targetItemId)) return false;
             const targetParentId = getTargetParentId(target, rootItem);
             for (const draggedItemId of draggedItemIds) {
-                if (targetParentId === draggedItemId) return false; // Cannot drop into self
-
-                // Check original 'items' state for structure
+                if (targetParentId === draggedItemId) return false;
                 const draggedItem = items[draggedItemId];
-                if (draggedItem?.isFolder) { // Check only if the dragged item is a folder
-                    // Is target parent a descendant of the dragged folder?
-                    if (isDescendant(items, draggedItemId, targetParentId)) {
-                        return false;
-                    }
-                    // Is the specific item being dropped ONTO a descendant? (Redundant check, but safe)
-                    if (target.targetType === 'item' && isDescendant(items, draggedItemId, target.targetItem)) {
-                        return false;
-                    }
+                if (draggedItem?.isFolder) {
+                    if (isDescendant(items, draggedItemId, targetParentId)) return false;
+                    if (target.targetType === 'item' && isDescendant(items, draggedItemId, target.targetItem)) return false;
                 }
             }
             return true;
         },
+        // canRename: true // This is set directly on ControlledTreeEnvironment
     };
 
-    const handlePrimaryAction = React.useCallback((item: TreeItem<ItemData>) => {
+    // --- Primary Action Callback (keep as is) ---
+    const handlePrimaryActionCallback = React.useCallback((item: TreeItem<ItemData>) => {
         if (onPrimaryAction) {
             const fullItem = items[item.index] as ExtendedTreeItem;
-            if (fullItem) {
-                onPrimaryAction(fullItem);
-            } else {
-                console.warn("Primary action triggered on item not found in state:", item.index);
-            }
+            if (fullItem) onPrimaryAction(fullItem);
         }
     }, [onPrimaryAction, items]);
 
@@ -588,42 +462,30 @@ export function HierarchicalSection({
                             focusedItem: focusedItem,
                             expandedItems: expandedItems ?? [],
                             selectedItems: selectedItems ?? [],
+                            // renamingItem is managed internally by the library
                         },
                     }}
                     onFocusItem={(item) => setFocusedItem(item.index)}
                     onExpandItem={(item) => setExpandedItems(prev => [...new Set([...(prev ?? []), item.index])])}
                     onCollapseItem={(item) => setExpandedItems(prev => (prev ?? []).filter((id) => id !== item.index))}
                     onSelectItems={(items) => setSelectedItems(items)}
-                    onDrop={handleDrop}
-                    onRenameItem={handleRename}
-                    onPrimaryAction={handlePrimaryAction}
-                    canDragAndDrop={true}
+                    onDrop={handleDrop} // Handles internal drops
+                    onRenameItem={handleRename} // Handles rename confirmation
+                    onPrimaryAction={handlePrimaryActionCallback} // Handles item click
+                    canDragAndDrop={true} // Enable internal DND
                     canReorderItems={true}
                     canDropOnFolder={true}
-                    canDropOnNonFolder={true}
+                    canDropOnNonFolder={false}
                     {...treeCapabilities}
-
-                    canRename={true}
+                    canRename={true} // Enable rename capability
 
                     renderItem={renderTreeItem}
                     renderDragBetweenLine={renderDragBetweenLine}
 
-                    renderTreeContainer={({ children, containerProps }) => (
-                        <div {...containerProps} className={cn("rct-tree-root pl-1 pr-1", containerProps?.className)}>
-                            {children}
-                        </div>
-                    )}
-                    renderItemsContainer={({ children, containerProps }) => (
-                        <ul {...containerProps} className={cn("rct-tree-items-container", containerProps?.className)} style={{ paddingLeft: 0, listStyle: 'none', margin: 0 }}>
-                            {children}
-                        </ul>
-                    )}
+                    renderTreeContainer={({ children, containerProps }) => (<div {...containerProps} className={cn("rct-tree-root pl-1 pr-1", containerProps?.className)}>{children}</div>)}
+                    renderItemsContainer={({ children, containerProps }) => (<ul {...containerProps} className={cn("rct-tree-items-container m-0 list-none p-0", containerProps?.className)}>{children}</ul>)}
                 >
-                    <Tree
-                        treeId={treeId}
-                        rootItem={String(rootItem)}
-                        treeLabel={title}
-                    />
+                    <Tree treeId={treeId} rootItem={String(rootItem)} treeLabel={title} />
                 </ControlledTreeEnvironment>
             </SidebarGroupContent>
         </SidebarGroup>

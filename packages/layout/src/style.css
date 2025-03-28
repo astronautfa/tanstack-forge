@@ -853,58 +853,6 @@
   position: relative;
 }
 
-.flexlayout__tab_button--selected::before,
-.flexlayout__tab_button--selected::after {
-  content: "";
-  position: absolute;
-  bottom: calc(
-    -1 * var(--tab-border-width)
-  ); /* Position relative to the *visual* bottom including margin */
-  width: var(--tab-curve-size);
-  height: var(--tab-curve-size);
-  /* Draw the curve using radial gradient:
-     - Start transparent (or background color) up to the border line
-     - Draw the border color for its width
-     - Fill the rest with the tab bar color to hide it */
-  background: radial-gradient(
-    circle,
-    transparent 0,
-    transparent calc(var(--tab-curve-size) - var(--tab-border-width)),
-    /* Inner edge of border */ var(--border)
-      calc(var(--tab-curve-size) - var(--tab-border-width)),
-    /* Start border */ var(--border) var(--tab-curve-size),
-    /* End border */ var(--sidebar) var(--tab-curve-size)
-      /* Fill remaining space */
-  );
-  z-index: 1; /* Sit below tab content, above tab bar maybe? - adjust if needed*/
-}
-
-.flexlayout__tab_button--selected::before {
-  left: calc(-1 * var(--tab-curve-size));
-  /* Gradient origin: bottom right corner of the pseudo-element box */
-  background-image: radial-gradient(
-    circle at 100% 100%,
-    /* Bottom Right */ transparent 0,
-    transparent calc(var(--tab-curve-size) - var(--tab-border-width)),
-    var(--border) calc(var(--tab-curve-size) - var(--tab-border-width)),
-    var(--border) var(--tab-curve-size),
-    var(--sidebar) var(--tab-curve-size) /* Match tab bar bg */
-  );
-}
-
-.flexlayout__tab_button--selected::after {
-  right: calc(-1 * var(--tab-curve-size));
-  /* Gradient origin: bottom left corner of the pseudo-element box */
-  background-image: radial-gradient(
-    circle at 0% 100%,
-    /* Bottom Left */ transparent 0,
-    transparent calc(var(--tab-curve-size) - var(--tab-border-width)),
-    var(--border) calc(var(--tab-curve-size) - var(--tab-border-width)),
-    var(--border) var(--tab-curve-size),
-    var(--sidebar) var(--tab-curve-size) /* Match tab bar bg */
-  );
-}
-
 .flexlayout__tab_button_content,
 .flexlayout__tab_button_leading,
 .flexlayout__tab_button_trailing {
