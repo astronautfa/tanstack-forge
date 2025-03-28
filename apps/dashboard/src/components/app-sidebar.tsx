@@ -45,7 +45,6 @@ const staticNavData = {
                 { title: "Tools", url: "/tools", icon: Icons.Bot },
                 { title: "Integration", url: "/integration", icon: Icons.Link },
                 { title: "Library", url: "/library", icon: Icons.Library },
-                { title: "Layout Demo", url: "/layout", icon: Icons.AppWindow },
             ],
         },
         {

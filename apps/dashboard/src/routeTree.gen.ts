@@ -21,7 +21,6 @@ import { Route as AuthForgotPasswordImport } from './routes/auth/forgot-password
 import { Route as appToolsImport } from './routes/(app)/tools'
 import { Route as appSettingsImport } from './routes/(app)/settings'
 import { Route as appLibraryImport } from './routes/(app)/library'
-import { Route as appLayoutImport } from './routes/(app)/layout'
 import { Route as appIntegrationImport } from './routes/(app)/integration'
 import { Route as appInsightsImport } from './routes/(app)/insights'
 import { Route as appHelpImport } from './routes/(app)/help'
@@ -86,12 +85,6 @@ const appSettingsRoute = appSettingsImport.update({
 const appLibraryRoute = appLibraryImport.update({
   id: '/library',
   path: '/library',
-  getParentRoute: () => appRouteRoute,
-} as any)
-
-const appLayoutRoute = appLayoutImport.update({
-  id: '/layout',
-  path: '/layout',
   getParentRoute: () => appRouteRoute,
 } as any)
 
@@ -171,13 +164,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appIntegrationImport
       parentRoute: typeof appRouteImport
     }
-    '/(app)/layout': {
-      id: '/(app)/layout'
-      path: '/layout'
-      fullPath: '/layout'
-      preLoaderRoute: typeof appLayoutImport
-      parentRoute: typeof appRouteImport
-    }
     '/(app)/library': {
       id: '/(app)/library'
       path: '/library'
@@ -251,7 +237,6 @@ interface appRouteRouteChildren {
   appHelpRoute: typeof appHelpRoute
   appInsightsRoute: typeof appInsightsRoute
   appIntegrationRoute: typeof appIntegrationRoute
-  appLayoutRoute: typeof appLayoutRoute
   appLibraryRoute: typeof appLibraryRoute
   appSettingsRoute: typeof appSettingsRoute
   appToolsRoute: typeof appToolsRoute
@@ -264,7 +249,6 @@ const appRouteRouteChildren: appRouteRouteChildren = {
   appHelpRoute: appHelpRoute,
   appInsightsRoute: appInsightsRoute,
   appIntegrationRoute: appIntegrationRoute,
-  appLayoutRoute: appLayoutRoute,
   appLibraryRoute: appLibraryRoute,
   appSettingsRoute: appSettingsRoute,
   appToolsRoute: appToolsRoute,
@@ -301,7 +285,6 @@ export interface FileRoutesByFullPath {
   '/help': typeof appHelpRoute
   '/insights': typeof appInsightsRoute
   '/integration': typeof appIntegrationRoute
-  '/layout': typeof appLayoutRoute
   '/library': typeof appLibraryRoute
   '/settings': typeof appSettingsRoute
   '/tools': typeof appToolsRoute
@@ -318,7 +301,6 @@ export interface FileRoutesByTo {
   '/help': typeof appHelpRoute
   '/insights': typeof appInsightsRoute
   '/integration': typeof appIntegrationRoute
-  '/layout': typeof appLayoutRoute
   '/library': typeof appLibraryRoute
   '/settings': typeof appSettingsRoute
   '/tools': typeof appToolsRoute
@@ -338,7 +320,6 @@ export interface FileRoutesById {
   '/(app)/help': typeof appHelpRoute
   '/(app)/insights': typeof appInsightsRoute
   '/(app)/integration': typeof appIntegrationRoute
-  '/(app)/layout': typeof appLayoutRoute
   '/(app)/library': typeof appLibraryRoute
   '/(app)/settings': typeof appSettingsRoute
   '/(app)/tools': typeof appToolsRoute
@@ -359,7 +340,6 @@ export interface FileRouteTypes {
     | '/help'
     | '/insights'
     | '/integration'
-    | '/layout'
     | '/library'
     | '/settings'
     | '/tools'
@@ -375,7 +355,6 @@ export interface FileRouteTypes {
     | '/help'
     | '/insights'
     | '/integration'
-    | '/layout'
     | '/library'
     | '/settings'
     | '/tools'
@@ -393,7 +372,6 @@ export interface FileRouteTypes {
     | '/(app)/help'
     | '/(app)/insights'
     | '/(app)/integration'
-    | '/(app)/layout'
     | '/(app)/library'
     | '/(app)/settings'
     | '/(app)/tools'
@@ -437,7 +415,6 @@ export const routeTree = rootRoute
         "/(app)/help",
         "/(app)/insights",
         "/(app)/integration",
-        "/(app)/layout",
         "/(app)/library",
         "/(app)/settings",
         "/(app)/tools",
@@ -468,10 +445,6 @@ export const routeTree = rootRoute
     },
     "/(app)/integration": {
       "filePath": "(app)/integration.tsx",
-      "parent": "/(app)"
-    },
-    "/(app)/layout": {
-      "filePath": "(app)/layout.tsx",
       "parent": "/(app)"
     },
     "/(app)/library": {
