@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { HTMLProps, Ref } from 'react'; // Import Ref type
+import type { HTMLProps } from 'react'; // Import Ref type
 import {
     Tree,
     ControlledTreeEnvironment,
@@ -13,19 +13,17 @@ import {
     type TreeCapabilities,
     type TreeItem,
 } from "react-complex-tree";
-import { ChevronRight, MoreHorizontal, FileText, Edit2, Copy, ArrowRight, Trash2, Link as LinkIconLucide, Eye, Columns2 } from "lucide-react"; // Added Eye, Columns2
+import { ChevronRight, MoreHorizontal, FileText, Edit2, Copy, ArrowRight, Trash2, Link as LinkIconLucide, Eye, Columns2 } from "lucide-react";
 import { cn } from "@app/ui/lib/utils";
 import {
     SidebarGroup,
     SidebarGroupContent,
     SidebarGroupLabel,
-    SidebarMenuItem, // Keep this for structure if needed, or remove if AlertDialog causes issues
 } from "@app/ui/components/sidebar";
 import { Button } from "@app/ui/components/button";
 import { type ItemData, type ExtendedTreeItem, type TreeItems, defaultIcons } from "@/lib/mock/sidebar-data";
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator
-    // Remove Submenu imports if not immediately needed for MoveTo/Tags
 } from "@app/ui/components/dropdown-menu";
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -33,10 +31,8 @@ import {
 } from "@app/ui/components/alert-dialog";
 import {
     ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger
-    // Add ContextMenuSub imports if needed later
-} from "@app/ui/components/context-menu"; // Import Shadcn ContextMenu
+} from "@app/ui/components/context-menu";
 
-// --- Type Definitions ---
 type TreeItemRenderContext = LibraryTreeItemRenderContext<never>;
 
 interface HierarchicalSectionProps {

@@ -2,7 +2,6 @@
 
 import { Slot } from "@radix-ui/react-slot";
 import { type VariantProps, cva } from "class-variance-authority";
-import { PanelLeftIcon } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@app/ui/components/button";
@@ -29,6 +28,10 @@ const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
+export const MIN_SIDEBAR_WIDTH = 180;
+export const MAX_SIDEBAR_WIDTH = 500;
+export const SIDEBAR_WIDTH_ICON_NUM = 48;
+export const DEFAULT_SIDEBAR_WIDTH = 256;
 
 type SidebarContext = {
 	state: "expanded" | "collapsed";

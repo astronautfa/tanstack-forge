@@ -1,8 +1,7 @@
-// src/components/app-sidebar.tsx
 import { Link, useMatches, useNavigate, useRouteContext } from "@tanstack/react-router";
 import * as React from "react";
-import * as Icons from 'lucide-react'; // Import all icons
-import type { TreeItemIndex } from 'react-complex-tree'; // Import TreeItemIndex type
+import * as Icons from 'lucide-react';
+import type { TreeItemIndex } from 'react-complex-tree';
 
 import { WorkSpaceSwitcher } from "./workspace-switcher";
 import {
@@ -17,27 +16,23 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarRail,
-    // Removed SidebarInset and SidebarTrigger imports if they are not used here
 } from "@app/ui/components/sidebar";
 import { HierarchicalSection } from "./hierarchical-section";
 import { initialDocumentItems, initialLibraryItems, type ExtendedTreeItem } from "@/lib/mock/sidebar-data";
-import { SearchForm } from "./search-form"; // Assuming SearchForm is correctly defined/imported
-import { useLayoutStore } from "@/lib/store/useLayoutStore"; // Import the layout store
+import { SearchForm } from "./search-form";
+import { useLayoutStore } from "@/lib/store/useLayoutStore";
 
-// Define the search params interface expected by the view route
 interface ViewSearch {
     name?: string;
     type?: string;
     icon?: string;
 }
 
-// Define the params interface expected by the view route
 interface ViewParams {
     itemId: string;
 }
 
 
-// Static nav data (use specific icons from lucide-react)
 const staticNavData = {
     navMain: [
         {
