@@ -5,7 +5,6 @@ interface UseSidebarResizeProps {
   onResize: (width: string) => void;
   // Add persistWidth to the hook interface if you want the hook to handle persistence directly
   persistWidth: (width: string) => void;
-  onToggle: () => void;
   currentWidth: string;
   isCollapsed: boolean;
   minResizeWidth?: string;
@@ -50,7 +49,6 @@ export function useSidebarResize({
   enableDrag = true,
   onResize,
   persistWidth, // Get persistWidth from props
-  onToggle,
   currentWidth,
   isCollapsed,
   minResizeWidth = "14rem", // e.g., 224px
@@ -135,18 +133,6 @@ export function useSidebarResize({
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
 
-      if (!isDragging.current) {
-        // If not dragging (mousedown without mouseup), check if it was a simple click for toggle
-        // This scenario might be less common now if mousedown only happens when !isCollapsed
-        // but keeping it for robustness. Check if mouseup is near mousedown position.
-        if (!didMove.current && Math.abs(e.clientX - startX.current) <= 3) {
-          console.log("[useSidebarResize] Click detected (no drag initiated), toggling.");
-          onToggle();
-        }
-        return; // Exit if not dragging
-      }
-
-
       // Reset dragging state *before* potential state updates
       const wasDragging = didMove.current; // Capture if actual drag happened
       isDragging.current = false;
@@ -180,7 +166,6 @@ export function useSidebarResize({
         } else {
           // If drag was very short, treat it as a click/toggle
           console.log("[useSidebarResize] Drag distance minimal, toggling instead.");
-          onToggle();
 
           // Reset the CSS variable if we toggled instead of resizing
           if (sidebarWrapper) {
@@ -194,7 +179,6 @@ export function useSidebarResize({
       } else {
         // If mouse didn't move after mousedown, treat as a simple click
         console.log("[useSidebarResize] Click detected (no move), toggling.");
-        onToggle();
         // No need to reset CSS var here, as it wasn't changed in mouseMove
       }
 
@@ -237,7 +221,6 @@ export function useSidebarResize({
     // Dependencies
     onResize,
     persistWidth,
-    onToggle,
     isCollapsed, // Re-run effect if collapsed state changes
     currentWidth, // Needed to parse unit and get initial width
     minWidthPx,

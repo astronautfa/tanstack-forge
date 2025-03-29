@@ -483,7 +483,6 @@ const SidebarRail = React.forwardRef<
 		enableDrag,
 		onResize: setWidth,
 		persistWidth: persistWidth,
-		onToggle: toggleSidebar,
 		currentWidth: width,
 		isCollapsed: state === "collapsed",
 		minResizeWidth: MIN_SIDEBAR_WIDTH,
