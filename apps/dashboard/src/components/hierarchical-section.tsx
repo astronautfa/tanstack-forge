@@ -79,6 +79,8 @@ function isDescendant(items: TreeItems, parentId: TreeItemIndex, potentialChildI
 }
 // --- End Helper Functions ---
 
+const getStorageKey = (treeId: string): string => `hierarchicalSection:expandedItems:${treeId}`;
+
 export function HierarchicalSection({
     title,
     treeId,
@@ -98,13 +100,44 @@ export function HierarchicalSection({
     const [items, setItems] = React.useState<TreeItems>(initialItems);
     const [focusedItem, setFocusedItem] = React.useState<TreeItemIndex>();
     const [expandedItems, setExpandedItems] = React.useState<TreeItemIndex[]>(() => {
-        const root = items[rootItem];
-        const initialExpanded = new Set<TreeItemIndex>([rootItem]);
-        (root?.children ?? []).forEach(childId => {
-            if (items[childId]) initialExpanded.add(childId);
-        });
-        initialExpanded.add(rootItem);
-        return Array.from(initialExpanded);
+        const storageKey = getStorageKey(treeId);
+        let defaultExpanded: TreeItemIndex[] = [];
+
+        // Calculate default expansion (root + direct children) - only if needed
+        const calculateDefaultExpansion = () => {
+            const root = items[rootItem];
+            const initialExpanded = new Set<TreeItemIndex>([rootItem]);
+            (root?.children ?? []).forEach(childId => {
+                if (items[childId]) initialExpanded.add(childId);
+            });
+            return Array.from(initialExpanded);
+        };
+
+        if (typeof window !== 'undefined' && window.localStorage) {
+            try {
+                const savedStateString = localStorage.getItem(storageKey);
+                if (savedStateString) {
+                    const parsedState = JSON.parse(savedStateString);
+                    // Basic validation: check if it's an array
+                    if (Array.isArray(parsedState)) {
+                        console.log(`[HierarchicalSection ${treeId}] Loaded expanded state from localStorage.`);
+                        // You could add more validation here (e.g., check if items still exist)
+                        // but react-complex-tree handles non-existent IDs gracefully.
+                        return parsedState as TreeItemIndex[];
+                    } else {
+                        console.warn(`[HierarchicalSection ${treeId}] Invalid expanded state found in localStorage. Using default.`);
+                    }
+                }
+            } catch (error) {
+                console.error(`[HierarchicalSection ${treeId}] Error reading or parsing expanded state from localStorage:`, error);
+            }
+        } else {
+            console.log(`[HierarchicalSection ${treeId}] SSR or no localStorage, calculating default expansion.`);
+        }
+
+        // Fallback to default calculation
+        console.log(`[HierarchicalSection ${treeId}] Using default expansion.`);
+        return calculateDefaultExpansion();
     });
     const [selectedItems, setSelectedItems] = React.useState<TreeItemIndex[]>([]);
 
@@ -146,6 +179,18 @@ export function HierarchicalSection({
             });
         }
     }, [searchTerm, itemsToExpand, rootItem, filteredItems]);
+
+    React.useEffect(() => {
+        const storageKey = getStorageKey(treeId);
+        if (typeof window !== 'undefined' && window.localStorage) {
+            try {
+                localStorage.setItem(storageKey, JSON.stringify(expandedItems));
+                console.log(`[HierarchicalSection ${treeId}] Saved expanded state to localStorage.`);
+            } catch (error) {
+                console.error(`[HierarchicalSection ${treeId}] Error saving expanded state to localStorage:`, error);
+            }
+        }
+    }, [expandedItems, treeId]);
 
     // --- Internal Drag and Drop Handler (keep as is) ---
     const handleDrop: TreeChangeHandlers<ItemData>['onDrop'] = (draggedItems, target) => {
