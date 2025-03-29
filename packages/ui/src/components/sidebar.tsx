@@ -24,8 +24,10 @@ import { cn } from "@app/ui/lib/utils";
 import { useSidebarResize } from "../hooks/use-sidebar-resize.ts";
 import { mergeButtonRefs } from "../lib/merge-button-refs.ts";
 
-const SIDEBAR_COOKIE_NAME = "sidebar:state";
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
+
+const SIDEBAR_STATE_STORAGE_KEY = "sidebar:state";
+const SIDEBAR_WIDTH_STORAGE_KEY = "sidebar:width";
+
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
@@ -34,8 +36,6 @@ const MIN_SIDEBAR_WIDTH = "14rem";
 const MAX_SIDEBAR_WIDTH = "28rem";
 const SIDEBAR_WIDTH_ICON_NUM = 48;
 const DEFAULT_SIDEBAR_WIDTH = 256;
-const SIDEBAR_WIDTH_COOKIE_NAME = "sidebar:width";
-const SIDEBAR_WIDTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 
 type SidebarContext = {
 	state: "expanded" | "collapsed";
@@ -89,17 +89,20 @@ const SidebarProvider = React.forwardRef<
 		ref
 	) => {
 		const isMobile = useIsMobile();
-		//* new state for sidebar width
 		const [width, setWidth] = React.useState(() => {
-			if (typeof document === 'undefined') return defaultWidth; // SSR check
-			const cookieValue = document.cookie
-				.split('; ')
-				.find(row => row.startsWith(`${SIDEBAR_WIDTH_COOKIE_NAME}=`))
-				?.split('=')[1];
-			// Basic validation: ensure it looks like a width value (e.g., contains px or rem)
-			if (cookieValue && (cookieValue.includes('px') || cookieValue.includes('rem'))) {
-				console.log(`[SidebarProvider] Loaded width from cookie: ${cookieValue}`);
-				return cookieValue;
+			if (typeof window === 'undefined' || !window.localStorage) {
+				return defaultWidth; // SSR/no localStorage safety check
+			}
+			try {
+				const storedWidth = localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY);
+				// Basic validation: ensure it looks like a width value
+				if (storedWidth && (storedWidth.includes('px') || storedWidth.includes('rem'))) {
+					console.log(`[SidebarProvider] Loaded width from localStorage: ${storedWidth}`);
+					return storedWidth;
+				}
+			} catch (error) {
+				console.error("[SidebarProvider] Error reading width from localStorage:", error);
+				// Fall through to default if error occurs
 			}
 			console.log(`[SidebarProvider] Using default width: ${defaultWidth}`);
 			return defaultWidth;
@@ -110,8 +113,31 @@ const SidebarProvider = React.forwardRef<
 
 		// This is the internal state of the sidebar.
 		// We use openProp and setOpenProp for control from outside the component.
-		const [_open, _setOpen] = React.useState(defaultOpen);
+		const [_open, _setOpen] = React.useState(() => {
+			if (typeof window === 'undefined' || !window.localStorage) {
+				return defaultOpen; // SSR/no localStorage safety check
+			}
+			try {
+				const storedState = localStorage.getItem(SIDEBAR_STATE_STORAGE_KEY);
+				if (storedState === "true") {
+					console.log("[SidebarProvider] Loaded state from localStorage: expanded");
+					return true;
+				}
+				if (storedState === "false") {
+					console.log("[SidebarProvider] Loaded state from localStorage: collapsed");
+					return false;
+				}
+				// Ignore invalid values, fall through to default
+			} catch (error) {
+				console.error("[SidebarProvider] Error reading state from localStorage:", error);
+				// Fall through to default if error occurs
+			}
+			console.log(`[SidebarProvider] Using default state: ${defaultOpen ? 'expanded' : 'collapsed'}`);
+			return defaultOpen;
+		});
+
 		const open = openProp ?? _open;
+
 		const setOpen = React.useCallback(
 			(value: boolean | ((value: boolean) => boolean)) => {
 				const openState = typeof value === "function" ? value(open) : value;
@@ -121,23 +147,34 @@ const SidebarProvider = React.forwardRef<
 					_setOpen(openState);
 				}
 
-				// This sets the cookie to keep the sidebar state.
-				document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+				// Persist the state to localStorage
+				if (typeof window !== 'undefined' && window.localStorage) {
+					try {
+						console.log(`[SidebarProvider] Persisting state to localStorage: ${openState}`);
+						localStorage.setItem(SIDEBAR_STATE_STORAGE_KEY, String(openState)); // Store as 'true' or 'false' string
+					} catch (error) {
+						console.error("[SidebarProvider] Error saving state to localStorage:", error);
+					}
+				}
 			},
-			[setOpenProp, open]
+			[setOpenProp, open] // _setOpen is stable
 		);
 
-		const persistWidth = (finalWidth: string) => {
-			// Basic validation before setting cookie
+		const persistWidth = React.useCallback((finalWidth: string) => {
 			if (finalWidth && (finalWidth.includes('px') || finalWidth.includes('rem'))) {
-				console.log(`[SidebarProvider] Persisting width to cookie: ${finalWidth}`);
-				document.cookie = `${SIDEBAR_WIDTH_COOKIE_NAME}=${finalWidth}; path=/; max-age=${SIDEBAR_WIDTH_COOKIE_MAX_AGE}; SameSite=Lax; Secure`; // Added Secure
+				if (typeof window !== 'undefined' && window.localStorage) {
+					try {
+						console.log(`[SidebarProvider] Persisting width to localStorage: ${finalWidth}`);
+						localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, finalWidth);
+					} catch (error) {
+						console.error("[SidebarProvider] Error saving width to localStorage:", error);
+					}
+				}
 			} else {
 				console.warn(`[SidebarProvider] Attempted to persist invalid width: ${finalWidth}`);
 			}
-		};
+		}, []);
 
-		// Helper to toggle the sidebar.
 		const toggleSidebar = React.useCallback(() => {
 			return isMobile
 				? setOpenMobile((open) => !open)
@@ -145,8 +182,6 @@ const SidebarProvider = React.forwardRef<
 		}, [
 			isMobile,
 			setOpen,
-			//* remove setOpenMobile from dependencies because setOpenMobile are state setters created by useState
-			// setOpenMobile
 		]);
 
 		// Adds a keyboard shortcut to toggle the sidebar.

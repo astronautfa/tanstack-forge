@@ -20,7 +20,7 @@ import {
 import { HierarchicalSection } from "./hierarchical-section";
 import { initialDocumentItems, initialLibraryItems, type ExtendedTreeItem } from "@/lib/mock/sidebar-data";
 import { SearchForm } from "./search-form";
-import { useLayoutStore } from "@/lib/store/useLayoutStore";
+import { useLayoutStore } from "@/lib/store/use-layout-store";
 
 interface ViewSearch {
     name?: string;
