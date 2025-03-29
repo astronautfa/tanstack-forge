@@ -353,7 +353,7 @@ export function HierarchicalSection({
             // Use a simple li for structure, context menu wraps the interactive part
             <li
                 className={cn(
-                    "rct-tree-item-li relative list-none py-0 pl-0 pr-1", // Basic list item styling
+                    "rct-tree-item-li relative list-none py-0 pl-0", // Basic list item styling
                     context.isDraggingOver && !context.canDropOn && "bg-muted/20",
                     context.isDraggingOver && context.canDropOn && "bg-primary/10 outline-2 outline-offset-[-1px] outline-primary rounded",
                 )}

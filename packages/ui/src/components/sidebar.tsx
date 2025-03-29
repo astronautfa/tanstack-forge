@@ -34,8 +34,6 @@ const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 const MIN_SIDEBAR_WIDTH = "14rem";
 const MAX_SIDEBAR_WIDTH = "28rem";
-const SIDEBAR_WIDTH_ICON_NUM = 48;
-const DEFAULT_SIDEBAR_WIDTH = 256;
 
 type SidebarContext = {
 	state: "expanded" | "collapsed";
@@ -65,6 +63,7 @@ function useSidebar() {
 	return context;
 }
 
+// Modified SidebarProvider section
 const SidebarProvider = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<"div"> & {
@@ -90,14 +89,18 @@ const SidebarProvider = React.forwardRef<
 	) => {
 		const isMobile = useIsMobile();
 		const [isReady, setIsReady] = React.useState(false);
+
+		// Load width from localStorage with better error handling and validation
 		const [width, setWidth] = React.useState(() => {
 			if (typeof window === 'undefined' || !window.localStorage) {
 				return defaultWidth; // SSR/no localStorage safety check
 			}
 			try {
 				const storedWidth = localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY);
-				// Basic validation: ensure it looks like a width value
-				if (storedWidth && (storedWidth.includes('px') || storedWidth.includes('rem'))) {
+				// More robust validation to ensure it looks like a width value
+				if (storedWidth &&
+					(storedWidth.includes('px') || storedWidth.includes('rem')) &&
+					!isNaN(parseFloat(storedWidth))) {
 					console.log(`[SidebarProvider] Loaded width from localStorage: ${storedWidth}`);
 					return storedWidth;
 				}
@@ -108,12 +111,12 @@ const SidebarProvider = React.forwardRef<
 			console.log(`[SidebarProvider] Using default width: ${defaultWidth}`);
 			return defaultWidth;
 		});
+
 		const [openMobile, setOpenMobile] = React.useState(false);
 		//* new state for tracking is dragging rail
 		const [isDraggingRail, setIsDraggingRail] = React.useState(false);
 
-		// This is the internal state of the sidebar.
-		// We use openProp and setOpenProp for control from outside the component.
+		// Initialize state from localStorage with better error handling
 		const [_open, _setOpen] = React.useState(() => {
 			if (typeof window === 'undefined' || !window.localStorage) {
 				return defaultOpen; // SSR/no localStorage safety check
@@ -201,12 +204,17 @@ const SidebarProvider = React.forwardRef<
 			return () => window.removeEventListener("keydown", handleKeyDown);
 		}, [toggleSidebar]);
 
+		// Ensure the width is properly applied from localStorage on initial render
 		React.useEffect(() => {
-			// This runs after the first render, ensuring localStorage
-			// has been read and the initial state/CSS var is set.
-			setIsReady(true);
-			console.log("[SidebarProvider] Ready, rendering children.");
-		}, []);
+			// Apply the width from initial state immediately after the component mounts
+			// This ensures CSS variables are set properly before the first render
+			if (typeof window !== 'undefined' && !isReady) {
+				// This runs after the first render, ensuring localStorage
+				// has been read and the initial state/CSS var is set.
+				setIsReady(true);
+				console.log(`[SidebarProvider] Ready, applying width: ${width}`);
+			}
+		}, [width, isReady]);
 
 		// We add a state so that we can do data-state="expanded" or "collapsed".
 		// This makes it easier to style the sidebar with Tailwind classes.
@@ -235,8 +243,6 @@ const SidebarProvider = React.forwardRef<
 				setOpen,
 				isMobile,
 				openMobile,
-				//* remove setOpenMobile from dependencies because setOpenMobile are state setters created by useState
-				// setOpenMobile,
 				toggleSidebar,
 				//* add width to dependencies
 				width,
@@ -272,7 +278,7 @@ const SidebarProvider = React.forwardRef<
 		);
 	}
 );
-SidebarProvider.displayName = "SidebarProvider";
+
 
 const Sidebar = React.forwardRef<
 	HTMLDivElement,

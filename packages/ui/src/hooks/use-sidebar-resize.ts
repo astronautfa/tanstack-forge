@@ -13,20 +13,29 @@ interface UseSidebarResizeProps {
   side?: "left" | "right"; // Need the side to calculate delta correctly
 }
 
-// Helper functions (keep these as they are useful)
 function parseWidth(width: string): { value: number; unit: "rem" | "px" } {
   // Handle potential undefined or null width string gracefully
   if (!width) {
     console.warn("[parseWidth] Received invalid width:", width, "Using default 0px.");
     return { value: 0, unit: "px" };
   }
-  const unit = width.endsWith("rem") ? "rem" : "px";
-  const value = Number.parseFloat(width);
+
+  // Extract the numeric part and unit
+  const match = width.match(/^([\d.]+)(rem|px)$/);
+  if (!match) {
+    console.warn("[parseWidth] Failed to parse width format:", width, "Using default 0px.");
+    return { value: 0, unit: "px" };
+  }
+
+  const value = Number.parseFloat(match[1]!);
+  const unit = match[2] as "rem" | "px";
+
   // Check if parsing resulted in NaN
   if (Number.isNaN(value)) {
     console.warn("[parseWidth] Failed to parse width value:", width, "Using default 0px.");
     return { value: 0, unit: "px" };
   }
+
   return { value, unit };
 }
 
