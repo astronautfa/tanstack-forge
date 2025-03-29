@@ -1,32 +1,19 @@
-/* === Base FlexLayout Styles (Adapted from gray.css) === */
-
 :root {
-  /* --- Curve Variables --- */
-  --tab-curve-size: 10px; /* Adjust the curve radius here */
-  --tab-border-width: 1px; /* MUST match tab bar's border-bottom-width */
-  /* --- End Curve Variables --- */
+  --tab-curve-size: 10px;
+  --tab-border-width: 1px;
 
-  /* Define font defaults using global variables */
-  font-size: var(
-    --font-size,
-    medium
-  ); /* Fallback if --font-size isn't globally set */
-  /* font-family: var(--font-sans); <-- REMOVED TO PREVENT OVERRIDE */
+  font-size: var(--font-size, medium);
   color: var(--foreground);
   background-color: var(--background);
 }
 
-/* --- Minimal Reset (Keep only essentials if needed) --- */
 *,
 ::before,
 ::after {
   box-sizing: border-box;
   border-width: 0;
   border-style: solid;
-  border-color: var(
-    --border,
-    #e5e7eb
-  ); /* Use your border variable or a fallback */
+  border-color: var(--border, #e5e7eb);
 }
 
 ::before,
@@ -41,18 +28,14 @@ html,
   -moz-tab-size: 4;
   -o-tab-size: 4;
   tab-size: 4;
-  /* REMOVED font-family: ui-sans-serif... */
   -webkit-tap-highlight-color: transparent;
 }
 
 body {
   margin: 0;
   line-height: inherit;
-  /* Ensure body inherits application font */
-  font-family: var(--font-sans); /* Or your specific font variable */
+  font-family: var(--font-sans);
 }
-
-/* --- End Minimal Reset --- */
 
 .flexlayout__layout {
   left: 0;
@@ -62,7 +45,6 @@ body {
   position: absolute;
   display: flex;
   font-size: var(--font-size, medium);
-  /* font-family: var(--font-sans); <-- Let body handle this */
   color: var(--foreground);
   background-color: var(--background);
 }
@@ -70,14 +52,14 @@ body {
 .flexlayout__layout
   .flexlayout__tabset_container:first-child
   .flexlayout__tabset_tabbar_inner_tab_container {
-  padding-left: 40px; /* Keep if this is specific layout padding */
+  padding-left: 40px;
   gap: 1px;
 }
 
 .flexlayout__layout
   .flexlayout__tabset_container:not(:first-child)
   .flexlayout__tabset_tabbar_inner_tab_container {
-  padding-left: 0px; /* Adjust this value as needed */
+  padding-left: 0px;
   gap: 1px;
 }
 
@@ -133,19 +115,18 @@ body {
   flex-grow: 1;
 }
 
-/* Splitter styles */
 .flexlayout__splitter {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--sidebar-border); /* Match sidebar border */
+  background-color: var(--sidebar-border);
   touch-action: none;
   z-index: 10;
   transition: background-color 0.1s ease-in;
 }
 
 .flexlayout__splitter:hover {
-  background-color: var(--border); /* Use main border color on hover */
+  background-color: var(--border);
 }
 
 .flexlayout__splitter_horz {
@@ -166,14 +147,15 @@ body {
   width: 100% !important;
   height: 2px !important;
   min-height: 2px !important;
+  background-color: var(--sidebar);
 }
 
-/* Splitter Drag Style */
 .flexlayout__splitter_drag {
   position: absolute;
   z-index: 1000;
   background-color: oklch(from var(--border) l c h);
 }
+
 .dark .flexlayout__splitter_drag {
   background-color: oklch(from var(--accent) l c h / 0.25);
 }
@@ -198,7 +180,6 @@ body {
   background-color: transparent;
 }
 
-/* Drag/drop outline styles */
 .flexlayout__outline_rect {
   position: absolute;
   pointer-events: none;
@@ -234,7 +215,6 @@ body {
   font-family: inherit;
 }
 
-/* Row styles */
 .flexlayout__row {
   display: flex;
   flex-basis: 0px;
@@ -243,10 +223,9 @@ body {
   position: relative;
   box-sizing: border-box;
   overflow: hidden;
-  background-color: var(--background); /* Default */
+  background-color: var(--background);
 }
 
-/* TabSet styles */
 .flexlayout__tabset {
   display: flex;
   flex-direction: column;
@@ -254,7 +233,6 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   box-sizing: border-box;
-  /* font-family: inherit; <-- Let body/layout handle */
   overflow: hidden;
   flex-grow: 1;
 }
@@ -267,7 +245,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   flex-grow: 1;
-  background-color: var(--background); /* Match content background for curves */
+  background-color: var(--background);
   padding: 0;
 }
 
@@ -303,12 +281,9 @@ body {
   flex-grow: 1;
 }
 
-/* Tab Bar */
 .flexlayout__tabset_tabbar_outer {
   box-sizing: border-box;
-  background-color: var(
-    --sidebar
-  ) !important; /* Ensure tab bar has sidebar bg */
+  background-color: var(--sidebar) !important;
   overflow: hidden;
   display: flex;
   font-size: inherit;
@@ -318,7 +293,7 @@ body {
   height: 40px;
   /* border-bottom: var(--tab-border-width) solid var(--border); */
   position: relative;
-  z-index: 1; /* Behind selected tab */
+  z-index: 1;
 }
 
 .flexlayout__tabset_tabbar_outer_bottom {
@@ -352,7 +327,6 @@ body {
   border-bottom: 2px solid transparent;
 }
 
-/* Tab Stamp (used for measuring) */
 .flexlayout__tab_button_stamp {
   display: inline-flex;
   align-items: center;
@@ -361,7 +335,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Individual Tab Content Area */
 .flexlayout__tab {
   overflow: hidden;
   box-sizing: border-box;
@@ -392,19 +365,18 @@ body {
   background-color: oklch(0 0 0 / 0.25);
 }
 
-/* Tab Button Base */
 .flexlayout__tab_button {
-  position: relative; /* Needed for z-index stacking */
-  z-index: 2; /* Below selected tab */
+  position: relative;
+  z-index: 2;
   min-width: 100px;
   max-width: 200px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 6px 10px;
-  border: 1px solid transparent; /* Keep for spacing consistency */
+  border: 1px solid transparent;
   border-bottom: none;
-  border-top-left-radius: var(--radius-md); /* Use medium for unselected */
+  border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
   color: var(--muted-foreground);
   outline: none;
@@ -475,7 +447,6 @@ body {
   mask-position: 0% 100%;
 }
 
-/* Selected state specific to stretch buttons */
 .flexlayout__tab_button_stretch.flexlayout__tab_button_stretch_top {
   background-color: var(--background);
   color: var(--foreground);
@@ -514,18 +485,15 @@ body {
   mask-position: 0% 100%;
 }
 
-/* Hover effect */
 .flexlayout__tab_button_stretch.flexlayout__tab_button_stretch_top:hover {
   color: var(--accent-foreground);
 }
 
-/* Add z-index to ensure content stays above the curves */
 .flexlayout__tab_button_stretch.flexlayout__tab_button_stretch_top > * {
   position: relative;
   z-index: 2;
 }
 
-/* Unselected Tab */
 .flexlayout__tab_button--unselected {
   padding-bottom: 6px; /* Maintain height consistency */
 }
@@ -534,40 +502,30 @@ body {
   width: 100%;
 }
 
-/* Tab Button Hover */
 .flexlayout__tab_button:hover {
-  /* background-color: var(--accent); */
   color: var(--accent-foreground);
-  /* No border change on hover to keep curves clean */
   border-color: transparent;
-  z-index: 3; /* Bring hover slightly forward */
+  z-index: 3;
 }
-
-/* --- CURVED TAB STYLES START (No Border Version) --- */
 
 .flexlayout__tab_button_top.flexlayout__tab_button--selected {
-  background-color: var(--background); /* Selected tab matches content bg */
+  background-color: var(--background);
   color: var(--foreground);
   font-weight: 500;
-  z-index: 4; /* Above others */
+  z-index: 4;
   padding-bottom: 6px;
-  /* Top corners rounded */
   border-top-left-radius: var(--radius);
   border-top-right-radius: var(--radius);
-  /* REMOVE borders */
   border: none;
-  /* NO negative margin needed */
-  position: relative; /* Crucial for pseudo-elements */
+  position: relative;
 }
 
-/* Base styles for pseudo-elements (curves) */
 .flexlayout__tab_button_top.flexlayout__tab_button--selected::before,
 .flexlayout__tab_button_top.flexlayout__tab_button--selected::after {
   content: "";
   position: absolute;
   width: var(--tab-curve-size);
   height: var(--tab-curve-size);
-  /* The mask creates the curve shape */
   mask-image: radial-gradient(
     circle at center,
     transparent calc(50% - var(--tab-border-width)),
@@ -576,42 +534,32 @@ body {
   background-color: var(--background);
   mask-size: 200% 200%;
   pointer-events: none;
-  /* Position elements AT the bottom edge (since no border to cover) */
   bottom: -2px;
-  z-index: 1; /* Sit below tab content but above tab bar */
+  z-index: 1;
 }
 
-/* Left curve */
 .flexlayout__tab_button_top.flexlayout__tab_button--selected::before {
-  left: calc(
-    -0.8 * var(--tab-curve-size)
-  ) !important; /* Position outside the left edge */
-  mask-position: 100% 100%; /* Use bottom-right mask quadrant for bottom-left curve shape */
+  left: calc(-0.8 * var(--tab-curve-size)) !important;
+  mask-position: 100% 100%;
 }
 
-/* Right curve */
 .flexlayout__tab_button_top.flexlayout__tab_button--selected::after {
-  right: calc(
-    -0.8 * var(--tab-curve-size)
-  ) !important; /* Position outside the right edge */
-  mask-position: 0% 100%; /* Use bottom-left mask quadrant for bottom-right curve shape */
+  right: calc(-0.8 * var(--tab-curve-size)) !important;
+  mask-position: 0% 100%;
 }
 
-/* Ensure tab content (text, icons) is above the curves */
 .flexlayout__tab_button_top.flexlayout__tab_button--selected
   .flexlayout__tab_button_content,
 .flexlayout__tab_button_top.flexlayout__tab_button--selected
   .flexlayout__tab_button_leading,
 .flexlayout__tab_button_top.flexlayout__tab_button--selected
   .flexlayout__tab_button_trailing {
-  position: relative; /* Create a stacking context */
-  z-index: 2; /* Ensure content is above ::before and ::after */
+  position: relative;
+  z-index: 2;
 }
-/* --- CURVED TAB STYLES END --- */
 
 .flexlayout__tab_button_leading {
   display: flex;
-  /* position: relative; z-index: 2; <-- Add if inside selected tab */
 }
 
 .flexlayout__tab_button_content {
@@ -619,10 +567,9 @@ body {
   text-wrap: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* position: relative; z-index: 2; <-- Add if inside selected tab */
+  font-size: small;
 }
 
-/* Tab Rename Textbox */
 .flexlayout__tab_button_textbox {
   border: 1px solid var(--input);
   font-family: inherit;
@@ -633,13 +580,13 @@ body {
   width: 10em;
   padding: 2px 4px;
 }
+
 .flexlayout__tab_button_textbox:focus {
   outline: 2px solid var(--ring);
   outline-offset: 1px;
   border-color: var(--primary);
 }
 
-/* Close Button / Trailing Icons Container */
 .flexlayout__tab_button_trailing {
   display: flex;
   visibility: hidden;
@@ -648,20 +595,22 @@ body {
   color: var(--muted-foreground);
   /* position: relative; z-index: 2; <-- Add if inside selected tab */
 }
+
 .flexlayout__tab_button_trailing:hover {
   background-color: oklch(from var(--muted) l c h / 0.5);
   color: var(--foreground);
 }
+
 @media (hover: hover) {
   .flexlayout__tab_button:hover .flexlayout__tab_button_trailing {
     visibility: visible;
   }
 }
+
 .flexlayout__tab_button--selected .flexlayout__tab_button_trailing {
   visibility: visible;
 }
 
-/* Overflow Menu Button */
 .flexlayout__tab_button_overflow {
   display: flex;
   align-items: center;
@@ -717,7 +666,6 @@ body {
   align-items: center;
 }
 
-/* Floating Tab Placeholder */
 .flexlayout__tab_floating {
   overflow: auto;
   position: absolute;
@@ -746,7 +694,6 @@ body {
   color: var(--primary);
 }
 
-/* Border Styles */
 .flexlayout__border {
   box-sizing: border-box;
   overflow: hidden;
@@ -756,30 +703,36 @@ body {
   color: var(--sidebar-foreground);
   background-color: var(--sidebar);
 }
+
 .flexlayout__border_tab_contents {
   box-sizing: border-box;
   overflow: hidden;
   background-color: var(--background);
   flex-grow: 1;
 }
+
 .flexlayout__border_top {
   border-bottom: 1px solid var(--sidebar-border);
   align-items: center;
 }
+
 .flexlayout__border_bottom {
   border-top: 1px solid var(--sidebar-border);
   align-items: center;
 }
+
 .flexlayout__border_left {
   border-right: 1px solid var(--sidebar-border);
   align-content: center;
   flex-direction: column;
 }
+
 .flexlayout__border_right {
   border-left: 1px solid var(--sidebar-border);
   align-content: center;
   flex-direction: column;
 }
+
 .flexlayout__border_inner {
   position: relative;
   box-sizing: border-box;
@@ -787,6 +740,7 @@ body {
   overflow: hidden;
   flex-grow: 1;
 }
+
 .flexlayout__border_inner_tab_container {
   white-space: nowrap;
   display: flex;
@@ -796,18 +750,22 @@ body {
   position: absolute;
   width: 10000px;
 }
+
 .flexlayout__border_inner_tab_container_right {
   transform-origin: top left;
   transform: rotate(90deg);
 }
+
 .flexlayout__border_inner_tab_container_left {
   flex-direction: row-reverse;
   transform-origin: top right;
   transform: rotate(-90deg);
 }
+
 .flexlayout__border_tab_divider {
   width: 4px;
 }
+
 .flexlayout__border_button {
   display: flex;
   gap: 0.3em;
@@ -821,55 +779,67 @@ body {
   color: var(--sidebar-foreground);
   background-color: transparent;
 }
+
 .flexlayout__border_button--selected {
   background-color: var(--sidebar-accent);
   color: var(--sidebar-accent-foreground);
 }
+
 @media (hover: hover) {
   .flexlayout__border_button:hover {
     background-color: var(--sidebar-accent);
     color: var(--sidebar-accent-foreground);
   }
 }
+
 .flexlayout__border_button_leading {
   display: flex;
 }
+
 .flexlayout__border_button_content {
   display: flex;
 }
+
 .flexlayout__border_button_trailing {
   display: flex;
   border-radius: var(--radius-sm);
   visibility: hidden;
   margin-left: 0.5em;
 }
+
 .flexlayout__border_button_trailing:hover {
   background-color: oklch(from var(--sidebar-primary) l c h / 0.2);
 }
+
 @media (hover: hover) {
   .flexlayout__border_button:hover .flexlayout__border_button_trailing {
     visibility: visible;
   }
 }
+
 .flexlayout__border_button--selected .flexlayout__border_button_trailing {
   visibility: visible;
 }
+
 .flexlayout__border_toolbar {
   display: flex;
   gap: 0.3em;
   align-items: center;
 }
+
 .flexlayout__border_toolbar_left,
 .flexlayout__border_toolbar_right {
   flex-direction: column;
   padding-top: 0.5em;
   padding-bottom: 0.3em;
 }
+
 .flexlayout__border_toolbar_top,
 .flexlayout__border_toolbar_bottom {
   padding-left: 0.5em;
   padding-right: 0.3em;
 }
+
 .flexlayout__border_toolbar_button {
   border: none;
   outline: none;
@@ -879,12 +849,14 @@ body {
   padding: 1px;
   color: var(--sidebar-foreground);
 }
+
 @media (hover: hover) {
   .flexlayout__border_toolbar_button:hover {
     background-color: oklch(from var(--sidebar-primary) l c h / 0.2);
     color: var(--sidebar-primary-foreground);
   }
 }
+
 .flexlayout__border_toolbar_button_overflow {
   display: flex;
   align-items: center;
@@ -894,10 +866,10 @@ body {
   background-color: transparent;
 }
 
-/* Popup Menu Styles */
 .flexlayout__popup_menu {
-  font-size: inherit; /*font-family: inherit;*/
+  font-size: inherit;
 }
+
 .flexlayout__popup_menu_item {
   padding: 4px 0.75em;
   white-space: nowrap;
@@ -905,12 +877,14 @@ body {
   border-radius: var(--radius-sm);
   color: var(--popover-foreground);
 }
+
 @media (hover: hover) {
   .flexlayout__popup_menu_item:hover {
     background-color: var(--accent);
     color: var(--accent-foreground);
   }
 }
+
 .flexlayout__popup_menu_container {
   box-shadow:
     0 4px 6px -1px rgb(0 0 0 / 0.1),
@@ -927,7 +901,6 @@ body {
   padding: 4px;
 }
 
-/* Floating Window */
 .flexlayout__floating_window_content {
   left: 0;
   top: 0;
@@ -936,7 +909,6 @@ body {
   position: absolute;
 }
 
-/* Error Boundary */
 .flexlayout__error_boundary_container {
   left: 0;
   top: 0;
@@ -951,6 +923,7 @@ body {
   color: var(--destructive-foreground);
   border-radius: var(--radius);
 }
+
 .flexlayout__error_boundary_content {
   display: flex;
   align-items: center;
@@ -959,7 +932,6 @@ body {
   gap: 0.5em;
 }
 
-/* Sizers */
 .flexlayout__tabset_sizer,
 .flexlayout__tabset_header_sizer,
 .flexlayout__border_sizer {
@@ -967,30 +939,25 @@ body {
   top: -30000px;
   visibility: hidden;
   pointer-events: none;
-  font-size: inherit; /*font-family: inherit;*/
+  font-size: inherit;
   padding: 0;
   margin: 0;
 }
 
-/* === Custom Overrides and Theming (Continued) === */
-
-/* Tab Content Area */
 .flexlayout__tab_content {
   background-color: var(--background);
   overflow: hidden;
-  padding: 1rem; /* Or your desired padding */
+  padding: 1rem;
   position: relative;
   z-index: 1;
   margin-top: 0;
 }
 
-/* Rows */
 .flexlayout__layout > .flexlayout__row {
   background-color: var(--sidebar);
   gap: 0.5rem;
 }
 
-/* === Dark Mode Overrides (No changes needed for curve logic itself) === */
 .dark .flexlayout__splitter:hover {
   background-color: var(--border);
 }

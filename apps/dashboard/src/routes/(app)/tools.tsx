@@ -19,9 +19,8 @@ import {
   Zap,
   FileText,
   Edit3,
-  Image as ImageIcon // Added for image file type icon
+  Image as ImageIcon
 } from 'lucide-react';
-
 import { Button } from "@app/ui/components/button";
 import { Badge } from "@app/ui/components/badge";
 import { Textarea } from "@app/ui/components/textarea";
@@ -45,14 +44,11 @@ import {
 } from "@app/ui/components/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@app/ui/components/command";
 import { cn } from "@app/ui/lib/utils";
-
 import ChatSettingsDialog, {
   type ModelSettings as DialogModelSettings,
   type ChatUISettings as DialogChatUISettings,
   type ModelOption
-} from '@/components/chat-settings-dialog'; // Assuming this path is correct
-
-// --- Type Definitions ---
+} from '@/components/chat-settings-dialog';
 
 interface FilePreview {
   id: string;
@@ -736,12 +732,12 @@ const MessageItem: React.FC<MessageItemProps> = React.memo(({
           {/* Message Bubble */}
           <div
             className={cn(
-              "relative group flex flex-col rounded-xl shadow-sm min-w-[40px]",
+              "relative group flex flex-col rounded-xl min-w-[40px]",
               messagePadding,
               isUser
                 ? 'bg-primary text-primary-foreground rounded-br-sm'
                 // Force assistant bubble to take full width within its parent column
-                : 'bg-muted text-foreground rounded-bl-sm w-full'
+                : 'text-foreground rounded-bl-sm w-full'
             )}
           >
             {!isUser && !isCompact && (<div className="text-xs font-medium mb-1.5 text-muted-foreground">{modelForMessage.name}</div>)}

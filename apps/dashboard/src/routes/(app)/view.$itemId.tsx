@@ -1,6 +1,6 @@
-// src/routes/(app)/view.$itemId.tsx
 import * as React from 'react';
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router';
+
 import {
     Layout,
     TabNode,
@@ -9,14 +9,15 @@ import {
     Model,
     type ITabRenderValues
 } from '@app/layout';
+
 import * as Icons from 'lucide-react';
 
 import { useLayoutStore, getTabData } from '@/lib/store/useLayoutStore';
 import { DocumentPlaceholder, LibraryItemPlaceholder, UnknownPlaceholder } from '@/components/view/placeholders';
 import { LoadingContainer } from '@app/ui/components/loading-container';
 import { SidebarTrigger } from '@app/ui/components/sidebar';
-import { cn } from '@app/ui/lib/utils';
 
+import { cn } from '@app/ui/lib/utils';
 
 interface ViewSearch {
     name?: string;
@@ -42,9 +43,6 @@ const handleRenderTab = (node: TabNode, renderValues: ITabRenderValues) => {
     }
 
     renderValues.content = <span className="truncate">{node.getName()}</span>;
-
-    // You can also add buttons here if needed:
-    // renderValues.buttons.push(<button key="mybutton">...</button>);
 };
 
 
@@ -69,9 +67,7 @@ function ViewPage() {
 
     const [isInitializing, setIsInitializing] = React.useState(true);
 
-    // Effect to open or select the tab when the route loads/changes
     React.useEffect(() => {
-        // ... (useEffect logic remains the same)
         if (!itemId) return;
 
         const tabName = name ?? `Item ${itemId.substring(0, 6)}`;
@@ -100,14 +96,11 @@ function ViewPage() {
             }
         }
 
-    }, [itemId, name, itemType, iconName, isTabOpen, addTab, selectTab, setActiveTabId, router.history, location.pathname, search]); // Removed model dependency if not directly used
+    }, [itemId, name, itemType, iconName, isTabOpen, addTab, selectTab, setActiveTabId, router.history, location.pathname, search]);
 
-    // Factory function to render tab content
     const factory = (node: TabNode): React.ReactNode => {
         const component = node.getComponent();
         const nodeIconName = node.getIcon();
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         const Icon = nodeIconName ? Icons[nodeIconName as keyof typeof Icons] as React.ElementType : null;
         const props = { node, Icon };
 
@@ -121,7 +114,6 @@ function ViewPage() {
         }
     };
 
-    // Handle model changes from flexlayout actions
     const onModelChange = (currentModel: Model, action: Action) => {
         // ... (onModelChange logic remains the same)
         if (action.type === Actions.SELECT_TAB) {
@@ -184,9 +176,7 @@ function ViewPage() {
                     model={model}
                     factory={factory}
                     onModelChange={onModelChange}
-                    // *** FIX: Use onRenderTab instead of titleFactory ***
                     onRenderTab={handleRenderTab}
-                    // *** END FIX ***
                     icons={{
                         close: <Icons.X className="h-3 w-3" />,
                         maximize: <Icons.Maximize2 className="h-3 w-3" />,
@@ -194,7 +184,6 @@ function ViewPage() {
                         more: <Icons.MoreHorizontal className="h-4 w-4" />,
                         popout: <Icons.SquareArrowOutUpRight className="h-3 w-3" />,
                     }}
-                // REMOVED titleFactory prop
                 />
             </div>
         </div>
