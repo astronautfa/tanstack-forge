@@ -1,7 +1,6 @@
-// src/components/view/placeholders.tsx
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@app/ui/components/card';
-import { FileText, Book, HelpCircle } from 'lucide-react';
+import { FileText, Book, HelpCircle, Folder as DefaultFolderIcon } from 'lucide-react';
 import type { TabNode } from '@app/layout'; // Import TabNode type
 
 interface PlaceholderProps {
@@ -42,5 +41,9 @@ export const LibraryItemPlaceholder: React.FC<PlaceholderProps> = (props) => (
 // Add more placeholders as needed (e.g., Dashboard, Settings)
 
 export const UnknownPlaceholder: React.FC<PlaceholderProps> = (props) => (
+    <BasePlaceholder {...props} Icon={HelpCircle} typeLabel={`Unknown (${props.node.getComponent()})`} />
+);
+
+export const FolderPlaceholder: React.FC<PlaceholderProps> = (props) => (
     <BasePlaceholder {...props} Icon={HelpCircle} typeLabel={`Unknown (${props.node.getComponent()})`} />
 );

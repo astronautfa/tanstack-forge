@@ -281,49 +281,58 @@ export const useLayoutStore = create<LayoutState>((set, get) => {
             }
         },
 
+        // src/lib/store/useLayoutStore.ts
         removeTab: (tabId) => {
             const { model, tabs, activeTabId } = get();
-            const node = model.getNodeById(tabId);
-            let nextActiveTabId = activeTabId; // Start with current active
+            const nodeToDelete = model.getNodeById(tabId);
+            let nextActiveTabId = activeTabId; // Assume current active might remain
 
-            if (node) {
-                const parentTabset = node.getParent() as TabSetNode | BorderNode | undefined;
-                // const parentChildrenCountBefore = parentTabset?.getChildren().length ?? 0;
+            if (nodeToDelete instanceof TabNode) {
+                const parent = nodeToDelete.getParent(); // Get parent before deleting
 
-                model.doAction(Actions.deleteTab(tabId)); // This triggers model change & persistence
+                // Perform the deletion action
+                model.doAction(Actions.deleteTab(tabId)); // This mutates the model and triggers internal selection changes
 
                 const newTabs = new Map(tabs);
                 newTabs.delete(tabId);
+                set({ tabs: newTabs }); // Update our tab map
 
-                // Determine the next active tab ONLY if the removed tab was the active one
-                if (activeTabId === tabId) {
-                    // 1. Try the newly selected tab in the *same parent* (FlexLayout selects one automatically if possible)
-                    const newSelectedNode = parentTabset?.getSelectedNode();
-                    if (newSelectedNode) {
-                        nextActiveTabId = newSelectedNode.getId();
-                    } else {
-                        // 2. If parent is empty or gone, find *any* other available tab globally
-                        let foundNext = false;
-                        model.visitNodes((n) => {
-                            if (!foundNext && n instanceof TabNode) {
-                                nextActiveTabId = n.getId();
-                                foundNext = true;
-                            }
-                        });
-                        // If still no tab found after visiting all, set to undefined
-                        if (!foundNext) {
-                            nextActiveTabId = undefined;
+                // Now, determine the next active tab based on the *updated* model state
+                if (activeTabId === tabId) { // Only need to find a *new* active tab if the deleted one *was* active
+                    let newlySelectedNode: Node | undefined = undefined;
+
+                    // Check if the *original* parent still exists and has a selected node
+                    if (parent && model.getNodeById(parent.getId())) {
+                        if (parent instanceof TabSetNode || parent instanceof BorderNode) {
+                            newlySelectedNode = parent.getSelectedNode();
                         }
                     }
+
+                    // If the original parent didn't yield a selection, check the model's current active tabset
+                    if (!newlySelectedNode) {
+                        const currentActiveTabset = model.getActiveTabset();
+                        newlySelectedNode = currentActiveTabset?.getSelectedNode();
+                    }
+
+                    // If still no selection, iterate globally to find the first available tab
+                    if (!newlySelectedNode) {
+                        model.visitNodes((node) => {
+                            if (!newlySelectedNode && node instanceof TabNode) { // Find the *first* remaining TabNode
+                                newlySelectedNode = node;
+                            }
+                        });
+                    }
+
+                    nextActiveTabId = newlySelectedNode?.getId(); // Can be undefined if no tabs left
                     console.log("Setting next active tab after remove:", nextActiveTabId);
-                    set({ activeTabId: nextActiveTabId }); // Update state immediately
+                    set({ activeTabId: nextActiveTabId }); // Update store state
                 }
+                // If the deleted tab wasn't active, nextActiveTabId remains unchanged unless FlexLayout itself changed it,
+                // which would trigger a SELECT_TAB action handled by onModelChange later.
 
-                set({ tabs: newTabs }); // Update tabs map regardless
-
-                return nextActiveTabId; // Return the ID for potential navigation
+                return nextActiveTabId; // Return the ID for navigation
             }
-            return undefined;
+            return undefined; // Node not found or not a TabNode
         },
 
         renameTab: (tabId, newName) => {

@@ -1,5 +1,3 @@
-// src/routes/(app)/view/$itemId.tsx
-
 import * as React from 'react';
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router';
 import {
@@ -9,15 +7,12 @@ import {
     Actions,
     Model,
     type ITabRenderValues,
-    Node, // Import Node type
-    TabSetNode, // Import TabSetNode
-    BorderNode, // Import BorderNode
 } from '@app/layout';
 
 import * as Icons from 'lucide-react';
 
 import { useLayoutStore, getTabData, type TabData } from '@/lib/store/use-layout-store'; // Import TabData type
-import { DocumentPlaceholder, LibraryItemPlaceholder, UnknownPlaceholder } from '@/components/view/placeholders';
+import { DocumentPlaceholder, FolderPlaceholder, LibraryItemPlaceholder, UnknownPlaceholder } from '@/components/view/placeholders';
 import { LoadingContainer } from '@app/ui/components/loading-container';
 import { SidebarTrigger } from '@app/ui/components/sidebar';
 
@@ -159,6 +154,8 @@ function ViewPage() {
                 return <DocumentPlaceholder {...props} />;
             case 'library-item':
                 return <LibraryItemPlaceholder {...props} />;
+            case 'folder':
+                return <FolderPlaceholder {...props} />;
             default:
                 return <UnknownPlaceholder {...props} />;
         }

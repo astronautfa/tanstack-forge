@@ -89,6 +89,7 @@ const SidebarProvider = React.forwardRef<
 		ref
 	) => {
 		const isMobile = useIsMobile();
+		const [isReady, setIsReady] = React.useState(false);
 		const [width, setWidth] = React.useState(() => {
 			if (typeof window === 'undefined' || !window.localStorage) {
 				return defaultWidth; // SSR/no localStorage safety check
@@ -200,6 +201,13 @@ const SidebarProvider = React.forwardRef<
 			return () => window.removeEventListener("keydown", handleKeyDown);
 		}, [toggleSidebar]);
 
+		React.useEffect(() => {
+			// This runs after the first render, ensuring localStorage
+			// has been read and the initial state/CSS var is set.
+			setIsReady(true);
+			console.log("[SidebarProvider] Ready, rendering children.");
+		}, []);
+
 		// We add a state so that we can do data-state="expanded" or "collapsed".
 		// This makes it easier to style the sidebar with Tailwind classes.
 		const state = open ? "expanded" : "collapsed";
@@ -257,7 +265,7 @@ const SidebarProvider = React.forwardRef<
 						ref={ref}
 						{...props}
 					>
-						{children}
+						{isReady ? children : null}
 					</div>
 				</TooltipProvider>
 			</SidebarContext.Provider>

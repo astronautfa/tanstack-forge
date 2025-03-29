@@ -32,6 +32,7 @@ import {
 import {
     ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger
 } from "@app/ui/components/context-menu";
+import { useNavigate } from "@tanstack/react-router";
 
 type TreeItemRenderContext = LibraryTreeItemRenderContext<never>;
 
@@ -108,6 +109,8 @@ export function HierarchicalSection({
     const [selectedItems, setSelectedItems] = React.useState<TreeItemIndex[]>([]);
 
     const environmentRef = React.useRef<TreeEnvironmentRef<ItemData, never>>(null);
+
+    const navigate = useNavigate()
 
     // --- Filter logic (keep as is) ---
     const { filteredItems, itemsToExpand } = React.useMemo(() => {
@@ -204,9 +207,26 @@ export function HierarchicalSection({
             e.stopPropagation();
             if (context.isExpanded) context.collapseItem(); else context.expandItem();
         };
-        const handleItemClick = (e: React.MouseEvent) => {
-            e.stopPropagation();
-            if (!isItemRenaming && onPrimaryAction) onPrimaryAction(extendedItem);
+        // Inside your sidebar's item click handler...
+        const handleItemClick = (item: ExtendedTreeItem) => {
+            console.log("Tree item clicked:", item.index, item.data.name); // Keep for debugging
+
+            const iconName = typeof item.data.icon === 'string'
+                ? item.data.icon
+                : (item.data.icon as any)?.displayName // Attempt to get name if it's a component
+                ?? undefined;
+
+            console.log(`Navigating to /view/${item.index} with type: ${item.data.type}`);
+            navigate({
+                to: '/view/$itemId',
+                params: { itemId: item.index as string },
+                search: {
+                    name: item.data.name,
+                    type: item.data.type, // Pass 'folder', 'document', etc.
+                    icon: iconName
+                },
+                replace: false // Use false generally unless you specifically want to replace history
+            });
         };
 
         // --- Menu Item Actions ---
@@ -308,7 +328,7 @@ export function HierarchicalSection({
                                 )}
                                 {...context.itemContainerWithoutChildrenProps}
                                 {...context.interactiveElementProps}
-                                onClick={handleItemClick}
+                                onClick={() => handleItemClick(item)}
                                 // Context menu is handled by the wrapper
                                 draggable={!isItemRenaming && item.canMove} // Internal DND still possible
                             // Removed external onDragStart
